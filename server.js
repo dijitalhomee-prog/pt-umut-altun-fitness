@@ -156,6 +156,23 @@ app.put('/api/clients/:id/status', (req, res) => {
   res.json({ success: true, client });
 });
 
+// Update Client Password (Trainer Action)
+app.put('/api/clients/:id/password', (req, res) => {
+  const { id } = req.params;
+  const { password } = req.body;
+
+  const db = readDb();
+  const client = db.clients.find(c => c.id === id);
+
+  if (!client) {
+    return res.status(404).json({ success: false, message: 'Danışan bulunamadı.' });
+  }
+
+  client.password = password || Math.floor(100000 + Math.random() * 900000).toString();
+  writeDb(db);
+  res.json({ success: true, password: client.password, client });
+});
+
 // Delete Client Endpoint (Trainer Action)
 app.delete('/api/clients/:id', (req, res) => {
   const { id } = req.params;

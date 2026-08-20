@@ -859,6 +859,9 @@
               <button class="toggle-status-btn" data-id="${c.id}" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: var(--radius-sm); border: 1px solid ${isActive ? '#10B981' : '#EF4444'}; background: ${isActive ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; color: ${isActive ? '#10B981' : '#EF4444'}; cursor: pointer; font-weight: bold;">
                 ${isActive ? '🟢 Aktif' : '🔴 Pasif Yap'}
               </button>
+              <button class="reset-password-btn" data-id="${c.id}" data-name="${c.name}" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: var(--radius-sm); border: 1px solid #F59E0B; background: rgba(245,158,11,0.15); color: #F59E0B; cursor: pointer; font-weight: bold;" title="Danışanın Şifresini Sıfırla">
+                🔑 Şifre Yenile
+              </button>
               <button class="delete-client-btn" data-id="${c.id}" data-name="${c.name}" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: var(--radius-sm); border: 1px solid #EF4444; background: rgba(239,68,68,0.2); color: #EF4444; cursor: pointer; font-weight: bold;" title="Danışanı Kalıcı Sil">
                 <i class="fas fa-trash-alt"></i> Sil
               </button>
@@ -868,7 +871,7 @@
 
         // Card select event -> Switch active builder workspace client
         card.addEventListener('click', (e) => {
-          if (e.target.closest('.toggle-status-btn') || e.target.closest('.delete-client-btn')) return;
+          if (e.target.closest('.toggle-status-btn') || e.target.closest('.delete-client-btn') || e.target.closest('.reset-password-btn')) return;
           selectedClientId = c.id;
           renderClientsList();
         });
@@ -881,6 +884,37 @@
           saveClients();
           renderClientsList();
         });
+
+        // Reset password event
+        const resetBtn = card.querySelector('.reset-password-btn');
+        if (resetBtn) {
+          resetBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const newPass = Math.floor(100000 + Math.random() * 900000).toString();
+            if (confirm(`"${c.name}" isimli danışanın giriş şifresini "${newPass}" olarak yenilemek istediğinize emin misiniz?`)) {
+              c.password = newPass;
+              saveClients();
+
+              // Call REST API
+              try {
+                await fetch(`/api/clients/${c.id}/password`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ password: newPass })
+                });
+              } catch(err){}
+
+              const phoneStr = c.phone || '';
+              const waText = encodeURIComponent(`Merhaba ${c.name}, PT Umut Altun Danışan Paneli yeni giriş şifreniz: ${newPass}\n\nPaneline giriş yapmak için: https://ptumutaltun.com/dashboard.html`);
+              const waUrl = `https://wa.me/90${phoneStr}?text=${waText}`;
+
+              alert(`🔑 Şifre Başarıyla Yenilendi!\n\n📌 Danışan: ${c.name}\n📱 Telefon: ${c.phone || 'Tanımsız'}\n🔑 Yeni Şifre: ${newPass}\n\nYeni şifre danışana iletilmeye hazırdır.`);
+              if (phoneStr) {
+                window.open(waUrl, '_blank');
+              }
+            }
+          });
+        }
 
         // Delete client event
         card.querySelector('.delete-client-btn').addEventListener('click', async (e) => {
