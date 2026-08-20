@@ -1609,6 +1609,23 @@ html, body {
   color: var(--accent-red) !important;
 }
 
+/* Strict Mobile & Tablet Hide for Header DijitalGru Tag */
+@media screen and (max-width: 1024px) {
+  .nav-dijitalgru-tag,
+  span.nav-dijitalgru-tag {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    max-width: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
 @media (max-width: 992px) {
   .nav-dijitalgru-tag {
     display: none !important;
