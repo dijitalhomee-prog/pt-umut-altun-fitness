@@ -1534,6 +1534,40 @@ html, body {
     font-size: 1.5rem !important;
     z-index: 99999 !important;
   }
+
+  /* Mobile Tab Navigation Pill Bar Touch Scrolling */
+  .dash-tabs-bar,
+  .workout-day-selector {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 0.5rem !important;
+    gap: 0.5rem !important;
+  }
+
+  .dash-tab-btn,
+  .day-pill {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    font-size: 0.82rem !important;
+    padding: 0.5rem 0.9rem !important;
+  }
+
+  /* Exercise & Nutrition Row Items on Mobile */
+  .exercise-item,
+  .meal-food-item {
+    padding: 0.85rem 1rem !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.6rem !important;
+  }
+
+  .exercise-meta,
+  .meal-macro-badges {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
 }
 
 /* ==========================================================================
