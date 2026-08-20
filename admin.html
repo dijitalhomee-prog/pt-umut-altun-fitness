@@ -666,12 +666,16 @@
         <div class="calc-form-group">
           <label class="calc-label" for="new-client-package">Paket Türü *</label>
           <select id="new-client-package" class="input-field">
-            <option value="Ücretsiz Deneme / Özel">🎁 Ücretsiz Deneme / Özel Koçluk</option>
-            <option value="Cevahir MACFit Hibrit">📍 Cevahir MACFit Hibrit (3.900 ₺)</option>
-            <option value="3 Aylık Başlangıç">🌱 3 Aylık Başlangıç & Disiplin (4.500 ₺)</option>
-            <option value="6 Aylık Vücut Yenileme">🔥 6 Aylık Vücut Yenileme (7.900 ₺)</option>
-            <option value="12 Aylık VIP Şampiyon">👑 12 Aylık VIP Şampiyon (13.500 ₺)</option>
-            <option value="Cevahir 20 Ders PT">🏋️‍♂️ Cevahir Birebir PT (20 Ders)</option>
+            <option value="🎁 Ücretsiz Deneme / Özel Koçluk">🎁 Ücretsiz Deneme / Özel Koçluk</option>
+            <option value="⚡ 1 Aylık Hızlı Değişim & Detoks">⚡ 1 Aylık Hızlı Değişim & Detoks (1.800 ₺)</option>
+            <option value="🌱 3 Aylık Başlangıç & Disiplin">🌱 3 Aylık Başlangıç & Disiplin (4.500 ₺)</option>
+            <option value="🔥 6 Aylık Vücut Yenileme & Hipertrofi">🔥 6 Aylık Vücut Yenileme & Hipertrofi (7.900 ₺)</option>
+            <option value="👑 12 Aylık VIP Şampiyon Dönüşüm">👑 12 Aylık VIP Şampiyon Dönüşüm (13.500 ₺)</option>
+            <option value="📍 Cevahir MACFit Hibrit Koçluk">📍 Cevahir MACFit Hibrit Koçluk (3.900 ₺)</option>
+            <option value="🏋️‍♀️ Cevahir AVM Birebir PT (10 Ders)">🏋️‍♀️ Cevahir AVM Birebir PT (10 Ders)</option>
+            <option value="🏋️‍♂️ Cevahir AVM Birebir PT (20 Ders)">🏋️‍♂️ Cevahir AVM Birebir PT (20 Ders)</option>
+            <option value="🏋️‍♂️ Cevahir AVM Birebir PT (30 Ders)">🏋️‍♂️ Cevahir AVM Birebir PT (30 Ders)</option>
+            <option value="🤝 Özel Çift / Kurumsal Koçluk">🤝 Özel Çift / Kurumsal Koçluk</option>
           </select>
         </div>
 
@@ -1002,9 +1006,11 @@
 
         // Auto Expiry Date Calculation
         let daysToAdd = 90;
+        if (pkg.includes('1 Aylık')) daysToAdd = 30;
+        if (pkg.includes('3 Aylık')) daysToAdd = 90;
         if (pkg.includes('6 Aylık')) daysToAdd = 180;
         if (pkg.includes('12 Aylık')) daysToAdd = 365;
-        if (pkg.includes('Deneme') || pkg.includes('PT')) daysToAdd = 30;
+        if (pkg.includes('Deneme') || pkg.includes('PT') || pkg.includes('Ders') || pkg.includes('Çift')) daysToAdd = 45;
 
         const expDateObj = new Date();
         expDateObj.setDate(expDateObj.getDate() + daysToAdd);
