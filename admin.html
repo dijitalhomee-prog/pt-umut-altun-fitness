@@ -379,7 +379,7 @@
           <div id="tab-note-builder" class="builder-pane" style="display: none;">
             <div class="calc-form-group">
               <label class="calc-label">Haftalık Eğitmen Notunuz & Motivasyon Mesajınız</label>
-              <textarea id="builder-coach-note" class="input-field" rows="5" placeholder="Danışanınıza bu haftalık özel talimat ve tavsiyelerinizi yazın...">3 Aylık Başlangıç & Disiplin ailesine hoş geldin Ahmet! İlk 2 haftamızda temel hedefimiz ağır kitleler kaldırmak değil, hareket formlarını eksiksiz öğrenmek ve vücudunu antrenman ritmine alıştırmaktır. Beslenme listendeki makrolara sadık kal!</textarea>
+              <textarea id="builder-coach-note" class="input-field" rows="5" placeholder="Danışanınıza bu haftalık özel talimat ve tavsiyelerinizi yazın..."></textarea>
             </div>
 
             <button type="button" class="btn btn-primary-glow btn-block" id="send-note-btn" style="margin-top: 1rem;">
@@ -793,6 +793,14 @@
             statusBadge.style.color = '#EF4444';
             statusBadge.style.background = 'rgba(239,68,68,0.15)';
           }
+        }
+
+        // Dynamically set default personalized coach note for selected client
+        const coachNoteInput = document.getElementById('builder-coach-note');
+        if (coachNoteInput && (!coachNoteInput.value || coachNoteInput.getAttribute('data-client-id') !== currentSelected.id)) {
+          const firstName = currentSelected.name.split(' ')[0];
+          coachNoteInput.setAttribute('data-client-id', currentSelected.id);
+          coachNoteInput.value = `${currentSelected.package} ailesine hoş geldin ${firstName}! İlk 2 haftamızda temel hedefimiz ağır kitleler kaldırmak değil, hareket formlarını eksiksiz öğrenmek ve vücudunu antrenman ritmine alıştırmaktır. Beslenme listendeki makrolara sadık kal!`;
         }
       } else {
         if (titleName) titleName.textContent = 'Danışan Seçilmedi';

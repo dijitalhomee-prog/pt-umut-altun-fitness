@@ -469,7 +469,7 @@
             <i class="fas fa-comment-dots"></i> Umut Hoca'nın 1. Hafta Başlangıç Notu:
           </h4>
           <p style="font-size: 0.95rem; color: #E5E7EB;" id="trainer-note-body">
-            "3 Aylık Başlangıç & Disiplin ailesine hoş geldin Ahmet! İlk 2 haftamızda temel hedefimiz ağır kitleler kaldırmak değil, hareket formlarını eksiksiz öğrenmek ve vücudunu antrenman ritmine alıştırmaktır. Beslenme listendeki makrolara sadık kal, her antrenman sonrası hareket kontrol videolarını atmayı unutma!"
+            "3 Aylık Başlangıç & Disiplin ailesine hoş geldin <span id="trainer-note-client-name">Danışanım</span>! İlk 2 haftamızda temel hedefimiz ağır kitleler kaldırmak değil, hareket formlarını eksiksiz öğrenmek ve vücudunu antrenman ritmine alıştırmaktır. Beslenme listendeki makrolara sadık kal, her antrenman sonrası hareket kontrol videolarını atmayı unutma!"
           </p>
         </div>
       </div>
@@ -965,14 +965,20 @@
     const pkg12Btn = document.getElementById('btn-pkg-12month');
     const pkgPtBtn = document.getElementById('btn-pkg-pt');
 
+    function getActiveClientFirstName() {
+      const fullName = sessionStorage.getItem('client_user_name') || 'Danışanım';
+      return fullName.trim().split(' ')[0];
+    }
+
     // 1. Cevahir MACFit Hibrit Paketi
     if (pkgHybridBtn) {
       pkgHybridBtn.addEventListener('click', () => {
         setActivePkgBtn(pkgHybridBtn);
+        const name = getActiveClientFirstName();
         document.getElementById('client-package-badge').innerHTML = '<i class="fas fa-map-marker-alt"></i> Cevahir MACFit Hibrit Koçluk Paketi (2. Hafta / 12 Hafta)';
         document.getElementById('stat-checkin-period').textContent = 'Ayda 1 Salonda Özel Ders';
         document.getElementById('trainer-note-title').innerHTML = '<i class="fas fa-comment-dots"></i> Umut Hoca\'nın Cevahir MACFit Hibrit Notu:';
-        document.getElementById('trainer-note-body').textContent = '"Ahmet selam! Önümüzdeki Cumartesi 14:00\'te Cevahir AVM MACFit stüdyosunda 1-on-1 birebir özel dersimiz var. Salonda squat ve deadlift formunu yüz yüze birebir inceleyeceğiz!"';
+        document.getElementById('trainer-note-body').textContent = `"${name} selam! Önümüzdeki Cumartesi 14:00'te Cevahir AVM MACFit stüdyosunda 1-on-1 birebir özel dersimiz var. Salonda squat ve deadlift formunu yüz yüze birebir inceleyeceğiz!"`;
         
         document.getElementById('pkg-privilege-tag').textContent = '📍 STÜDYO HİBRİT KOÇLUK HAKLARI';
         document.getElementById('pkg-privilege-title').textContent = 'Cevahir AVM MACFit Yüz Yüze Birebir Özel Ders & Hibrit Koçluk';
@@ -985,10 +991,11 @@
     if (pkg3Btn) {
       pkg3Btn.addEventListener('click', () => {
         setActivePkgBtn(pkg3Btn);
+        const name = getActiveClientFirstName();
         document.getElementById('client-package-badge').innerHTML = '<i class="fas fa-shield-alt"></i> 3 Aylık Başlangıç & Disiplin Paketi (1. Hafta / 12 Hafta)';
         document.getElementById('stat-checkin-period').textContent = '2 Haftada Bir';
         document.getElementById('trainer-note-title').innerHTML = '<i class="fas fa-comment-dots"></i> Umut Hoca\'nın 1. Hafta Başlangıç Notu:';
-        document.getElementById('trainer-note-body').textContent = '"3 Aylık Başlangıç & Disiplin ailesine hoş geldin Ahmet! İlk 2 haftamızda temel hedefimiz ağır kitleler kaldırmak değil, hareket formlarını eksiksiz öğrenmek ve vücudunu antrenman ritmine alıştırmaktır."';
+        document.getElementById('trainer-note-body').textContent = `"3 Aylık Başlangıç & Disiplin ailesine hoş geldin ${name}! İlk 2 haftamızda temel hedefimiz ağır kitleler kaldırmak değil, hareket formlarını eksiksiz öğrenmek ve vücudunu antrenman ritmine alıştırmaktır."`;
         
         document.getElementById('pkg-privilege-tag').textContent = '🌱 TEMEL KOÇLUK & DİSİPLİN HAKLARI';
         document.getElementById('pkg-privilege-title').textContent = 'Kişiye Özel Antrenman & Esnek Beslenme Desteği';
@@ -1001,10 +1008,11 @@
     if (pkg6Btn) {
       pkg6Btn.addEventListener('click', () => {
         setActivePkgBtn(pkg6Btn);
+        const name = getActiveClientFirstName();
         document.getElementById('client-package-badge').innerHTML = '<i class="fas fa-fire"></i> 6 Aylık Vücut Yenileme Paketi (3. Hafta / 24 Hafta)';
         document.getElementById('stat-checkin-period').textContent = 'Haftalık (Her Pazar)';
         document.getElementById('trainer-note-title').innerHTML = '<i class="fas fa-comment-dots"></i> Umut Hoca\'nın 3. Hafta Hipertrofi Notu:';
-        document.getElementById('trainer-note-body').textContent = '"Harika gidiyorsun Ahmet! Geçen hafta verdiğin 1.2 kg yağ kaybı muazzamdı. Bu hafta göğüs antrenmanına Drop-set ekledim. Kardiyoyu yine antrenman sonraları 20 dk tutuyoruz."';
+        document.getElementById('trainer-note-body').textContent = `"Harika gidiyorsun ${name}! Geçen hafta verdiğin 1.2 kg yağ kaybı muazzamdı. Bu hafta göğüs antrenmanına Drop-set ekledim. Kardiyoyu yine antrenman sonraları 20 dk tutuyoruz."`;
         
         document.getElementById('pkg-privilege-tag').textContent = '🔥 HAFTALIK REVİZE & ÖNCELİKLİ HAKLAR';
         document.getElementById('pkg-privilege-title').textContent = 'Haftalık Form Analizi & Program Revize Garantisi';
@@ -1033,10 +1041,11 @@
     if (pkgPtBtn) {
       pkgPtBtn.addEventListener('click', () => {
         setActivePkgBtn(pkgPtBtn);
+        const name = getActiveClientFirstName();
         document.getElementById('client-package-badge').innerHTML = '<i class="fas fa-dumbbell"></i> Cevahir AVM 20 Ders Birebir PT Paketi (8. Ders / 20 Ders)';
         document.getElementById('stat-checkin-period').textContent = 'Salonda Birebir Ders';
         document.getElementById('trainer-note-title').innerHTML = '<i class="fas fa-comment-dots"></i> Umut Hoca\'nın Birebir PT Notu:';
-        document.getElementById('trainer-note-body').textContent = '"Ahmet selam! 20 derslik paketimizin 8 dersini tamamladık. Yarın 16:00\'daki bacak & kalça dersimiz için Cevahir AVM MACFit stüdyosunda buluşuyoruz."';
+        document.getElementById('trainer-note-body').textContent = `"${name} selam! 20 derslik paketimizin 8 dersini tamamladık. Yarın 16:00'daki bacak & kalça dersimiz için Cevahir AVM MACFit stüdyosunda buluşuyoruz."`;
         
         document.getElementById('pkg-privilege-tag').textContent = '🏋️‍♂️ SALONDA BİREBİR ÖZEL DERS HAKLARI';
         document.getElementById('pkg-privilege-title').textContent = 'Cevahir AVM MACFit 1-on-1 Birebir PT Seansları';
@@ -1060,8 +1069,13 @@
     // Live Sync Trainer Note from Admin Panel (localStorage)
     function syncTrainerNote() {
       const savedNote = localStorage.getItem('pt_trainer_note');
+      const firstName = getActiveClientFirstName();
+      const nameSpan = document.getElementById('trainer-note-client-name');
+      if (nameSpan) nameSpan.textContent = firstName;
+
       if (savedNote) {
-        document.getElementById('trainer-note-body').textContent = '"' + savedNote + '"';
+        const dynamicNote = savedNote.replace(/Ahmet/g, firstName);
+        document.getElementById('trainer-note-body').textContent = '"' + dynamicNote + '"';
       }
     }
 
