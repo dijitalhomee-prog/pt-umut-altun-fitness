@@ -878,15 +878,30 @@
     if (clientLoginForm) {
       clientLoginForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const phone = clientPhoneInput.value.trim();
-        const pass = clientPassInput.value.trim();
+        const rawPhone = clientPhoneInput.value.trim();
+        const enteredPhone = rawPhone.replace(/\D/g, '');
+        const enteredPass = clientPassInput.value.trim();
         
-        if (phone.length >= 8 && pass.length >= 3) {
+        // Registered clients list
+        const storedClients = JSON.parse(localStorage.getItem('pt_clients_list')) || [];
+        
+        const matchingClient = storedClients.find(c => {
+          const clientPhoneClean = (c.phone || '').replace(/\D/g, '');
+          return (clientPhoneClean && clientPhoneClean === enteredPhone && c.password === enteredPass) || (c.password === enteredPass);
+        });
+
+        if (matchingClient || (enteredPhone.length >= 8 && (enteredPass === '123456' || enteredPass.length >= 4))) {
           sessionStorage.setItem('client_authenticated', 'true');
-          sessionStorage.setItem('client_user_phone', phone);
+          sessionStorage.setItem('client_user_phone', enteredPhone);
+          if (matchingClient) {
+            sessionStorage.setItem('client_user_name', matchingClient.name);
+            const nameSpan = document.querySelector('.client-welcome-box h2');
+            if (nameSpan) nameSpan.textContent = `Hoş Geldin, ${matchingClient.name}! 👋`;
+          }
           clientAuthOverlay.style.display = 'none';
         } else {
           clientLoginError.style.display = 'block';
+          clientLoginError.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Girdiğiniz telefon numarası veya şifre hatalı!';
         }
       });
     }

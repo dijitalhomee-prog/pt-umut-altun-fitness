@@ -627,6 +627,21 @@
         </div>
 
         <div class="calc-form-group">
+          <label class="calc-label" for="new-client-phone">Telefon Numarası (Danışan Girişi İçin) *</label>
+          <input type="tel" id="new-client-phone" class="input-field" placeholder="Örn: 05386376258" required>
+        </div>
+
+        <div class="calc-form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+            <label class="calc-label" for="new-client-password" style="margin-bottom: 0;">Danışan Giriş Şifresi *</label>
+            <button type="button" id="auto-gen-pass-btn" style="background: none; border: none; color: var(--accent-red); cursor: pointer; font-size: 0.78rem; font-weight: bold;">
+              <i class="fas fa-random"></i> Otomatik Şifre Üret
+            </button>
+          </div>
+          <input type="text" id="new-client-password" class="input-field" placeholder="Örn: 586142 veya 123456" required>
+        </div>
+
+        <div class="calc-form-group">
           <label class="calc-label" for="new-client-package">Paket Türü *</label>
           <select id="new-client-package" class="input-field">
             <option value="Ücretsiz Deneme / Özel">🎁 Ücretsiz Deneme / Özel Koçluk</option>
@@ -652,7 +667,7 @@
         </div>
 
         <button type="submit" class="btn btn-primary-glow" style="width: 100%; margin-top: 1rem;">
-          <i class="fas fa-plus-circle"></i> Danışanı Sisteme Ekle
+          <i class="fas fa-plus-circle"></i> Danışanı Sisteme Ekle ve Şifre Üret
         </button>
       </form>
     </div>
@@ -883,9 +898,23 @@
     const closeModalBtn = document.getElementById('close-add-client-modal');
     const addClientForm = document.getElementById('add-client-form');
 
+    // Auto Password Generator Button
+    const autoGenBtn = document.getElementById('auto-gen-pass-btn');
+    if (autoGenBtn) {
+      autoGenBtn.addEventListener('click', () => {
+        const randomPass = Math.floor(100000 + Math.random() * 900000).toString();
+        document.getElementById('new-client-password').value = randomPass;
+      });
+    }
+
     if (openModalBtn) {
       openModalBtn.addEventListener('click', () => {
         modal.classList.add('active');
+        // Auto generate password when modal opens if blank
+        const passInput = document.getElementById('new-client-password');
+        if (passInput && !passInput.value) {
+          passInput.value = Math.floor(100000 + Math.random() * 900000).toString();
+        }
       });
     }
 
@@ -899,9 +928,13 @@
       addClientForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const name = document.getElementById('new-client-name').value.trim();
+        const rawPhone = document.getElementById('new-client-phone').value.trim();
+        const password = document.getElementById('new-client-password').value.trim();
         const pkg = document.getElementById('new-client-package').value;
         const stage = document.getElementById('new-client-stage').value.trim();
         const status = document.getElementById('new-client-status').value;
+
+        const phone = rawPhone.replace(/\D/g, '');
 
         // Auto Expiry Date Calculation
         let daysToAdd = 90;
@@ -916,6 +949,8 @@
         const newClient = {
           id: 'client-' + Date.now(),
           name: name,
+          phone: phone,
+          password: password,
           package: pkg,
           stage: stage,
           expiryDate: expiryDateStr,
@@ -936,7 +971,7 @@
         
         modal.classList.remove('active');
         addClientForm.reset();
-        alert(`✨ ${name} başarıyla eğitmen paneline ve sunucuya eklendi!\n📅 Otomatik Paket Bitiş Tarihi: ${expiryDateStr}`);
+        alert(`✨ Danışan Başarıyla Sisteme Kaydedildi!\n\n📌 Danışan: ${name}\n📱 Giriş Telefonu: ${rawPhone}\n🔑 Giriş Şifresi: ${password}\n📅 Paket Bitiş Tarihi: ${expiryDateStr}\n\nDanışan bu telefon ve şifre ile danışan paneline giriş yapabilir.`);
       });
     }
 

@@ -93,7 +93,7 @@ app.get('/api/clients', (req, res) => {
 
 // 2. Add New Client (Trainer Action)
 app.post('/api/clients', (req, res) => {
-  const { name, package: pkg, stage, status, expiryDate } = req.body;
+  const { name, phone, password, package: pkg, stage, status, expiryDate } = req.body;
   if (!name) {
     return res.status(400).json({ success: false, message: 'Danışan adı gereklidir.' });
   }
@@ -113,9 +113,15 @@ app.post('/api/clients', (req, res) => {
     finalExpiryDate = expObj.toISOString().split('T')[0];
   }
 
+  // Auto-generate 6-digit password if not provided
+  const generatedPassword = password || Math.floor(100000 + Math.random() * 900000).toString();
+  const clientPhone = phone ? phone.replace(/\D/g, '') : '';
+
   const newClient = {
     id: 'client-' + Date.now(),
     name,
+    phone: clientPhone,
+    password: generatedPassword,
     package: pkg || 'Ücretsiz Deneme',
     stage: stage || '1. Hafta (Yeni Başladı)',
     expiryDate: finalExpiryDate,
