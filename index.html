@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PT Umut Altun | Uzaktan Fitness Koçluğu & Beslenme Programı</title>
+  <meta name="description" content="Pt Umut Altun ile kişiselleştirilmiş 1-on-1 uzaktan koçluk, bilimsel antrenman programı, esnek beslenme ve 7/24 WhatsApp desteği. Hayalindeki vücuda hemen ulaşın!">
+  <meta name="keywords" content="Pt Umut Altun, uzaktan eğitim, fitness koçu, uzaktan koçluk, beslenme programı, diyet planı, kişisel antrenör, kas kazanımı, yağ yakımı">
+  
+  <!-- Open Graph / Social Media -->
+  <meta property="og:title" content="PT Umut Altun | Uzaktan Fitness Koçluğu">
+  <meta property="og:description" content="Kişiye özel antrenman ve esnek beslenme programı ile hayalindeki vücudu inşa et.">
+  <meta property="og:type" content="website">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       1. Navigation Bar
+       ========================================================================== -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="#" class="brand-logo">
+        <div class="logo-icon">UA</div>
+        <span>PT UMUT ALTUN</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="#home" class="nav-link">Ana Sayfa</a>
+        <a href="#features" class="nav-link">Neden Biz?</a>
+        <a href="#packages" class="nav-link">Paketler</a>
+        <a href="#calculator" class="nav-link">BMR Hesapla</a>
+        <a href="#transformations" class="nav-link">Dönüşümler</a>
+        <a href="dashboard.html" class="nav-link" style="color: var(--accent-primary); font-weight: 700;"><i class="fas fa-user-circle"></i> Danışan Paneli</a>
+        <a href="admin.html" class="nav-link" style="color: var(--accent-secondary); font-weight: 700;"><i class="fas fa-user-ninja"></i> Eğitmen Paneli</a>
+      </nav>
+
+      <button class="btn btn-primary-glow open-modal-btn">
+        <i class="fas fa-paper-plane"></i> Ücretsiz Değerlendirme
+      </button>
+
+      <button class="menu-toggle" id="menu-toggle" aria-label="Mobil Menü">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ==========================================================================
+         2. Hero Section
+         ========================================================================== -->
+    <section id="home" class="hero-section">
+      <div class="container">
+        <div class="hero-grid">
+          
+          <div class="hero-content">
+            <div class="hero-badge">
+              <i class="fas fa-bolt"></i> 2026 Sezonu Sınırlı Kontenjan Başvuruları Açık
+            </div>
+            
+            <h1 class="hero-title">
+              BİLİMSEL YÖNTEMLERLE <br>
+              <span class="gradient-text">HAYALİNDEKİ VÜCUDU</span> İNŞA ET
+            </h1>
+
+            <p class="hero-subtitle">
+              Sadece sana özel hazırlanan 1-on-1 antrenman ve esnek beslenme planıyla aç kalmadan, zaman kaybetmeden maksimum hedefine ulaş.
+            </p>
+
+            <div class="hero-actions">
+              <a href="#packages" class="btn btn-primary-glow">
+                Paketleri İncele <i class="fas fa-arrow-down"></i>
+              </a>
+              <a href="#calculator" class="btn btn-outline">
+                <i class="fas fa-calculator"></i> Kalori/BMR Hesapla
+              </a>
+            </div>
+          </div>
+
+          <div class="hero-media-wrapper">
+            <div class="hero-image-card">
+              <img src="assets/images/trainer_umut.jpg" alt="Pt Umut Altun Fitness Koçu" id="hero-trainer-img">
+              <div class="floating-badge">
+                <div class="badge-icon" style="background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);">
+                  <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="badge-text">
+                  <h5>Spor Salonu: Cevahir AVM MACFit</h5>
+                  <p>Şişli / İstanbul & Tüm Türkiye Uzaktan Koçluk</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         3. Packages & Pricing Section (Fiyatlar & Paketler)
+         ========================================================================== -->
+    <section id="packages" class="packages-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag"><i class="fas fa-tags"></i> Fiyatlandırma</span>
+          <h2 class="section-title">Sana En Uygun <span class="gradient-text">Paketi Seç</span></h2>
+          <p class="section-subtitle">Hedeflerin doğrultusunda oluşturulmuş uzaktan eğitim ve hibrit koçluk paketleri. İçerikler tamamen sana göre şekillenir.</p>
+        </div>
+
+        <div class="packages-grid" id="packages-container">
+          <!-- Rendered dynamically by js/app.js -->
+        </div>
+
+        <!-- Bağımsız Bölüm: Cevahir AVM MACFit Yüz Yüze Birebir Özel Ders Paketleri -->
+        <div class="pt-pt-pricing-container" style="margin-top: 3.5rem; padding: 2.2rem; background: linear-gradient(180deg, rgba(239, 68, 68, 0.08) 0%, rgba(18, 18, 22, 0.95) 100%); border: 2px solid var(--accent-red); border-radius: var(--radius-lg); box-shadow: 0 10px 40px rgba(239, 68, 68, 0.25);">
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <span style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 1rem; background: rgba(239, 68, 68, 0.2); border: 1px solid var(--accent-red); border-radius: var(--radius-full); color: var(--accent-red); font-size: 0.825rem; font-weight: 700; margin-bottom: 0.8rem;">
+              <i class="fas fa-map-marker-alt"></i> Cevahir AVM MACFit Stüdyo Dersleri
+            </span>
+            <h3 style="font-size: 1.6rem; font-weight: 700; color: #FFFFFF; margin-bottom: 0.5rem;">
+              Cevahir AVM MACFit <span style="color: var(--accent-red);">Yüz Yüze Birebir Özel Ders</span> Paketleri
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 680px; margin: 0 auto;">
+              Şişli Cevahir AVM MACFit stüdyosında Umut Altun ile 1-on-1 yüz yüze birebir kişisel antrenörlük ve postür odaklı özel ders paketleri.
+            </p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; align-items: stretch;">
+            <!-- 10 Ders -->
+            <div style="padding: 1.6rem; background: rgba(0,0,0,0.5); border: 1px solid var(--border-light); border-radius: var(--radius-md); display: flex; flex-direction: column; justify-content: space-between; text-align: center; position: relative;">
+              <div>
+                <span style="font-size: 0.75rem; font-weight: 600; color: var(--accent-red); background: rgba(239,68,68,0.15); padding: 0.2rem 0.6rem; border-radius: var(--radius-full);">Aylık Kullanım</span>
+                <h4 style="font-size: 1.15rem; margin: 0.8rem 0 0.4rem 0; color: #FFFFFF; font-weight: 700;">10 Ders Birebir PT</h4>
+                <p style="font-size: 0.825rem; color: var(--text-muted); margin-bottom: 1.2rem;">Salonda Birebir Yüz Yüze Özel Antrenman & Form Takibi</p>
+                <div style="font-size: 1.7rem; font-weight: 800; color: #FFFFFF; margin-bottom: 0.2rem;">17.900 ₺</div>
+                <span style="font-size: 0.8rem; color: var(--accent-red); font-weight: 600;">(Ders Başı ~1.790 ₺)</span>
+              </div>
+              <button class="btn btn-outline open-modal-btn" style="margin-top: 1.5rem; width: 100%;">
+                <i class="fab fa-whatsapp" style="color: #25D366;"></i> 10 Derslik Pakete Başvur
+              </button>
+            </div>
+
+            <!-- 20 Ders -->
+            <div style="padding: 1.6rem; background: rgba(0,0,0,0.5); border: 1px solid var(--border-light); border-radius: var(--radius-md); display: flex; flex-direction: column; justify-content: space-between; text-align: center; position: relative;">
+              <div>
+                <span style="font-size: 0.75rem; font-weight: 600; color: var(--accent-red); background: rgba(239,68,68,0.15); padding: 0.2rem 0.6rem; border-radius: var(--radius-full);">En Çok Tercih Edilen</span>
+                <h4 style="font-size: 1.15rem; margin: 0.8rem 0 0.4rem 0; color: #FFFFFF; font-weight: 700;">20 Ders Birebir PT</h4>
+                <p style="font-size: 0.825rem; color: var(--text-muted); margin-bottom: 1.2rem;">İleri Seviye Vücut Şekillendirme & Postür Analizi</p>
+                <div style="font-size: 1.7rem; font-weight: 800; color: #FFFFFF; margin-bottom: 0.2rem;">32.900 ₺</div>
+                <span style="font-size: 0.8rem; color: var(--accent-red); font-weight: 600;">(Ders Başı ~1.645 ₺)</span>
+              </div>
+              <button class="btn btn-outline open-modal-btn" style="margin-top: 1.5rem; width: 100%;">
+                <i class="fab fa-whatsapp" style="color: #25D366;"></i> 20 Derslik Pakete Başvur
+              </button>
+            </div>
+
+            <!-- 30 Ders -->
+            <div style="padding: 1.6rem; background: linear-gradient(180deg, rgba(239, 68, 68, 0.18) 0%, rgba(0,0,0,0.6) 100%); border: 2px solid var(--accent-red); border-radius: var(--radius-md); display: flex; flex-direction: column; justify-content: space-between; text-align: center; position: relative; box-shadow: 0 0 25px rgba(239,68,68,0.3);">
+              <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent-gradient); color: #FFFFFF; font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.8rem; border-radius: var(--radius-full); white-space: nowrap;">
+                🔥 En Avantajlı Ders Başı Fiyat
+              </div>
+              <div>
+                <span style="font-size: 0.75rem; font-weight: 600; color: var(--accent-red); background: rgba(239,68,68,0.15); padding: 0.2rem 0.6rem; border-radius: var(--radius-full); margin-top: 0.4rem; display: inline-block;">Full Dönüşüm VIP</span>
+                <h4 style="font-size: 1.15rem; margin: 0.8rem 0 0.4rem 0; color: #FFFFFF; font-weight: 700;">30 Ders Birebir PT</h4>
+                <p style="font-size: 0.825rem; color: var(--text-muted); margin-bottom: 1.2rem;">Komple Beden Yenileme & Özel Beslenme Programı</p>
+                <div style="font-size: 1.75rem; font-weight: 800; color: #FFFFFF; margin-bottom: 0.2rem;">45.350 ₺</div>
+                <span style="font-size: 0.8rem; color: var(--accent-red); font-weight: 600;">(Ders Başı ~1.511 ₺)</span>
+              </div>
+              <button class="btn btn-primary-glow open-modal-btn" style="margin-top: 1.5rem; width: 100%;">
+                <i class="fab fa-whatsapp"></i> 30 Derslik Pakete Başvur
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- iyzico Secure Payment Band -->
+        <div class="iyzico-trust-container" style="text-align: center; margin-top: 2.5rem; padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-light); border-radius: var(--radius-lg);">
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.8rem; font-weight: 600;">
+            <i class="fas fa-lock" style="color: var(--accent-primary);"></i> Ödemeleriniz <strong>iyzico 256-Bit SSL & 3D Secure</strong> Altyapısıyla Güvence Altındadır
+          </div>
+          <img src="assets/images/logos/iyzico_footer_band.svg" alt="iyzico ile Güvenli Ödeme - Visa MasterCard Troy" style="height: 38px; margin: 0 auto; display: block; max-width: 90%;">
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         4. Trainer Credentials & Expertise (Neden Umut Altun?)
+         ========================================================================== -->
+    <section id="features" class="features-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag"><i class="fas fa-certificate"></i> Akademik & Lisanslı Uzmanlık</span>
+          <h2 class="section-title">Neden <span class="gradient-text">Pt Umut Altun?</span></h2>
+          <p class="section-subtitle">Akademik spor bilimleri altyapısı, uluslararası EREPS sertifikasyonu ve milli takım tecrübesiyle bilime dayalı birebir koçluk.</p>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card glass-panel">
+            <div class="feature-icon-box">
+              <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h3>Marmara Üni. Spor Bilimleri</h3>
+            <p>Spor Bilimleri Fakültesi Antrenörlük Eğitimi Bölümü mezuniyeti ile bilimsel anatomi, fizyoloji ve antrenman metodolojisi.</p>
+          </div>
+
+          <div class="feature-card glass-panel">
+            <div class="feature-icon-box">
+              <i class="fas fa-award"></i>
+            </div>
+            <h3>EREPS Level 4 Eğitmen</h3>
+            <p>European Register of Exercise Professionals (EREPS) Level 4 uluslararası yüksek seviye antrenörlük yetkinlik sertifikası.</p>
+          </div>
+
+          <div class="feature-card glass-panel">
+            <div class="feature-icon-box">
+              <i class="fas fa-dumbbell"></i>
+            </div>
+            <h3>1. Kademe Fitness Antrenörü</h3>
+            <p>Türkiye Vücut Geliştirme, Fitness ve Bilek Güreşi Federasyonu (TVGFBF) resmi onaylı 1. Kademe Antrenörlük lisansı.</p>
+          </div>
+
+          <div class="feature-card glass-panel">
+            <div class="feature-icon-box">
+              <i class="fas fa-flag"></i>
+            </div>
+            <h3>Milli Takım Sporcusu</h3>
+            <p>Uluslararası arenada ülkemizi gururla temsil etmiş milli takım sporcusu disiplini, azmi ve profesyonelliği.</p>
+          </div>
+
+          <div class="feature-card glass-panel">
+            <div class="feature-icon-box">
+              <i class="fas fa-trophy"></i>
+            </div>
+            <h3>Taekwondo Balkan 3.'lüğü</h3>
+            <p>Balkan Taekwondo Championship 3.'lüğü ile elit düzey dövüş sporları kondisyonu, esneklik ve atletik performans birikimi.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         5. BMR & Macro Calculator
+         ========================================================================== -->
+    <section id="calculator" class="calculator-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag"><i class="fas fa-calculator"></i> Ücretsiz Araç</span>
+          <h2 class="section-title">BMR & Günlük Kalori / <span class="gradient-text">Makro Hesaplayıcı</span></h2>
+          <p class="section-subtitle">Vücudunun ihtiyacı olan günlük kaloriyi ve besin dağılımını (Protein, Karbonhidrat, Yağ) saniyeler içinde öğren.</p>
+        </div>
+
+        <div class="calc-card glass-panel">
+          <div class="calc-form">
+            <div class="calc-form-group">
+              <label class="calc-label">Cinsiyet</label>
+              <div class="gender-toggle">
+                <label class="gender-option">
+                  <input type="radio" name="calc-gender" value="male" checked>
+                  <div class="gender-btn"><i class="fas fa-mars"></i> Erkek</div>
+                </label>
+                <label class="gender-option">
+                  <input type="radio" name="calc-gender" value="female">
+                  <div class="gender-btn"><i class="fas fa-venus"></i> Kadın</div>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="calc-form-group">
+                <label class="calc-label" for="calc-age">Yaş</label>
+                <input type="number" id="calc-age" class="input-field" value="25" min="15" max="80">
+              </div>
+              <div class="calc-form-group">
+                <label class="calc-label" for="calc-height">Boy (cm)</label>
+                <input type="number" id="calc-height" class="input-field" value="180" min="120" max="230">
+              </div>
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label" for="calc-weight">Mevcut Kilo (kg)</label>
+              <input type="number" id="calc-weight" class="input-field" value="80" min="30" max="200">
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label" for="calc-activity">Günlük Hareket Seviyesi</label>
+              <select id="calc-activity" class="input-field">
+                <option value="sedentary">Masa Başı / Hareketsiz (Haftada 0-1 Gün Spor)</option>
+                <option value="light">Hafif Aktif (Haftada 1-3 Gün Spor)</option>
+                <option value="moderate" selected>Orta Aktif (Haftada 3-5 Gün Spor)</option>
+                <option value="active">Çok Aktif (Haftada 6-7 Gün Ağır Spor)</option>
+              </select>
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label" for="calc-goal">Ana Hedefiniz</label>
+              <select id="calc-goal" class="input-field">
+                <option value="fat_loss" selected>Hızlı Yağ Yakımı & Kilo Verme (%20 Kalori Açığı)</option>
+                <option value="recomp">Sıkılaşma & Yağ Yakarken Kas Koruma (%10 Kalori Açığı)</option>
+                <option value="muscle_gain">Kas Kütlesi Kazanma & Hacim (%12 Kalori Fazlası)</option>
+                <option value="maintenance">Mevcut Formu Koruma</option>
+              </select>
+            </div>
+
+            <button type="button" id="calc-btn" class="btn btn-primary-glow btn-block">
+              <i class="fas fa-sync-alt"></i> Yeniden Hesapla
+            </button>
+          </div>
+
+          <div class="calc-results-box">
+            <div>
+              <h3 style="margin-bottom: 1.5rem; font-size: 1.3rem;"><i class="fas fa-chart-pie" style="color: var(--accent-primary);"></i> Analiz Sonuçlarınız</h3>
+              
+              <div class="res-metrics-grid">
+                <div class="metric-card">
+                  <span>Bazal Metabolizma (BMR)</span>
+                  <h4 id="res-bmr">1825 kcal</h4>
+                </div>
+                <div class="metric-card">
+                  <span>Günlük Harcama (TDEE)</span>
+                  <h4 id="res-tdee">2828 kcal</h4>
+                </div>
+                <div class="metric-card" style="border-color: var(--accent-primary);">
+                  <span>Hedef Kalori</span>
+                  <h4 id="res-target" style="color: #FFFFFF;">2262 kcal</h4>
+                </div>
+              </div>
+
+              <div class="macro-bars">
+                <div class="macro-item">
+                  <div class="macro-info">
+                    <span><strong>Protein:</strong> <span id="res-protein">176g</span></span>
+                    <span id="pct-protein" style="color: var(--accent-primary);">%31</span>
+                  </div>
+                  <div class="progress-track">
+                    <div class="progress-fill fill-protein" id="bar-protein" style="width: 31%;"></div>
+                  </div>
+                </div>
+
+                <div class="macro-item">
+                  <div class="macro-info">
+                    <span><strong>Karbonhidrat:</strong> <span id="res-carb">233g</span></span>
+                    <span id="pct-carb" style="color: var(--accent-secondary);">%44</span>
+                  </div>
+                  <div class="progress-track">
+                    <div class="progress-fill fill-carb" id="bar-carb" style="width: 44%;"></div>
+                  </div>
+                </div>
+
+                <div class="macro-item">
+                  <div class="macro-info">
+                    <span><strong>Sağlıklı Yağ:</strong> <span id="res-fat">63g</span></span>
+                    <span id="pct-fat" style="color: #F59E0B;">%25</span>
+                  </div>
+                  <div class="progress-track">
+                    <div class="progress-fill fill-fat" id="bar-fat" style="width: 25%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button class="btn btn-outline btn-block open-modal-btn">
+              <i class="fab fa-whatsapp" style="color: #25D366;"></i> Bu Hedefler İçin Programa Başvur
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         6. Transformations Section
+         ========================================================================== -->
+    <section id="transformations" class="transformations-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag"><i class="fas fa-trophy"></i> Başarı Hikayeleri</span>
+          <h2 class="section-title">Gerçek Danışan <span class="gradient-text">Dönüşümleri</span></h2>
+          <p class="section-subtitle">Disiplin ve doğru rehberlikle hayatı değişen danışanlarımızın tarafsız yorumları.</p>
+        </div>
+
+        <div class="transformations-grid" id="transformations-container">
+          <!-- Rendered dynamically by js/app.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         7. About Trainer Section
+         ========================================================================== -->
+    <section class="about-section">
+      <div class="container">
+        <div class="about-grid">
+          <div class="about-image">
+            <img src="assets/images/trainer_umut.jpg" alt="Pt Umut Altun Biyografi">
+          </div>
+          <div class="about-content">
+            <span class="section-tag"><i class="fas fa-user-ninja"></i> Eğitmeninizi Tanıyın</span>
+            <h2>Ben Umut Altun, <span class="gradient-text">Fitness Koçunuz.</span></h2>
+            <p>
+              Marmara Üniversitesi Spor Bilimleri Fakültesi Antrenörlük Eğitimi Bölümü mezunuyum. Uluslararası EREPS Level 4 sertifikam, 1. Kademe Fitness Antrenörlüğü lisansım, Milli Takım sporculuğu kariyerim ve Taekwondo Balkan 3.'lüğü derecemle edindiğim atletik disiplini 10 yılı aşkın süredir danışanlarımın gelişimine aktarıyorum. Sporun sadece salonda ağırlık kaldırmaktan ibaret olmadığını, sürdürülebilir bir yaşam tarzı olduğunu kanıtlamak ana misyonumdur.
+            </p>
+            <p style="color: var(--accent-red); font-weight: 700; margin-top: 0.8rem; font-size: 0.95rem;">
+              <i class="fas fa-map-marker-alt"></i> Antrenman ve yüz yüze danışan form değerlendirmelerimi <strong>Cevahir AVM MACFit (Şişli / İstanbul)</strong> stüdyosunda yürütmekteyim.
+            </p>
+
+            <div class="about-features" style="display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 1.5rem;">
+              <div class="about-feature-item" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); padding: 0.5rem 1rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 600;">
+                <i class="fas fa-graduation-cap" style="color: var(--accent-primary);"></i> Marmara Üni. Spor Bilimleri Ant. Bölümü
+              </div>
+              <div class="about-feature-item" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); padding: 0.5rem 1rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 600;">
+                <i class="fas fa-certificate" style="color: var(--accent-primary);"></i> EREPS Level 4 Sertifikası
+              </div>
+              <div class="about-feature-item" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); padding: 0.5rem 1rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 600;">
+                <i class="fas fa-dumbbell" style="color: var(--accent-primary);"></i> 1. Kademe Fitness Antrenörü
+              </div>
+              <div class="about-feature-item" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); padding: 0.5rem 1rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 600;">
+                <i class="fas fa-flag" style="color: var(--accent-primary);"></i> Milli Takım Sporcusu
+              </div>
+              <div class="about-feature-item" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); padding: 0.5rem 1rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 600;">
+                <i class="fas fa-trophy" style="color: var(--accent-primary);"></i> Taekwondo Balkan 3.'lüğü
+              </div>
+              <div class="about-feature-item" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); padding: 0.5rem 1rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 600;">
+                <i class="fas fa-map-marked-alt" style="color: var(--accent-red);"></i> Cevahir AVM MACFit Trainer
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sertifikalar & Uzmanlık Eğitimleri Tablosu -->
+        <div class="certificates-table-container glass-panel" style="margin-top: 3rem; padding: 2rem; border-radius: var(--radius-lg); border: 1px solid var(--border-light); overflow-x: auto;">
+          <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--text-main); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.6rem;">
+            <i class="fas fa-certificate" style="color: var(--accent-red);"></i> Uzmanlık Seminerleri & Akademik Sertifikalar
+          </h3>
+
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border-glow); color: var(--accent-red); font-weight: 700;">
+                <th style="padding: 0.9rem 1rem;">Eğitim Programı / Sertifika Adı</th>
+                <th style="padding: 0.9rem 1rem;">Kurum / Organizasyon</th>
+                <th style="padding: 0.9rem 1rem;">Eğitmen (Instructor)</th>
+                <th style="padding: 0.9rem 1rem;">Tarih</th>
+                <th style="padding: 0.9rem 1rem;">Durum</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--border-light);">
+                <td style="padding: 0.85rem 1rem; font-weight: 600; color: var(--text-main);">Calf Yaralanmalarında Erken Dönem Egzersiz Programları</td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-muted);">Quadro Athletics & İTF MED</td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-muted);">Stevve Miller</td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-muted);">11.12.2024</td>
+                <td style="padding: 0.85rem 1rem;"><span style="color: var(--accent-red); background: rgba(239,68,68,0.15); padding: 0.25rem 0.65rem; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700;">Sertifikalı (2 Hours)</span></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-light);">
+                <td style="padding: 0.85rem 1rem; font-weight: 600; color: var(--text-main);">Çocuklarda Hız Geliştirme ve Organizasyon</td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-muted);">Quadro Athletics & İTF MED</td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-muted);">Jesse Padgett</td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-muted);">13.12.2024</td>
+                <td style="padding: 0.85rem 1rem;"><span style="color: var(--accent-red); background: rgba(239,68,68,0.15); padding: 0.25rem 0.65rem; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700;">Sertifikalı (2 Hours)</span></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-light);">
+                <td style="padding: 0.85rem 1rem; font-weight: 600; color: var(--text-main);">Kalça Kompleksinin Değerlendirilmesi ve Özel Testler</td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-muted);">Quadro Athletics & İTF MED</td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-muted);">Reid Nelles</td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-muted);">17.12.2024</td>
+                <td style="padding: 0.85rem 1rem;"><span style="color: var(--accent-red); background: rgba(239,68,68,0.15); padding: 0.25rem 0.65rem; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700;">Sertifikalı (2 Hours)</span></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-light);">
+                <td style="padding: 0.85rem 1rem; font-weight: 600; color: var(--text-main);">Adölesan Sporcularda Kuvvet ve Güç Antrenmanları</td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-muted);">Quadro Athletics & İTF MED</td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-muted);">Rick Howard</td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-muted);">18.12.2024</td>
+                <td style="padding: 0.85rem 1rem;"><span style="color: var(--accent-red); background: rgba(239,68,68,0.15); padding: 0.25rem 0.65rem; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700;">Sertifikalı (2 Hours)</span></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-light);">
+                <td style="padding: 0.85rem 1rem; font-weight: 600; color: var(--text-main);">Yüksek Performans Kültürü Davranışları</td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-muted);">Quadro Athletics & İTF MED</td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-muted);">Matt Kritz</td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-muted);">19.12.2024</td>
+                <td style="padding: 0.85rem 1rem;"><span style="color: var(--accent-red); background: rgba(239,68,68,0.15); padding: 0.25rem 0.65rem; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700;">Sertifikalı (2 Hours)</span></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-light);">
+                <td style="padding: 0.85rem 1rem; font-weight: 600; color: var(--text-main);">Nöro-Atletik Antrenman Isınma Programları</td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-muted);">Quadro Athletics & İTF MED</td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-muted);">Osman Coşkun</td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-muted);">26.12.2024</td>
+                <td style="padding: 0.85rem 1rem;"><span style="color: var(--accent-red); background: rgba(239,68,68,0.15); padding: 0.25rem 0.65rem; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700;">Sertifikalı (2 Hours)</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         8. FAQ Section
+         ========================================================================== -->
+    <section id="faq" class="faq-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag"><i class="fas fa-question-circle"></i> Merak Edilenler</span>
+          <h2 class="section-title">Sıkça Sorulan <span class="gradient-text">Sorular</span></h2>
+          <p class="section-subtitle">Aklınıza takılabilecek soruların yanıtları aşağıdadır.</p>
+        </div>
+
+        <div class="faq-accordion" id="faq-accordion">
+          <!-- Rendered dynamically by js/app.js -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Floating WhatsApp CTA Button -->
+  <a href="https://wa.me/905386376258?text=Merhaba%20Umut%20Hocam!%20Uzaktan%20e%C4%9Fitim%20paketleriniz%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum." 
+     target="_blank" 
+     class="whatsapp-float" 
+     aria-label="WhatsApp İletişim">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <!-- ==========================================================================
+       9. Onboarding / Purchase Modal
+       ========================================================================== -->
+  <div class="modal-overlay" id="onboarding-modal">
+    <div class="modal-container">
+      <button class="close-modal-btn" id="close-modal">&times;</button>
+      
+      <div class="modal-header">
+        <h3><i class="fas fa-rocket" style="color: var(--accent-primary);"></i> Uzaktan Eğitim Başvuru Formu</h3>
+        <p>Bilgilerinizi doldurun, hedefinize özel programlama için doğrudan Pt Umut Altun WhatsApp hattına aktarılacaksınız.</p>
+      </div>
+
+      <form id="onboarding-form">
+        <div class="form-grid">
+          <div class="calc-form-group">
+            <label class="calc-label" for="form-name">Adınız Soyadınız *</label>
+            <input type="text" id="form-name" class="input-field" placeholder="Örn: Ahmet Yılmaz" required>
+          </div>
+          <div class="calc-form-group">
+            <label class="calc-label" for="form-phone">Telefon Numaranız *</label>
+            <input type="tel" id="form-phone" class="input-field" placeholder="05XX XXX XX XX" required>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="calc-form-group">
+            <label class="calc-label" for="form-age">Yaş</label>
+            <input type="number" id="form-age" class="input-field" value="25">
+          </div>
+          <div class="calc-form-group">
+            <label class="calc-label" for="form-weight">Kilo (kg)</label>
+            <input type="number" id="form-weight" class="input-field" value="80">
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="calc-form-group">
+            <label class="calc-label" for="form-height">Boy (cm)</label>
+            <input type="number" id="form-height" class="input-field" value="180">
+          </div>
+          <div class="calc-form-group">
+            <label class="calc-label" for="form-goal">Ana Hedef</label>
+            <select id="form-goal" class="input-field">
+              <option value="Hızlı Yağ Yakımı & Kilo Verme">Hızlı Yağ Yakımı & Kilo Verme</option>
+              <option value="Kas Kütlesi & Hacim Kazanma">Kas Kütlesi & Hacim Kazanma</option>
+              <option value="Vücut Yenileme (Recomp)">Vücut Yenileme (Recomp)</option>
+              <option value="Postür Düzeltme & Sıkılaşma">Postür Düzeltme & Sıkılaşma</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid full">
+          <div class="calc-form-group">
+            <label class="calc-label" for="form-experience">Spor Geçmişiniz</label>
+            <select id="form-experience" class="input-field">
+              <option value="Yeni Başlayan (0-6 Ay)">Yeni Başlayan (0-6 Ay)</option>
+              <option value="Orta Seviye (6 Ay - 2 Yıl)">Orta Seviye (6 Ay - 2 Yıl)</option>
+              <option value="İleri Seviye (2 Yıl+)">İleri Seviye (2 Yıl+)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid full">
+          <div class="calc-form-group">
+            <label class="calc-label" for="form-package">İlgilendiğiniz Paket</label>
+            <select id="form-package" class="input-field">
+              <option value="Cevahir MACFit Hibrit Koçluk Paketi">Cevahir MACFit Hibrit Koçluk Paketi (3.900 ₺ - Ayda 1 Özel Dersli)</option>
+              <option value="3 Aylık Başlangıç & Disiplin Paketi">3 Aylık Başlangıç & Disiplin Paketi (4.500 ₺)</option>
+              <option value="6 Aylık Vücut Yenileme & Hipertrofi Paketi" selected>6 Aylık Vücut Yenileme & Hipertrofi Paketi (7.900 ₺ - En Popüler)</option>
+              <option value="12 Aylık VIP Şampiyon Dönüşüm Paketi">12 Aylık VIP Şampiyon Dönüşüm Paketi (13.500 ₺)</option>
+              <optgroup label="📍 Cevahir AVM Birebir PT Özel Ders Paketleri">
+                <option value="Cevahir AVM 10 Ders Birebir PT">Cevahir AVM 10 Ders Birebir PT (17.900 ₺)</option>
+                <option value="Cevahir AVM 20 Ders Birebir PT">Cevahir AVM 20 Ders Birebir PT (32.900 ₺)</option>
+                <option value="Cevahir AVM 30 Ders Birebir PT">Cevahir AVM 30 Ders Birebir PT (45.350 ₺ - Ders Başı 1.511 ₺)</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid full">
+          <div class="calc-form-group">
+            <label class="calc-label" for="form-note">Eğitmene Notunuz (Varsa Sakatlık/Özel Durum)</label>
+            <textarea id="form-note" class="input-field" rows="2" placeholder="Örn: Bel fıtığım var, evde spor yapacağım vb."></textarea>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary-glow btn-block" style="margin-top: 1rem;">
+          <i class="fab fa-whatsapp"></i> Başvurumu WhatsApp'a Gönder & Başla
+        </button>
+
+        <div style="text-align: center; margin-top: 1.2rem; padding-top: 0.8rem; border-top: 1px solid var(--border-light);">
+          <img src="assets/images/logos/iyzico_tr_checkout.svg" alt="iyzico ile Güvenli Ödeme Altyapısı" style="height: 26px; margin: 0 auto 0.4rem auto; display: block;">
+          <span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fas fa-shield-alt" style="color: var(--accent-primary);"></i> iyzico 256-Bit SSL Koruma & 3D Secure Taksitli Ödeme Altyapısı</span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       10. Footer
+       ========================================================================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid" style="grid-template-columns: 1.5fr 1fr 1fr 1.2fr;">
+        <div class="footer-brand">
+          <a href="#" class="brand-logo">
+            <div class="logo-icon">UA</div>
+            <span>PT UMUT ALTUN</span>
+          </a>
+          <p>Bilimsel esaslara dayalı kişiselleştirilmiş uzaktan koçluk ve beslenme danışmanlığı ile hayatınızı değiştirin.</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Hızlı Bağlantılar</h4>
+          <ul>
+            <li><a href="#home">Ana Sayfa</a></li>
+            <li><a href="#features">Neden Biz?</a></li>
+            <li><a href="#packages">Paketler & Fiyatlar</a></li>
+            <li><a href="#calculator">BMR Hesaplayıcı</a></li>
+            <li><a href="#transformations">Dönüşüm Hikayeleri</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>İletişim & Sosyal</h4>
+          <ul>
+            <li><a href="https://instagram.com" target="_blank"><i class="fab fa-instagram"></i> @ptumutaltun</a></li>
+            <li><a href="https://wa.me/905386376258" target="_blank"><i class="fab fa-whatsapp" style="color: #25D366;"></i> WhatsApp Mesaj Gönder</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4><i class="fas fa-map-marker-alt" style="color: var(--accent-red);"></i> Spor Salonu Konumu</h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem;">
+            <strong>Cevahir AVM MACFit</strong><br>
+            Büyükdere Cad. Cevahir AVM Şişli / İstanbul
+          </p>
+          <img src="assets/images/logos/iyzico_footer_band.svg" alt="iyzico ile Güvenli Ödeme" style="height: 28px; display: block;">
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 PT Umut Altun Uzaktan Koçluk Sistemleri. Ödemeler <strong>iyzico 256-Bit SSL</strong> güvencesindedir. Tüm hakları saklıdır.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- App Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/calculator.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

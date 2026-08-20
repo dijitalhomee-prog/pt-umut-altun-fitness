@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Danışan Paneli | PT Umut Altun Uzaktan Koçluk</title>
+  <meta name="description" content="PT Umut Altun Danışan Paneli - Kişisel antrenman programınız, beslenme takibi ve haftalık form kontrolleriniz.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Dashboard Specific Styles */
+    .dashboard-page {
+      padding-top: 5.5rem;
+      min-height: 100vh;
+      background: var(--bg-primary);
+    }
+    .package-switcher-bar {
+      padding: 0.8rem 1.2rem;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid var(--border-glow);
+      border-radius: var(--radius-md);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .package-pill-btn {
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-light);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+    .package-pill-btn:hover {
+      color: var(--text-main);
+    }
+    .package-pill-btn.active {
+      background: var(--accent-gradient);
+      color: #000;
+      border-color: transparent;
+      font-weight: 800;
+    }
+
+    .user-welcome-card {
+      padding: 2rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+    .user-info-box {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+    .user-avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: var(--accent-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      color: #000;
+      font-weight: 800;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+    }
+    .user-details h2 {
+      font-size: 1.6rem;
+      margin-bottom: 0.25rem;
+    }
+    .package-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.9rem;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid var(--border-glow);
+      border-radius: var(--radius-full);
+      color: var(--accent-primary);
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .client-stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+    .client-stat-card {
+      padding: 1.25rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      text-align: center;
+    }
+    .client-stat-card .label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.3rem;
+    }
+    .client-stat-card .value {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #FFF;
+    }
+    .client-stat-card .value.green {
+      color: var(--accent-primary);
+    }
+
+    /* Dashboard Tabs */
+    .dashboard-tabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 0.5rem;
+      overflow-x: auto;
+    }
+    .dash-tab-btn {
+      padding: 0.8rem 1.4rem;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: var(--transition-fast);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .dash-tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .dash-tab-btn.active {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-primary);
+      border: 1px solid var(--border-glow);
+    }
+
+    /* Tab Content Areas */
+    .tab-content-pane {
+      display: none;
+    }
+    .tab-content-pane.active {
+      display: block;
+    }
+
+    /* Workout Cards */
+    .workout-day-selector {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+    }
+    .day-pill {
+      padding: 0.6rem 1.2rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-full);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+    .day-pill.active {
+      background: var(--accent-gradient);
+      color: #000;
+      border-color: transparent;
+    }
+    .exercise-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .exercise-item {
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      transition: var(--transition-fast);
+    }
+    .exercise-item:hover {
+      border-color: var(--border-glow);
+    }
+    .exercise-info h4 {
+      font-size: 1.1rem;
+      margin-bottom: 0.3rem;
+    }
+    .exercise-info p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .exercise-meta {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .sets-badge {
+      padding: 0.4rem 0.8rem;
+      background: rgba(6, 182, 212, 0.12);
+      border-radius: var(--radius-sm);
+      color: var(--accent-secondary);
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .check-exercise-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid var(--text-dark);
+      background: none;
+      color: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-fast);
+    }
+    .check-exercise-btn.completed {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: #000;
+    }
+
+    /* Trainer Note Box */
+    .trainer-note-card {
+      padding: 1.8rem;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.05) 100%);
+      border: 1px solid var(--border-glow);
+      border-radius: var(--radius-lg);
+      margin-bottom: 2rem;
+      display: flex;
+      gap: 1.25rem;
+    }
+    .trainer-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent-primary);
+    }
+
+    /* Meal Plan Items */
+    .meal-block {
+      margin-bottom: 1.5rem;
+      padding: 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+    }
+    .meal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 1px solid var(--border-light);
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+    .meal-food-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      font-size: 0.925rem;
+    }
+    .meal-food-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 0.8rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+    }
+    .meal-macro-badges {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .macro-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-full);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .badge-kcal { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-protein { background: rgba(239, 68, 68, 0.15); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.35); }
+    .badge-carb { background: rgba(248, 113, 113, 0.15); color: #F87171; border: 1px solid rgba(248, 113, 113, 0.35); }
+    .badge-fat { background: rgba(185, 28, 28, 0.2); color: #FCA5A5; border: 1px solid rgba(185, 28, 28, 0.4); }
+
+    .macro-pill {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+    }
+    .tag-protein { background: rgba(239, 68, 68, 0.15); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.35); }
+    .tag-carb { background: rgba(248, 113, 113, 0.15); color: #F87171; border: 1px solid rgba(248, 113, 113, 0.35); }
+    .tag-fat { background: rgba(185, 28, 28, 0.2); color: #FCA5A5; border: 1px solid rgba(185, 28, 28, 0.4); }
+  </style>
+</head>
+<body>
+
+  <!-- Danışan Güvenlik Giriş Modalı (Telefon Numarası & Şifre) -->
+  <div id="client-auth-overlay" style="position: fixed; inset: 0; background: rgba(8, 8, 10, 0.98); z-index: 99999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(15px); padding: 1.5rem;">
+    <div class="glass-panel" style="max-width: 440px; width: 100%; padding: 2.5rem; border-radius: var(--radius-lg); border: 2px solid var(--accent-red); box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);">
+      <div style="width: 70px; height: 70px; background: rgba(239, 68, 68, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem auto; border: 1px solid var(--accent-red);">
+        <i class="fas fa-id-card" style="font-size: 2rem; color: var(--accent-red);"></i>
+      </div>
+      <h3 style="color: #FFFFFF; font-size: 1.4rem; margin-bottom: 0.4rem; text-align: center;">PT Umut Altun — Danışan Paneli Girişi</h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; text-align: center;">Programınıza erişmek için Telefon Numarası ve Şifreniz ile giriş yapın.</p>
+
+      <form id="client-login-form">
+        <div class="calc-form-group" style="margin-bottom: 1rem;">
+          <label class="calc-label" for="client-phone-input">Telefon Numarası *</label>
+          <input type="tel" id="client-phone-input" class="input-field" placeholder="05XX XXX XX XX" value="05386376258" required autofocus>
+        </div>
+
+        <div class="calc-form-group" style="margin-bottom: 1.2rem;">
+          <label class="calc-label" for="client-pass-input">Danışan Giriş Şifresi *</label>
+          <input type="password" id="client-pass-input" class="input-field" placeholder="Şifreniz" value="123456" required>
+        </div>
+
+        <div id="client-login-error" style="color: var(--accent-red); font-size: 0.85rem; font-weight: bold; margin-bottom: 1rem; display: none; text-align: center;">
+          <i class="fas fa-exclamation-triangle"></i> Lütfen geçerli bir telefon numarası ve şifre giriniz!
+        </div>
+
+        <button type="submit" class="btn btn-primary-glow" style="width: 100%; padding: 0.8rem; font-size: 1rem;">
+          <i class="fas fa-sign-in-alt"></i> Danışan Paneline Giriş Yap
+        </button>
+
+        <p style="font-size: 0.78rem; color: var(--text-muted); text-align: center; margin-top: 1.2rem; line-height: 1.4;">
+          Şifrenizi bilmiyorsanız veya ilk kez giriş yapıyorsanız <a href="https://wa.me/905386376258" target="_blank" style="color: var(--accent-red); font-weight: bold;">WhatsApp Destek Hattımızdan</a> anında talep edebilirsiniz.
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <header class="navbar scrolled">
+    <div class="container nav-container">
+      <a href="index.html" class="brand-logo">
+        <div class="logo-icon">UA</div>
+        <span>PT UMUT ALTUN</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link"><i class="fas fa-arrow-left"></i> Ana Sayfaya Dön</a>
+        <a href="#workout" class="nav-link">Programım</a>
+        <a href="#nutrition" class="nav-link">Beslenmem</a>
+        <a href="#progress" class="nav-link">Form Kontrolü</a>
+      </nav>
+
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <a href="https://wa.me/905386376258" target="_blank" class="btn btn-outline" style="padding: 0.5rem 1.2rem; font-size: 0.85rem;">
+          <i class="fab fa-whatsapp" style="color: #25D366;"></i> WhatsApp Mesaj Gönder
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-page">
+    <div class="container">
+      
+      <!-- Interactive Package View Switcher Demo Bar -->
+      <div class="package-switcher-bar">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <span style="font-size: 0.875rem; font-weight: 700; color: var(--accent-primary);">
+            <i class="fas fa-eye"></i> Satın Alınan Paket Görünümünü İncele:
+          </span>
+          <span style="font-size: 0.8rem; color: var(--accent-red); font-weight: 700;">
+            <i class="fas fa-map-marker-alt"></i> Stüdyo: Cevahir AVM MACFit
+          </span>
+        </div>
+        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+          <button class="package-pill-btn active" id="btn-pkg-hybrid">📍 Cevahir MACFit Hibrit Paketi (3.900 ₺)</button>
+          <button class="package-pill-btn" id="btn-pkg-3month">🌱 3 Aylık Başlangıç & Disiplin Paketi (4.500 ₺)</button>
+          <button class="package-pill-btn" id="btn-pkg-6month">🔥 6 Aylık Vücut Yenileme Paketi (7.900 ₺)</button>
+          <button class="package-pill-btn" id="btn-pkg-12month">👑 12 Aylık VIP Şampiyon Paketi (13.500 ₺)</button>
+          <button class="package-pill-btn" id="btn-pkg-pt">🏋️‍♂️ Cevahir Birebir PT Paketi (20 Ders / 32.900 ₺)</button>
+        </div>
+      </div>
+
+      <!-- Top Welcome & Status Banner -->
+      <div class="user-welcome-card glass-panel">
+        <div class="user-info-box">
+          <div class="user-avatar" id="client-initials">AY</div>
+          <div class="user-details">
+            <h2>Hoş Geldin, <span class="gradient-text" id="client-name">Ahmet Yılmaz</span> 👋</h2>
+            <div class="package-pill" id="client-package-badge">
+              <i class="fas fa-shield-alt"></i> 3 Aylık Başlangıç & Disiplin Paketi (1. Hafta / 12 Hafta)
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary-glow" id="checkin-trigger-btn">
+          <i class="fas fa-camera"></i> Haftalık Form Görseli Yükle
+        </button>
+      </div>
+
+      <!-- Quick Stats Overview -->
+      <div class="client-stats-row" style="margin-bottom: 2rem;">
+        <div class="client-stat-card">
+          <div class="label">Başlangıç Kilosu</div>
+          <div class="value" id="stat-initial-weight">88.0 kg</div>
+        </div>
+        <div class="client-stat-card">
+          <div class="label">Güncel Kilo</div>
+          <div class="value green" id="stat-current-weight">86.2 kg</div>
+        </div>
+        <div class="client-stat-card">
+          <div class="label">Form Kontrol Periyodu</div>
+          <div class="value" id="stat-checkin-period" style="font-size: 1.1rem; padding-top: 0.3rem;">2 Haftada Bir</div>
+        </div>
+        <div class="client-stat-card">
+          <div class="label">Disiplin Notu</div>
+          <div class="value green" id="stat-discipline-score">%98 <i class="fas fa-fire" style="font-size: 1rem; color: #F59E0B;"></i></div>
+        </div>
+      </div>
+
+      <!-- Trainer Note of the Week -->
+      <div class="trainer-note-card">
+        <img src="assets/images/trainer_umut.jpg" alt="Pt Umut Altun" class="trainer-avatar">
+        <div>
+          <h4 style="color: var(--accent-primary); margin-bottom: 0.3rem;" id="trainer-note-title">
+            <i class="fas fa-comment-dots"></i> Umut Hoca'nın 1. Hafta Başlangıç Notu:
+          </h4>
+          <p style="font-size: 0.95rem; color: #E5E7EB;" id="trainer-note-body">
+            "3 Aylık Başlangıç & Disiplin ailesine hoş geldin Ahmet! İlk 2 haftamızda temel hedefimiz ağır kitleler kaldırmak değil, hareket formlarını eksiksiz öğrenmek ve vücudunu antrenman ritmine alıştırmaktır. Beslenme listendeki makrolara sadık kal, her antrenman sonrası hareket kontrol videolarını atmayı unutma!"
+          </p>
+        </div>
+      </div>
+
+      <!-- YENİ: Pakete Özel İmkânlar & Hizmet Hakları Kartı -->
+      <div id="package-privileges-box" class="glass-panel" style="margin-bottom: 2rem; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--accent-red); background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(18, 18, 22, 0.95) 100%);">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+          <div>
+            <span style="font-size: 0.75rem; font-weight: 800; color: var(--accent-red); background: rgba(239, 68, 68, 0.15); padding: 0.25rem 0.7rem; border-radius: var(--radius-full); text-transform: uppercase; letter-spacing: 0.05em;" id="pkg-privilege-tag">
+              📍 STÜDYO HİBRİT KOÇLUK HAKLARI
+            </span>
+            <h3 style="font-size: 1.2rem; font-weight: 800; color: #FFFFFF; margin-top: 0.5rem;" id="pkg-privilege-title">
+              Cevahir AVM MACFit Yüz Yüze Birebir Özel Ders & Hibrit Koçluk
+            </h3>
+            <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.2rem;" id="pkg-privilege-desc">
+              Her ay 1 adet Cevahir AVM MACFit stüdyosunda Umut Altun ile 1-on-1 yüz yüze birebir antrenman & postür analizi ders hakkınız aktiftir.
+            </p>
+          </div>
+
+          <!-- Package Action / Status Badge -->
+          <div id="pkg-privilege-action" style="background: rgba(0, 0, 0, 0.5); padding: 0.8rem 1.2rem; border-radius: var(--radius-md); border: 1px solid var(--border-light); text-align: center;">
+            <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem;">Salondaki Randevu Durumu</span>
+            <strong style="font-size: 0.9rem; color: #10B981;" id="pkg-action-status"><i class="fas fa-calendar-check"></i> 24 Ağustos Cumartesi 14:00 (Cevahir MACFit)</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="dashboard-tabs">
+        <button class="dash-tab-btn active" data-tab="tab-workout">
+          <i class="fas fa-dumbbell"></i> Antrenman Programım
+        </button>
+        <button class="dash-tab-btn" data-tab="tab-nutrition">
+          <i class="fas fa-utensils"></i> Beslenme & Makro Günlüğü
+        </button>
+        <button class="dash-tab-btn" data-tab="tab-checkin">
+          <i class="fas fa-chart-line"></i> Form Kontrolü & Ölçümler
+        </button>
+        <button class="dash-tab-btn" data-tab="tab-supplements">
+          <i class="fas fa-capsules"></i> Takviye & Supplement Rehberi
+        </button>
+      </div>
+
+      <!-- TAB 1: ANTRENMAN PROGRAMI -->
+      <div id="tab-workout" class="tab-content-pane active">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+          <div class="workout-day-selector" id="workout-day-container" style="margin-bottom: 0;">
+            <button class="day-pill active">Gün 1: Tüm Vücut (Full Body) Adaptasyon A</button>
+            <button class="day-pill">Gün 2: Kardiyo & Karın (Core)</button>
+            <button class="day-pill">Gün 3: Tüm Vücut (Full Body) Adaptasyon B</button>
+          </div>
+          <button id="download-workout-pdf-btn" class="btn btn-outline" style="padding: 0.45rem 1rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-file-pdf" style="color: var(--accent-red);"></i> Programı PDF İndir
+          </button>
+        </div>
+
+        <div class="exercise-list" id="exercise-list-box">
+          <div class="exercise-item">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span style="font-weight: 800; color: var(--accent-primary); font-size: 1.2rem;">01</span>
+              <div class="exercise-info">
+                <h4>Goblet Squat (Dambıl ile Squat)</h4>
+                <p>Topuklar yerde, dizler dışarı bakacak | 60 sn Dinlenme</p>
+              </div>
+            </div>
+            <div class="exercise-meta">
+              <div class="sets-badge">3 Set x 12-15 Tekrar</div>
+              <button class="check-exercise-btn completed" title="Tamamlandı İşaretle"><i class="fas fa-check"></i></button>
+            </div>
+          </div>
+
+          <div class="exercise-item">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span style="font-weight: 800; color: var(--accent-primary); font-size: 1.2rem;">02</span>
+              <div class="exercise-info">
+                <h4>Dumbbell Chest Press (Düz Sehpa)</h4>
+                <p>Kürek kemiklerini sıkıştır, kontrollü indir | 60 sn Dinlenme</p>
+              </div>
+            </div>
+            <div class="exercise-meta">
+              <div class="sets-badge">3 Set x 12 Tekrar</div>
+              <button class="check-exercise-btn completed" title="Tamamlandı İşaretle"><i class="fas fa-check"></i></button>
+            </div>
+          </div>
+
+          <div class="exercise-item">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span style="font-weight: 800; color: var(--accent-primary); font-size: 1.2rem;">03</span>
+              <div class="exercise-info">
+                <h4>Lat Pulldown (Göğse Çekiş)</h4>
+                <p>Sırt kaslarını sıkarak çene altına çek | 60 sn Dinlenme</p>
+              </div>
+            </div>
+            <div class="exercise-meta">
+              <div class="sets-badge">3 Set x 12 Tekrar</div>
+              <button class="check-exercise-btn" title="Tamamlandı İşaretle"><i class="fas fa-check"></i></button>
+            </div>
+          </div>
+
+          <div class="exercise-item">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span style="font-weight: 800; color: var(--accent-primary); font-size: 1.2rem;">04</span>
+              <div class="exercise-info">
+                <h4>Seated Dumbbell Shoulder Press</h4>
+                <p>Dirsekler 45 derece açıyla yukarı itiş | 60 sn Dinlenme</p>
+              </div>
+            </div>
+            <div class="exercise-meta">
+              <div class="sets-badge">3 Set x 12 Tekrar</div>
+              <button class="check-exercise-btn" title="Tamamlandı İşaretle"><i class="fas fa-check"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- YENİ: Antrenmanı Bitir & Kapat Butonu Barı -->
+        <div class="workout-action-bar" style="margin-top: 1.8rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.3rem 1.6rem; background: linear-gradient(180deg, rgba(239, 68, 68, 0.12) 0%, rgba(18, 18, 22, 0.9) 100%); border: 1px solid var(--accent-red); border-radius: var(--radius-md);">
+          <div>
+            <h4 style="color: #FFFFFF; font-size: 1.1rem; margin-bottom: 0.2rem; display: flex; align-items: center; gap: 0.5rem;">
+              <i class="fas fa-fire" style="color: var(--accent-red);"></i> Bugünkü Antrenman Durumu
+            </h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);" id="workout-status-text">
+              Hareketleri tamamladığında aşağıdaki butona basarak bugünün antrenmanını kapat ve takvime kaydet.
+            </p>
+          </div>
+          <button id="complete-today-workout-btn" class="btn btn-primary-glow" style="display: inline-flex; align-items: center; gap: 0.6rem;">
+            <i class="fas fa-check-circle"></i> Bugünün Antrenmanını Bitir & Takvime İşle
+          </button>
+        </div>
+
+        <!-- YENİ: Aylık Antrenman Devamlılık Takvimi -->
+        <div class="workout-calendar-card glass-panel" style="margin-top: 2rem; padding: 1.8rem; border-radius: var(--radius-lg); border: 1px solid var(--border-light);">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-light); padding-bottom: 1rem;">
+            <div>
+              <h3 style="font-size: 1.25rem; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 0.6rem;">
+                <i class="fas fa-calendar-alt" style="color: var(--accent-red);"></i> Antrenman Devamlılık Takvimi
+              </h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
+                Ağustos 2026 — Tamamladığın antrenman günleri kırmızı onay rozeti ile takvimine işlenir.
+              </p>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+              <div style="text-align: center; background: rgba(0,0,0,0.4); padding: 0.5rem 1.2rem; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Tamamlanan</span>
+                <strong style="font-size: 1.2rem; color: var(--accent-red);" id="calendar-completed-count">14 Gün</strong>
+              </div>
+              <div style="text-align: center; background: rgba(0,0,0,0.4); padding: 0.5rem 1.2rem; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Devamlılık Oranı</span>
+                <strong style="font-size: 1.2rem; color: #10B981;" id="calendar-rate">%92</strong>
+              </div>
+              <div style="text-align: center; background: rgba(0,0,0,0.4); padding: 0.5rem 1.2rem; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Aktif Seri</span>
+                <strong style="font-size: 1.2rem; color: #F59E0B;" id="calendar-streak">🔥 4 Gün</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Haftanın Günleri -->
+          <div class="calendar-grid-header" style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 700; font-size: 0.8rem; color: var(--accent-red); margin-bottom: 0.8rem;">
+            <div>Pzt</div><div>Sal</div><div>Çar</div><div>Per</div><div>Cum</div><div>Cmt</div><div>Paz</div>
+          </div>
+
+          <!-- Takvim Gün Matrisi (31 Gün) -->
+          <div class="calendar-grid-body" id="calendar-days-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.6rem; text-align: center;">
+            <!-- Rendered dynamically by script -->
+          </div>
+
+          <div style="display: flex; gap: 1.5rem; justify-content: center; margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-muted); flex-wrap: wrap;">
+            <span style="display: flex; align-items: center; gap: 0.4rem;"><span style="width: 12px; height: 12px; border-radius: 50%; background: var(--accent-red); display: inline-block;"></span> Antrenman Yapıldı</span>
+            <span style="display: flex; align-items: center; gap: 0.4rem;"><span style="width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--accent-red); display: inline-block;"></span> Bugün</span>
+            <span style="display: flex; align-items: center; gap: 0.4rem;"><span style="width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.08); display: inline-block;"></span> Dinlenme Günü</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: BESLENME PROGRAMI -->
+      <div id="tab-nutrition" class="tab-content-pane">
+        <div class="glass-panel" style="padding: 1.5rem; margin-bottom: 2rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+            <h3 style="margin-bottom: 0;">Başlangıç Seviye Günlük Makro Hedefi (2,100 kcal)</h3>
+            <button id="download-nutrition-pdf-btn" class="btn btn-outline" style="padding: 0.45rem 1rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.5rem;">
+              <i class="fas fa-file-pdf" style="color: var(--accent-red);"></i> Beslenme Listesini PDF İndir
+            </button>
+          </div>
+          <div class="res-metrics-grid">
+            <div class="metric-card">
+              <span>Hedef Protein</span>
+              <h4>160g</h4>
+            </div>
+            <div class="metric-card">
+              <span>Hedef Karbonhidrat</span>
+              <h4>210g</h4>
+            </div>
+            <div class="metric-card">
+              <span>Hedef Yağ</span>
+              <h4>58g</h4>
+            </div>
+          </div>
+        </div>
+
+        <div class="meal-block">
+          <div class="meal-header">
+            <h4><i class="fas fa-coffee" style="color: var(--accent-primary);"></i> Öğün 1: Disiplin Kahvaltısı</h4>
+            <div class="meal-macro-badges">
+              <span class="macro-badge badge-kcal"><i class="fas fa-fire"></i> 520 kcal</span>
+              <span class="macro-badge badge-protein"><i class="fas fa-drumstick-bite"></i> 38g Protein</span>
+              <span class="macro-badge badge-carb"><i class="fas fa-bread-slice"></i> 45g Karbonhidrat</span>
+              <span class="macro-badge badge-fat"><i class="fas fa-seedling"></i> 16g Yağ</span>
+            </div>
+          </div>
+          <div class="meal-food-list">
+            <div class="meal-food-item">
+              <span><i class="fas fa-check-circle" style="color: var(--accent-primary); margin-right: 0.4rem;"></i> 3 Adet Haşlanmış Yumurta (veya Omlet)</span>
+              <span class="macro-pill tag-protein">+18g Protein</span>
+            </div>
+            <div class="meal-food-item">
+              <span><i class="fas fa-check-circle" style="color: var(--accent-primary); margin-right: 0.4rem;"></i> 50g Süzme Peynir / Lor Peyniri</span>
+              <span class="macro-pill tag-protein">+10g Protein</span>
+            </div>
+            <div class="meal-food-item">
+              <span><i class="fas fa-check-circle" style="color: var(--accent-primary); margin-right: 0.4rem;"></i> 50g Yulaf Ezmesi + 5-6 Adet Çiğ Ceviz</span>
+              <span class="macro-pill tag-carb">+35g Karbonhidrat</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="meal-block">
+          <div class="meal-header">
+            <h4><i class="fas fa-utensils" style="color: var(--accent-primary);"></i> Öğün 2: Ana Öğün (Öğle / Akşam)</h4>
+            <div class="meal-macro-badges">
+              <span class="macro-badge badge-kcal"><i class="fas fa-fire"></i> 620 kcal</span>
+              <span class="macro-badge badge-protein"><i class="fas fa-drumstick-bite"></i> 48g Protein</span>
+              <span class="macro-badge badge-carb"><i class="fas fa-bread-slice"></i> 70g Karbonhidrat</span>
+              <span class="macro-badge badge-fat"><i class="fas fa-seedling"></i> 12g Yağ</span>
+            </div>
+          </div>
+          <div class="meal-food-list">
+            <div class="meal-food-item">
+              <span><i class="fas fa-check-circle" style="color: var(--accent-primary); margin-right: 0.4rem;"></i> 180g Izgara Tavuk Göğsü / Köfte / Balık</span>
+              <span class="macro-pill tag-protein">+42g Protein</span>
+            </div>
+            <div class="meal-food-item">
+              <span><i class="fas fa-check-circle" style="color: var(--accent-primary); margin-right: 0.4rem;"></i> 200g Pişmiş Pirinç veya Bulgur Pilavı</span>
+              <span class="macro-pill tag-carb">+55g Karbonhidrat</span>
+            </div>
+            <div class="meal-food-item">
+              <span><i class="fas fa-check-circle" style="color: var(--accent-primary); margin-right: 0.4rem;"></i> Mevsim Salatası (1 Tatlı Kaşığı Zeytinyağı)</span>
+              <span class="macro-pill tag-fat">+7g Sağlıklı Yağ</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Besin Değişim Rehberi İpucu Kutusu -->
+        <div style="padding: 1.2rem; background: rgba(6, 182, 212, 0.08); border: 1px dashed var(--accent-secondary); border-radius: var(--radius-md); display: flex; align-items: center; gap: 1rem;">
+          <i class="fas fa-lightbulb" style="font-size: 1.5rem; color: var(--accent-secondary);"></i>
+          <div style="font-size: 0.875rem; color: #E5E7EB;">
+            <strong>💡 Esnek Besin Değişim Rehberi:</strong> Canınız tavuk istemiyorsa 180g Tavuk Göğsü yerine <strong>200g Yağsız Dana Kıyma</strong>, <strong>220g Somon/Balık</strong> veya <strong>250g Lor Peyniri</strong> tüketebilirsiniz.
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: FORM KONTROLÜ & ÖLÇÜMLER -->
+      <div id="tab-checkin" class="tab-content-pane">
+        <div class="glass-panel" style="padding: 2rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <h3><i class="fas fa-history" style="color: var(--accent-primary);"></i> Form Kontrol & Değerlendirme Geçmişi</h3>
+            <span style="font-size: 0.85rem; color: var(--accent-red); background: rgba(239,68,68,0.15); padding: 0.4rem 0.8rem; border-radius: var(--radius-full); border: 1px solid rgba(239,68,68,0.3); font-weight: 700;">
+              🗓️ 2 Haftada Bir Değerlendirme Yapılır
+            </span>
+          </div>
+          
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border-light); color: var(--text-muted);">
+                <th style="padding: 0.8rem;">Kontrol Dönemi</th>
+                <th style="padding: 0.8rem;">Kilo</th>
+                <th style="padding: 0.8rem;">Bel Ölçüsü</th>
+                <th style="padding: 0.8rem;">Kol</th>
+                <th style="padding: 0.8rem;">Form Fotoğrafı</th>
+                <th style="padding: 0.8rem;">Koç Durumu</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--border-light);">
+                <td style="padding: 0.8rem;">1. Kontrol (2. Hafta)</td>
+                <td style="padding: 0.8rem; font-weight: 700; color: var(--accent-primary);">86.2 kg (-1.8 kg)</td>
+                <td style="padding: 0.8rem;">89 cm</td>
+                <td style="padding: 0.8rem;">37.5 cm</td>
+                <td style="padding: 0.8rem;"><i class="fas fa-check-circle" style="color: #10B981;"></i> Yüklendi</td>
+                <td style="padding: 0.8rem; color: #10B981;"><i class="fas fa-check-circle"></i> İnceledi & Onayladı</td>
+              </tr>
+              <tr>
+                <td style="padding: 0.8rem;">Başlangıç (0. Hafta)</td>
+                <td style="padding: 0.8rem; font-weight: 700;">88.0 kg</td>
+                <td style="padding: 0.8rem;">91 cm</td>
+                <td style="padding: 0.8rem;">37.0 cm</td>
+                <td style="padding: 0.8rem;"><i class="fas fa-check-circle" style="color: #10B981;"></i> Yüklendi</td>
+                <td style="padding: 0.8rem; color: var(--text-muted);">Program Başladı</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- YENİ: Görsel Form Kontrol & Randevu Takvimi Grid -->
+          <div style="margin-top: 2rem; padding-top: 1.8rem; border-top: 1px solid var(--border-light);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 0.8rem;">
+              <h4 style="color: #FFFFFF; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-calendar-check" style="color: var(--accent-red);"></i> Form Görseli & Ölçüm Yükleme Takvimi
+              </h4>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">
+                Sıradaki Form Yükleme Tarihi: <strong style="color: var(--accent-red);">28 Ağustos 2026</strong>
+              </span>
+            </div>
+
+            <!-- Check-in Timeline Calendar Cards -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+              <!-- 0. Hafta -->
+              <div style="padding: 1.2rem; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); text-align: center;">
+                <span style="font-size: 0.72rem; font-weight: 800; color: #10B981; background: rgba(16,185,129,0.15); padding: 0.2rem 0.5rem; border-radius: var(--radius-full);">BAŞLANGIÇ</span>
+                <h5 style="color: #FFFFFF; font-size: 1rem; margin: 0.5rem 0 0.2rem 0;">1 Ağustos 2026</h5>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.6rem;">0. Hafta Form & Kilo Yükleme</p>
+                <span style="font-size: 0.75rem; color: #10B981; font-weight: 700;"><i class="fas fa-check-circle"></i> Yüklendi & Tamamlandı</span>
+              </div>
+
+              <!-- 2. Hafta (Geçmiş - Onaylı) -->
+              <div style="padding: 1.2rem; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); text-align: center;">
+                <span style="font-size: 0.72rem; font-weight: 800; color: #10B981; background: rgba(16,185,129,0.15); padding: 0.2rem 0.5rem; border-radius: var(--radius-full);">1. KONTROL</span>
+                <h5 style="color: #FFFFFF; font-size: 1rem; margin: 0.5rem 0 0.2rem 0;">14 Ağustos 2026</h5>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.6rem;">86.2 kg (-1.8 kg Yağ Kaybı)</p>
+                <span style="font-size: 0.75rem; color: #10B981; font-weight: 700;"><i class="fas fa-check-circle"></i> Umut Hoca Onayladı</span>
+              </div>
+
+              <!-- 4. Hafta (Gelecek - Aktif Bildirimli) -->
+              <div style="padding: 1.2rem; background: rgba(239, 68, 68, 0.12); border: 2px solid var(--accent-red); border-radius: var(--radius-md); text-align: center; box-shadow: 0 0 15px rgba(239,68,68,0.25);">
+                <span style="font-size: 0.72rem; font-weight: 800; color: #FFFFFF; background: var(--accent-red); padding: 0.2rem 0.5rem; border-radius: var(--radius-full);">YAKLAŞAN KONTROL</span>
+                <h5 style="color: #FFFFFF; font-size: 1rem; margin: 0.5rem 0 0.2rem 0;">28 Ağustos 2026</h5>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.6rem;">2. Kontrol (4. Hafta)</p>
+                <button class="btn btn-primary-glow" style="padding: 0.35rem 0.8rem; font-size: 0.75rem; width: 100%;" onclick="alert('Form Fotoğrafı & Ölçüm Yükleme Ekranı Açıldı!')">
+                  <i class="fas fa-camera"></i> Görsel & Ölçüm Yükle
+                </button>
+              </div>
+
+              <!-- 6. Hafta (Gelecek) -->
+              <div style="padding: 1.2rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-light); border-radius: var(--radius-md); text-align: center; opacity: 0.6;">
+                <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); background: rgba(255,255,255,0.05); padding: 0.2rem 0.5rem; border-radius: var(--radius-full);">3. KONTROL</span>
+                <h5 style="color: #FFFFFF; font-size: 1rem; margin: 0.5rem 0 0.2rem 0;">11 Eylül 2026</h5>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.6rem;">6. Hafta Değerlendirmesi</p>
+                <span style="font-size: 0.75rem; color: var(--text-dark);"><i class="fas fa-clock"></i> Beklemede</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: SUPPLEMENT REHBERİ -->
+      <div id="tab-supplements" class="tab-content-pane">
+        <div class="glass-panel" style="padding: 2rem;">
+          <h3 style="margin-bottom: 1rem;"><i class="fas fa-capsules" style="color: var(--accent-primary);"></i> Temel Başlangıç Supplement Protokolü</h3>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem;">3 Aylık Başlangıç Paketiniz kapsamında önerilen temel gıda takviyeleri rehberi:</p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+            <div style="padding: 1.25rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-light); border-radius: var(--radius-md);">
+              <h4 style="color: var(--accent-primary); margin-bottom: 0.5rem;"><i class="fas fa-bolt"></i> Creatine Monohydrate</h4>
+              <p style="font-size: 0.875rem; color: var(--text-muted);">Güç ve kas içi su tutumunu artırır. Her gün düzenli 5g (1 ölçek) bol su ile alınır.</p>
+            </div>
+            <div style="padding: 1.25rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-light); border-radius: var(--radius-md);">
+              <h4 style="color: var(--accent-secondary); margin-bottom: 0.5rem;"><i class="fas fa-wine-bottle"></i> Whey Protein (Opsiyonel)</h4>
+              <p style="font-size: 0.875rem; color: var(--text-muted);">Günlük protein hedefine ulaşamadığınız günlerde antrenman sonrası 1 ölçek.</p>
+            </div>
+            <div style="padding: 1.25rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-light); border-radius: var(--radius-md);">
+              <h4 style="color: #F59E0B; margin-bottom: 0.5rem;"><i class="fas fa-heart"></i> Omega-3 & Vitamin D3</h4>
+              <p style="font-size: 0.875rem; color: var(--text-muted);">Eklem sağlığı, immün sistem ve genel performans için kahvaltı sonraları 1 kapsül.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // ==========================================================================
+    // Client Authentication Logic (Telefon Numarası & Şifre Doğrulama)
+    // ==========================================================================
+    const clientAuthOverlay = document.getElementById('client-auth-overlay');
+    const clientLoginForm = document.getElementById('client-login-form');
+    const clientPhoneInput = document.getElementById('client-phone-input');
+    const clientPassInput = document.getElementById('client-pass-input');
+    const clientLoginError = document.getElementById('client-login-error');
+
+    if (sessionStorage.getItem('client_authenticated') === 'true') {
+      if (clientAuthOverlay) clientAuthOverlay.style.display = 'none';
+    } else {
+      if (clientAuthOverlay) clientAuthOverlay.style.display = 'flex';
+    }
+
+    if (clientLoginForm) {
+      clientLoginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const phone = clientPhoneInput.value.trim();
+        const pass = clientPassInput.value.trim();
+        
+        if (phone.length >= 8 && pass.length >= 3) {
+          sessionStorage.setItem('client_authenticated', 'true');
+          sessionStorage.setItem('client_user_phone', phone);
+          clientAuthOverlay.style.display = 'none';
+        } else {
+          clientLoginError.style.display = 'block';
+        }
+      });
+    }
+
+    // Tab switching logic
+    document.querySelectorAll('.dash-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.dash-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content-pane').forEach(p => p.classList.remove('active'));
+        
+        btn.classList.add('active');
+        const tabId = btn.getAttribute('data-tab');
+        document.getElementById(tabId).classList.add('active');
+      });
+    });
+
+    // Package View Switcher Demo (Paket Bazlı Dinamik Arayüz Motoru)
+    const pkgHybridBtn = document.getElementById('btn-pkg-hybrid');
+    const pkg3Btn = document.getElementById('btn-pkg-3month');
+    const pkg6Btn = document.getElementById('btn-pkg-6month');
+    const pkg12Btn = document.getElementById('btn-pkg-12month');
+    const pkgPtBtn = document.getElementById('btn-pkg-pt');
+
+    // 1. Cevahir MACFit Hibrit Paketi
+    if (pkgHybridBtn) {
+      pkgHybridBtn.addEventListener('click', () => {
+        setActivePkgBtn(pkgHybridBtn);
+        document.getElementById('client-package-badge').innerHTML = '<i class="fas fa-map-marker-alt"></i> Cevahir MACFit Hibrit Koçluk Paketi (2. Hafta / 12 Hafta)';
+        document.getElementById('stat-checkin-period').textContent = 'Ayda 1 Salonda Özel Ders';
+        document.getElementById('trainer-note-title').innerHTML = '<i class="fas fa-comment-dots"></i> Umut Hoca\'nın Cevahir MACFit Hibrit Notu:';
+        document.getElementById('trainer-note-body').textContent = '"Ahmet selam! Önümüzdeki Cumartesi 14:00\'te Cevahir AVM MACFit stüdyosunda 1-on-1 birebir özel dersimiz var. Salonda squat ve deadlift formunu yüz yüze birebir inceleyeceğiz!"';
+        
+        document.getElementById('pkg-privilege-tag').textContent = '📍 STÜDYO HİBRİT KOÇLUK HAKLARI';
+        document.getElementById('pkg-privilege-title').textContent = 'Cevahir AVM MACFit Yüz Yüze Birebir Özel Ders & Hibrit Koçluk';
+        document.getElementById('pkg-privilege-desc').textContent = 'Her ay 1 adet Cevahir AVM MACFit stüdyosunda Umut Altun ile 1-on-1 yüz yüze birebir antrenman & postür analizi ders hakkınız aktiftir.';
+        document.getElementById('pkg-action-status').innerHTML = '<i class="fas fa-calendar-check"></i> 24 Ağustos Cumartesi 14:00 (Cevahir MACFit)';
+      });
+    }
+
+    // 2. 3 Aylık Başlangıç & Disiplin Paketi
+    if (pkg3Btn) {
+      pkg3Btn.addEventListener('click', () => {
+        setActivePkgBtn(pkg3Btn);
+        document.getElementById('client-package-badge').innerHTML = '<i class="fas fa-shield-alt"></i> 3 Aylık Başlangıç & Disiplin Paketi (1. Hafta / 12 Hafta)';
+        document.getElementById('stat-checkin-period').textContent = '2 Haftada Bir';
+        document.getElementById('trainer-note-title').innerHTML = '<i class="fas fa-comment-dots"></i> Umut Hoca\'nın 1. Hafta Başlangıç Notu:';
+        document.getElementById('trainer-note-body').textContent = '"3 Aylık Başlangıç & Disiplin ailesine hoş geldin Ahmet! İlk 2 haftamızda temel hedefimiz ağır kitleler kaldırmak değil, hareket formlarını eksiksiz öğrenmek ve vücudunu antrenman ritmine alıştırmaktır."';
+        
+        document.getElementById('pkg-privilege-tag').textContent = '🌱 TEMEL KOÇLUK & DİSİPLİN HAKLARI';
+        document.getElementById('pkg-privilege-title').textContent = 'Kişiye Özel Antrenman & Esnek Beslenme Desteği';
+        document.getElementById('pkg-privilege-desc').textContent = 'Kişiye özel antrenman ve beslenme programı, WhatsApp soru-cevap hattı ve 2 haftada bir detaylı form & ölçüm takibi haklarınız aktiftir.';
+        document.getElementById('pkg-action-status').innerHTML = '<i class="fas fa-clock"></i> Sıradaki Form Yükleme: 28 Ağustos 2026';
+      });
+    }
+
+    // 3. 6 Aylık Vücut Yenileme Paketi
+    if (pkg6Btn) {
+      pkg6Btn.addEventListener('click', () => {
+        setActivePkgBtn(pkg6Btn);
+        document.getElementById('client-package-badge').innerHTML = '<i class="fas fa-fire"></i> 6 Aylık Vücut Yenileme Paketi (3. Hafta / 24 Hafta)';
+        document.getElementById('stat-checkin-period').textContent = 'Haftalık (Her Pazar)';
+        document.getElementById('trainer-note-title').innerHTML = '<i class="fas fa-comment-dots"></i> Umut Hoca\'nın 3. Hafta Hipertrofi Notu:';
+        document.getElementById('trainer-note-body').textContent = '"Harika gidiyorsun Ahmet! Geçen hafta verdiğin 1.2 kg yağ kaybı muazzamdı. Bu hafta göğüs antrenmanına Drop-set ekledim. Kardiyoyu yine antrenman sonraları 20 dk tutuyoruz."';
+        
+        document.getElementById('pkg-privilege-tag').textContent = '🔥 HAFTALIK REVİZE & ÖNCELİKLİ HAKLAR';
+        document.getElementById('pkg-privilege-title').textContent = 'Haftalık Form Analizi & Program Revize Garantisi';
+        document.getElementById('pkg-privilege-desc').textContent = 'Her Pazar düzenli kilo/ölçüm takibi, 7/24 öncelikli WhatsApp iletişim hattı ve duraksamaları önleyen sonsuz dinamik makro güncellemeleriniz aktiftir.';
+        document.getElementById('pkg-action-status').innerHTML = '<i class="fas fa-calendar-alt"></i> Sıradaki Pazar Analizi: 23 Ağustos Pazar';
+      });
+    }
+
+    // 4. 12 Aylık VIP Şampiyon Paketi
+    if (pkg12Btn) {
+      pkg12Btn.addEventListener('click', () => {
+        setActivePkgBtn(pkg12Btn);
+        document.getElementById('client-package-badge').innerHTML = '<i class="fas fa-crown"></i> 12 Aylık VIP Şampiyon Paketi (6. Hafta / 52 Hafta)';
+        document.getElementById('stat-checkin-period').textContent = 'VIP Anlık & WhatsApp';
+        document.getElementById('trainer-note-title').innerHTML = '<i class="fas fa-comment-dots"></i> Umut Hoca\'nın VIP Koçluk Notu:';
+        document.getElementById('trainer-note-body').textContent = '"VIP Şampiyon sürecinde 6. haftamızı tamamladık. Çarşamba günü 20:00\'de WhatsApp görüntülü değerlendirme görüşmemiz var!"';
+        
+        document.getElementById('pkg-privilege-tag').textContent = '👑 FULL VIP & GÖRÜNTÜLÜ DEĞERLENDİRME';
+        document.getElementById('pkg-privilege-title').textContent = 'Aylık Görüntülü WhatsApp Değerlendirme & Yıllık Periodizasyon';
+        document.getElementById('pkg-privilege-desc').textContent = '7/24 kesintisiz VIP WhatsApp erişimi, her ay 1-on-1 görüntülü WhatsApp değerlendirme görüşmesi ve 12 aylık elit sezonluk antrenman periodizasyonu haklarınız mevcuttur.';
+        document.getElementById('pkg-action-status').innerHTML = '<i class="fas fa-video"></i> Canlı Görüntülü Görüşme: 26 Ağustos Çarşamba 20:00';
+      });
+    }
+
+    // 5. Cevahir AVM Birebir PT Paketi
+    if (pkgPtBtn) {
+      pkgPtBtn.addEventListener('click', () => {
+        setActivePkgBtn(pkgPtBtn);
+        document.getElementById('client-package-badge').innerHTML = '<i class="fas fa-dumbbell"></i> Cevahir AVM 20 Ders Birebir PT Paketi (8. Ders / 20 Ders)';
+        document.getElementById('stat-checkin-period').textContent = 'Salonda Birebir Ders';
+        document.getElementById('trainer-note-title').innerHTML = '<i class="fas fa-comment-dots"></i> Umut Hoca\'nın Birebir PT Notu:';
+        document.getElementById('trainer-note-body').textContent = '"Ahmet selam! 20 derslik paketimizin 8 dersini tamamladık. Yarın 16:00\'daki bacak & kalça dersimiz için Cevahir AVM MACFit stüdyosunda buluşuyoruz."';
+        
+        document.getElementById('pkg-privilege-tag').textContent = '🏋️‍♂️ SALONDA BİREBİR ÖZEL DERS HAKLARI';
+        document.getElementById('pkg-privilege-title').textContent = 'Cevahir AVM MACFit 1-on-1 Birebir PT Seansları';
+        document.getElementById('pkg-privilege-desc').textContent = 'Kalan Özel Birebir Ders Hakkınız: 12 / 20 Ders. Salonda antrenör eşliğinde birebir kişisel performans ve postür seansları.';
+        document.getElementById('pkg-action-status').innerHTML = '<i class="fas fa-dumbbell"></i> Sıradaki Salon Dersi: Yarın 16:00 (Cevahir MACFit)';
+      });
+    }
+
+    function setActivePkgBtn(activeBtn) {
+      [pkg3Btn, pkg6Btn, pkg12Btn, pkgHybridBtn, pkgPtBtn].forEach(b => { if(b) b.classList.remove('active'); });
+      activeBtn.classList.add('active');
+    }
+
+    // Checkbox toggles
+    document.querySelectorAll('.check-exercise-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('completed');
+      });
+    });
+
+    // Live Sync Trainer Note from Admin Panel (localStorage)
+    function syncTrainerNote() {
+      const savedNote = localStorage.getItem('pt_trainer_note');
+      if (savedNote) {
+        document.getElementById('trainer-note-body').textContent = '"' + savedNote + '"';
+      }
+    }
+
+    // Run on load and listen for live storage updates
+    syncTrainerNote();
+    window.addEventListener('storage', syncTrainerNote);
+
+    // ==========================================================================
+    // Interactive Workout Calendar & Completion Logic (Antrenman Takvimi)
+    // ==========================================================================
+    const defaultCompletedDays = [1, 3, 5, 8, 10, 12, 14, 15, 17, 19];
+    let completedWorkoutDays = JSON.parse(localStorage.getItem('umut_fitness_completed_days')) || defaultCompletedDays;
+
+    function renderCalendar() {
+      const gridBox = document.getElementById('calendar-days-grid');
+      if (!gridBox) return;
+
+      gridBox.innerHTML = '';
+      const totalDaysInMonth = 31;
+      const today = 20; // Current Demo Day (Ağustos 20)
+
+      for (let day = 1; day <= totalDaysInMonth; day++) {
+        const dayCell = document.createElement('div');
+        dayCell.style.padding = '0.65rem 0.3rem';
+        dayCell.style.borderRadius = 'var(--radius-sm)';
+        dayCell.style.fontSize = '0.85rem';
+        dayCell.style.fontWeight = '700';
+        dayCell.style.position = 'relative';
+        dayCell.style.transition = 'var(--transition-fast)';
+
+        const isCompleted = completedWorkoutDays.includes(day);
+        const isToday = (day === today);
+
+        if (isCompleted) {
+          dayCell.style.background = 'rgba(239, 68, 68, 0.2)';
+          dayCell.style.color = '#FFFFFF';
+          dayCell.style.border = '1px solid var(--accent-red)';
+          dayCell.innerHTML = `<span>${day}</span> <i class="fas fa-check" style="color: var(--accent-red); font-size: 0.75rem; margin-left: 2px;"></i>`;
+        } else if (isToday) {
+          dayCell.style.background = 'rgba(255, 255, 255, 0.05)';
+          dayCell.style.color = '#FFFFFF';
+          dayCell.style.border = '2px solid var(--accent-red)';
+          dayCell.style.boxShadow = '0 0 12px rgba(239, 68, 68, 0.5)';
+          dayCell.innerHTML = `<span>${day}</span>`;
+        } else {
+          dayCell.style.background = 'rgba(255, 255, 255, 0.02)';
+          dayCell.style.color = 'var(--text-muted)';
+          dayCell.style.border = '1px solid rgba(255, 255, 255, 0.04)';
+          dayCell.innerHTML = `<span>${day}</span>`;
+        }
+
+        gridBox.appendChild(dayCell);
+      }
+
+      // Update Summary Stats
+      const countEl = document.getElementById('calendar-completed-count');
+      const rateEl = document.getElementById('calendar-rate');
+
+      if (countEl) countEl.textContent = completedWorkoutDays.length + ' Gün';
+      if (rateEl) rateEl.textContent = '%' + Math.min(100, Math.round((completedWorkoutDays.length / 15) * 100));
+    }
+
+    renderCalendar();
+
+    // Complete Today's Workout Action
+    const completeBtn = document.getElementById('complete-today-workout-btn');
+    if (completeBtn) {
+      completeBtn.addEventListener('click', () => {
+        const today = 20;
+        
+        // 1. Mark all exercise checkmarks completed
+        document.querySelectorAll('.check-exercise-btn').forEach(btn => {
+          btn.classList.add('completed');
+        });
+
+        // 2. Add today to completed days if not present
+        if (!completedWorkoutDays.includes(today)) {
+          completedWorkoutDays.push(today);
+          localStorage.setItem('umut_fitness_completed_days', JSON.stringify(completedWorkoutDays));
+        }
+
+        // 3. Re-render calendar & update status text
+        renderCalendar();
+        
+        const statusText = document.getElementById('workout-status-text');
+        if (statusText) {
+          statusText.innerHTML = '<span style="color: #10B981; font-weight: 700;"><i class="fas fa-check-circle"></i> Tebrikler! Bugünkü antrenmanını tamamladın ve takvimine kırmızı onay rozetiyle işlendi.</span>';
+        }
+
+        completeBtn.style.background = '#10B981';
+        completeBtn.style.borderColor = '#10B981';
+        completeBtn.innerHTML = '<i class="fas fa-check-double"></i> Bugünkü Antrenmanı Bitirdin!';
+      });
+    }
+
+    // ==========================================================================
+    // PDF Export Function (PDF İndirme Motoru)
+    // ==========================================================================
+    function exportSectionToPDF(sectionTitle, elementId) {
+      const clientName = document.getElementById('client-name')?.textContent || 'Ahmet Yılmaz';
+      const clientPackage = document.getElementById('client-package-badge')?.textContent || '3 Aylık Başlangıç & Disiplin Paketi';
+      const targetElement = document.getElementById(elementId);
+      
+      if (!targetElement) return;
+
+      const contentHtml = targetElement.innerHTML;
+      const printWin = window.open('', '_blank', 'width=900,height=800');
+      
+      printWin.document.write(`
+        <!DOCTYPE html>
+        <html lang="tr">
+        <head>
+          <meta charset="UTF-8">
+          <title>PT Umut Altun — ${sectionTitle}</title>
+          <style>
+            body { font-family: 'Arial', sans-serif; color: #111111; padding: 35px; line-height: 1.5; background: #ffffff; }
+            .header-bar { border-bottom: 3px solid #EF4444; padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-end; }
+            .brand-name { font-size: 24px; font-weight: 900; color: #EF4444; letter-spacing: -0.5px; }
+            .brand-sub { font-size: 12px; color: #666666; margin-top: 3px; font-weight: bold; }
+            .client-meta { font-size: 13px; color: #333333; text-align: right; }
+            .doc-title { font-size: 20px; font-weight: 800; color: #111111; margin-bottom: 20px; }
+            .btn, .package-switcher-bar, .whatsapp-float, .workout-calendar-card, #workout-day-container, #complete-today-workout-btn, button { display: none !important; }
+            .exercise-item { border: 1px solid #e5e7eb; padding: 15px; border-radius: 8px; margin-bottom: 12px; background: #f9fafb; page-break-inside: avoid; }
+            .exercise-item h4 { margin: 0 0 5px 0; color: #111827; font-size: 16px; }
+            .exercise-item p { margin: 0; color: #4b5563; font-size: 13px; }
+            .sets-badge { background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; }
+            .meal-block { border: 1px solid #e5e7eb; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #f9fafb; page-break-inside: avoid; }
+            .meal-header h4 { margin: 0 0 10px 0; color: #111827; font-size: 16px; }
+            .macro-badge, .macro-pill { background: #fee2e2; color: #991b1b; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-right: 5px; }
+            .meal-food-item { border-bottom: 1px solid #e5e7eb; padding: 6px 0; font-size: 13px; display: flex; justify-content: space-between; }
+            .footer-note { margin-top: 40px; border-top: 1px solid #e5e7eb; padding-top: 15px; text-align: center; font-size: 11px; color: #6b7280; }
+          </style>
+        </head>
+        <body>
+          <div class="header-bar">
+            <div>
+              <div class="brand-name">PT UMUT ALTUN</div>
+              <div class="brand-sub">Uluslararası EREPS Level 4 Sertifikalı Fitness Koçluğu</div>
+            </div>
+            <div class="client-meta">
+              <strong>Danışan:</strong> ${clientName}<br>
+              <strong>Program:</strong> ${clientPackage}<br>
+              <strong>Tarih:</strong> ${new Date().toLocaleDateString('tr-TR')}
+            </div>
+          </div>
+
+          <div class="doc-title">📋 ${sectionTitle}</div>
+          
+          <div>${contentHtml}</div>
+
+          <div class="footer-note">
+            PT Umut Altun Uzaktan Koçluk Sistemleri — Birebir Özel Danışan Programı (İletişim: +90 538 637 62 58)
+          </div>
+
+          <script>
+            window.onload = function() {
+              setTimeout(function() { window.print(); }, 400);
+            };
+          </script>
+        </body>
+        </html>
+      `);
+      printWin.document.close();
+    }
+
+    // PDF Download Event Listeners
+    const dlWorkoutBtn = document.getElementById('download-workout-pdf-btn');
+    if (dlWorkoutBtn) {
+      dlWorkoutBtn.addEventListener('click', () => {
+        exportSectionToPDF('Kişiye Özel Antrenman Programı', 'tab-workout');
+      });
+    }
+
+    const dlNutritionBtn = document.getElementById('download-nutrition-pdf-btn');
+    if (dlNutritionBtn) {
+      dlNutritionBtn.addEventListener('click', () => {
+        exportSectionToPDF('Kişiye Özel Beslenme & Makro Günlüğü', 'tab-nutrition');
+      });
+    }
+  </script>
+</body>
+</html>
