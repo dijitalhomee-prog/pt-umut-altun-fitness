@@ -367,7 +367,7 @@
           <i class="fas fa-exclamation-triangle"></i> Lütfen geçerli bir telefon numarası ve şifre giriniz!
         </div>
 
-        <button type="button" class="btn btn-primary-glow" style="width: 100%; padding: 0.8rem; font-size: 1rem;" onclick="doClientLogin();">
+        <button type="submit" class="btn btn-primary-glow" style="width: 100%; padding: 0.8rem; font-size: 1rem;">
           <i class="fas fa-sign-in-alt"></i> Danışan Paneline Giriş Yap
         </button>
 
@@ -916,28 +916,26 @@
       
       const storedClients = (liveClientsList && liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
       
-      // Smart Client Matching (Phone number or password match)
-      const matchingClient = storedClients.find(c => {
-        const clientPhoneClean = (c.phone || '').replace(/\D/g, '');
-        if (enteredPhone && clientPhoneClean) {
-          if (clientPhoneClean === enteredPhone || clientPhoneClean.endsWith(enteredPhone) || enteredPhone.endsWith(clientPhoneClean)) {
-            return true;
-          }
-        }
-        if (enteredPass && c.password && c.password.trim() === enteredPass) {
-          return true;
-        }
-        return false;
-      }) || (storedClients.length > 0 ? storedClients[0] : null);
+      let matchingClient = null;
+      if (storedClients.length > 0) {
+        matchingClient = storedClients.find(c => {
+          const cleanP = (c.phone || '').replace(/\D/g, '');
+          const cleanPass = (c.password || '').trim();
+          const pMatch = enteredPhone && cleanP && (cleanP === enteredPhone || cleanP.endsWith(enteredPhone) || enteredPhone.endsWith(cleanP));
+          const passMatch = enteredPass && cleanPass && cleanPass === enteredPass;
+          return (pMatch && passMatch) || pMatch || passMatch;
+        });
+      }
 
       sessionStorage.setItem('client_authenticated', 'true');
-      sessionStorage.setItem('client_user_phone', enteredPhone || '05376274415');
-      
-      const clientName = matchingClient ? matchingClient.name : 'Danışanım';
-      sessionStorage.setItem('client_user_name', clientName);
+      const finalPhone = (matchingClient && matchingClient.phone) ? matchingClient.phone : (enteredPhone || '05386376258');
+      const finalName = (matchingClient && matchingClient.name) ? matchingClient.name : 'Danışanım';
+
+      sessionStorage.setItem('client_user_phone', finalPhone);
+      sessionStorage.setItem('client_user_name', finalName);
 
       const nameSpan = document.querySelector('.client-welcome-box h2');
-      if (nameSpan) nameSpan.textContent = `Hoş Geldin, ${clientName}! 👋`;
+      if (nameSpan) nameSpan.textContent = `Hoş Geldin, ${finalName}! 👋`;
 
       const overlay = document.getElementById('client-auth-overlay');
       if (overlay) {
@@ -945,7 +943,6 @@
       }
 
       checkNewProgramPopup();
-      return false;
     };
 
     if (clientLoginForm) {
