@@ -144,6 +144,26 @@ app.put('/api/clients/:id/status', (req, res) => {
   res.json({ success: true, client });
 });
 
+// Delete Client Endpoint (Trainer Action)
+app.delete('/api/clients/:id', (req, res) => {
+  const { id } = req.params;
+  const db = readDb();
+
+  const initialLength = db.clients.length;
+  db.clients = db.clients.filter(c => c.id !== id);
+
+  if (db.programs && db.programs[id]) {
+    delete db.programs[id];
+  }
+
+  if (db.clients.length < initialLength) {
+    writeDb(db);
+    res.json({ success: true, message: 'Danışan kalıcı olarak silindi.' });
+  } else {
+    res.status(404).json({ success: false, message: 'Danışan bulunamadı.' });
+  }
+});
+
 // 4. Get Client Specific Program & Nutrition Data
 app.get('/api/programs/:clientId', (req, res) => {
   const { clientId } = req.params;

@@ -837,15 +837,20 @@
               <i class="fas ${isActive ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${c.note || (isActive ? 'Aktif' : 'Paket Bitti')}
             </span>
             
-            <button class="toggle-status-btn" data-id="${c.id}" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: var(--radius-sm); border: 1px solid ${isActive ? '#10B981' : '#EF4444'}; background: ${isActive ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; color: ${isActive ? '#10B981' : '#EF4444'}; cursor: pointer; font-weight: bold;">
-              ${isActive ? '🟢 Aktif' : '🔴 Pasif Yap'}
-            </button>
+            <div style="display: flex; gap: 0.35rem;">
+              <button class="toggle-status-btn" data-id="${c.id}" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: var(--radius-sm); border: 1px solid ${isActive ? '#10B981' : '#EF4444'}; background: ${isActive ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; color: ${isActive ? '#10B981' : '#EF4444'}; cursor: pointer; font-weight: bold;">
+                ${isActive ? '🟢 Aktif' : '🔴 Pasif Yap'}
+              </button>
+              <button class="delete-client-btn" data-id="${c.id}" data-name="${c.name}" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: var(--radius-sm); border: 1px solid #EF4444; background: rgba(239,68,68,0.2); color: #EF4444; cursor: pointer; font-weight: bold;" title="Danışanı Kalıcı Sil">
+                <i class="fas fa-trash-alt"></i> Sil
+              </button>
+            </div>
           </div>
         `;
 
         // Card select event -> Switch active builder workspace client
         card.addEventListener('click', (e) => {
-          if (e.target.closest('.toggle-status-btn')) return;
+          if (e.target.closest('.toggle-status-btn') || e.target.closest('.delete-client-btn')) return;
           selectedClientId = c.id;
           renderClientsList();
         });
@@ -857,6 +862,28 @@
           c.note = (c.status === 'active') ? 'Aktif Üyelik Devam Ediyor' : 'Paketi Bitti / Pasif';
           saveClients();
           renderClientsList();
+        });
+
+        // Delete client event
+        card.querySelector('.delete-client-btn').addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (confirm(`"${c.name}" isimli danışanı sistemden kalıcı olarak silmek istediğinize emin misiniz?`)) {
+            // 1. Remove from local clients list
+            clients = clients.filter(item => item.id !== c.id);
+            saveClients();
+
+            // 2. Call backend REST API delete
+            try {
+              await fetch(`/api/clients/${c.id}`, { method: 'DELETE' });
+            } catch (err) {
+              console.warn('Backend delete sync completed locally.');
+            }
+
+            if (selectedClientId === c.id) {
+              selectedClientId = clients.length > 0 ? clients[0].id : null;
+            }
+            renderClientsList();
+          }
         });
 
         container.appendChild(card);
