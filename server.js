@@ -56,7 +56,28 @@ function readDb() {
   try {
     initDatabase();
     const raw = fs.readFileSync(DB_FILE, 'utf8');
-    return JSON.parse(raw);
+    const dbData = JSON.parse(raw);
+
+    // Ensure default master client exists if clients array is empty
+    if (!Array.isArray(dbData.clients) || dbData.clients.length === 0) {
+      dbData.clients = [
+        {
+          id: "client-egemen",
+          name: "Furkan Egemen Güneş",
+          phone: "05386376258",
+          password: "123456",
+          package: "👑 12 Aylık VIP Şampiyon Dönüşüm",
+          stage: "1. Hafta (Aktif Üye)",
+          expiryDate: "2027-12-31",
+          status: "active",
+          note: "Aktif VIP Üyelik Devam Ediyor",
+          createdAt: "2026-08-20T12:00:00.000Z"
+        }
+      ];
+      writeDb(dbData);
+    }
+
+    return dbData;
   } catch (err) {
     console.error('Error reading database:', err);
     return { clients: [], programs: {}, trainerPin: "586158" };
