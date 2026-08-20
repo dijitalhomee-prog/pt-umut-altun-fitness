@@ -1452,19 +1452,24 @@ html, body {
   .nav-container {
     padding: 0 0.6rem !important;
     gap: 0.3rem !important;
+    justify-content: space-between !important;
   }
 
   .brand-logo {
-    font-size: 0.9rem !important;
-    gap: 0.4rem !important;
+    font-size: 0.85rem !important;
+    gap: 0.35rem !important;
   }
 
   .brand-logo span {
-    max-width: 140px;
+    max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 0.85rem !important;
+    font-size: 0.82rem !important;
+  }
+
+  .nav-dijitalgru-tag {
+    display: none !important;
   }
 
   .logo-icon {
@@ -1474,10 +1479,11 @@ html, body {
   }
 
   .navbar .btn.open-modal-btn {
-    padding: 0.38rem 0.65rem !important;
-    font-size: 0.72rem !important;
+    padding: 0.35rem 0.6rem !important;
+    font-size: 0.7rem !important;
     border-radius: var(--radius-full) !important;
     white-space: nowrap;
+    max-width: 140px;
   }
 
   /* Footer Mobile Single Column Fix */
