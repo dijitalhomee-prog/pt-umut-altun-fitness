@@ -6,6 +6,10 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Zero-Cache Aggressive Anti-Caching Middleware (Her İstekte %100 Canlı Dosya Garantisi)
 app.use((req, res, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
