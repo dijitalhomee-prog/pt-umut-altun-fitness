@@ -875,34 +875,56 @@
       if (clientAuthOverlay) clientAuthOverlay.style.display = 'flex';
     }
 
+    // Live Clients Fetching Engine (Sunucu REST API Senkronizasyonu)
+    let liveClientsList = JSON.parse(localStorage.getItem('pt_clients_list')) || [];
+
+    async function fetchLiveClients() {
+      try {
+        const res = await fetch('/api/clients');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.clients) && data.clients.length > 0) {
+          liveClientsList = data.clients;
+          localStorage.setItem('pt_clients_list', JSON.stringify(liveClientsList));
+        }
+      } catch (err) {
+        console.warn('Sunucu eşleşmesi yerel hafızadan alındı:', err);
+      }
+    }
+    fetchLiveClients();
+
     if (clientLoginForm) {
-      clientLoginForm.addEventListener('submit', (e) => {
+      clientLoginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const rawPhone = clientPhoneInput.value.trim();
         const enteredPhone = rawPhone.replace(/\D/g, '');
         const enteredPass = clientPassInput.value.trim();
         
-        // Registered clients list
-        const storedClients = JSON.parse(localStorage.getItem('pt_clients_list')) || [];
+        // Sunucudan güncel danışan listesini çek
+        await fetchLiveClients();
+        const storedClients = (liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
         
+        // Esnek Telefon ve Şifre Eşleşme Motoru
         const matchingClient = storedClients.find(c => {
           const clientPhoneClean = (c.phone || '').replace(/\D/g, '');
-          return (clientPhoneClean && clientPhoneClean === enteredPhone && c.password === enteredPass) || (c.password === enteredPass);
+          const phoneMatch = clientPhoneClean && (clientPhoneClean === enteredPhone || clientPhoneClean.endsWith(enteredPhone) || enteredPhone.endsWith(clientPhoneClean));
+          const passMatch = (c.password && c.password.trim() === enteredPass);
+          return (phoneMatch && passMatch) || (c.password && c.password.trim() === enteredPass && enteredPhone.length >= 7);
         });
 
         if (matchingClient || (enteredPhone.length >= 8 && (enteredPass === '123456' || enteredPass.length >= 4))) {
           sessionStorage.setItem('client_authenticated', 'true');
           sessionStorage.setItem('client_user_phone', enteredPhone);
-          if (matchingClient) {
-            sessionStorage.setItem('client_user_name', matchingClient.name);
-            const nameSpan = document.querySelector('.client-welcome-box h2');
-            if (nameSpan) nameSpan.textContent = `Hoş Geldin, ${matchingClient.name}! 👋`;
-          }
+          const clientName = matchingClient ? matchingClient.name : 'Danışanım';
+          sessionStorage.setItem('client_user_name', clientName);
+
+          const nameSpan = document.querySelector('.client-welcome-box h2');
+          if (nameSpan) nameSpan.textContent = `Hoş Geldin, ${clientName}! 👋`;
+
           clientAuthOverlay.style.display = 'none';
           checkNewProgramPopup();
         } else {
           clientLoginError.style.display = 'block';
-          clientLoginError.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Girdiğiniz telefon numarası veya şifre hatalı!';
+          clientLoginError.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Girdiğiniz telefon numarası veya şifre sistemdeki üye kayıtlarıyla eşleşmedi!';
         }
       });
     }
