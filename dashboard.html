@@ -394,9 +394,12 @@
         <a href="#progress" class="nav-link">Form Kontrolü</a>
       </nav>
 
-      <div style="display: flex; align-items: center; gap: 1rem;">
+      <div style="display: flex; align-items: center; gap: 0.8rem;">
+        <button type="button" class="btn btn-outline" onclick="showClientAuthOverlay()" style="padding: 0.5rem 0.9rem; font-size: 0.82rem; border-color: rgba(239, 68, 68, 0.4); color: #EF4444; background: rgba(239,68,68,0.1);">
+          <i class="fas fa-key"></i> Hesaptan Çık / Giriş Yap
+        </button>
         <a href="https://wa.me/905386376258" target="_blank" class="btn btn-outline" style="padding: 0.5rem 1.2rem; font-size: 0.85rem;">
-          <i class="fab fa-whatsapp" style="color: #25D366;"></i> WhatsApp Mesaj Gönder
+          <i class="fab fa-whatsapp" style="color: #25D366;"></i> WhatsApp
         </a>
       </div>
     </div>
@@ -868,6 +871,15 @@
     const clientPhoneInput = document.getElementById('client-phone-input');
     const clientPassInput = document.getElementById('client-pass-input');
     const clientLoginError = document.getElementById('client-login-error');
+
+    function showClientAuthOverlay() {
+      sessionStorage.removeItem('client_authenticated');
+      const overlay = document.getElementById('client-auth-overlay');
+      if (overlay) {
+        overlay.style.setProperty('display', 'flex', 'important');
+      }
+    }
+    window.showClientAuthOverlay = showClientAuthOverlay;
 
     if (sessionStorage.getItem('client_authenticated') === 'true') {
       if (clientAuthOverlay) clientAuthOverlay.style.display = 'none';

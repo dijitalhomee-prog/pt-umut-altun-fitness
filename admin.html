@@ -735,15 +735,27 @@
     const defaultClients = [];
 
     let clients = JSON.parse(localStorage.getItem('pt_clients_list')) || defaultClients;
-    
-    // Clear legacy mock clients if present
-    if (clients.length > 0 && clients.some(c => c.id === 'ahmet-y' || c.id === 'zeynep-k')) {
-      clients = [];
-      localStorage.removeItem('pt_clients_list');
-    }
-
     let currentFilter = 'all';
-    let selectedClientId = null;
+    let selectedClientId = clients.length > 0 ? clients[0].id : null;
+
+    // Sunucudan (REST API) Kayıtlı Danışanları Canlı Çek
+    async function loadServerClients() {
+      try {
+        const res = await fetch('/api/clients');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.clients)) {
+          clients = data.clients;
+          localStorage.setItem('pt_clients_list', JSON.stringify(clients));
+          if (!selectedClientId && clients.length > 0) {
+            selectedClientId = clients[0].id;
+          }
+          renderClientsList();
+        }
+      } catch (err) {
+        console.warn('Sunucu danışan verisi yerel hafızadan okundu:', err);
+      }
+    }
+    loadServerClients();
 
     // Otomatik Paket Bitiş Kontrolü (Süresi geçen üyeleri otomatik pasife düşürür)
     function checkAutomaticExpirations() {
