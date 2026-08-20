@@ -1580,3 +1580,31 @@ html, body {
   border-left: 1px solid rgba(255, 255, 255, 0.18);
   padding-left: 0.75rem;
 }
+
+/* Header Navbar DijitalGru™ Tag */
+.nav-dijitalgru-tag {
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 0.35rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+}
+
+.nav-dijitalgru-tag a {
+  color: #F7EBD3 !important;
+  font-weight: 800 !important;
+  transition: var(--transition-fast);
+}
+
+.nav-dijitalgru-tag a:hover {
+  color: var(--accent-red) !important;
+}
+
+@media (max-width: 992px) {
+  .nav-dijitalgru-tag {
+    display: none !important;
+  }
+}
