@@ -12,7 +12,7 @@ const APP_DATA = {
     totalClients: "500+",
     satisfactionRate: "%98",
     whatsappNumber: "905386376258",
-    instagramHandle: "@ptumutaltun"
+    instagramHandle: "@ptumutaltun0"
   },
 
   // Paketler (Kompakt & Hizalı İçerik Yapısı)
