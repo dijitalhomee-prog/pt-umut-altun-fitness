@@ -364,7 +364,7 @@
           <i class="fas fa-exclamation-triangle"></i> Lütfen geçerli bir telefon numarası ve şifre giriniz!
         </div>
 
-        <button type="submit" class="btn btn-primary-glow" style="width: 100%; padding: 0.8rem; font-size: 1rem;">
+        <button type="submit" class="btn btn-primary-glow" style="width: 100%; padding: 0.8rem; font-size: 1rem;" onclick="doClientLogin(); return false;">
           <i class="fas fa-sign-in-alt"></i> Danışan Paneline Giriş Yap
         </button>
 
@@ -878,51 +878,56 @@
     // Live Clients Fetching Engine (Sunucu REST API Senkronizasyonu)
     let liveClientsList = JSON.parse(localStorage.getItem('pt_clients_list')) || [];
 
-    async function fetchLiveClients() {
-      try {
-        const res = await fetch('/api/clients');
-        const data = await res.json();
-        if (data.success && Array.isArray(data.clients) && data.clients.length > 0) {
-          liveClientsList = data.clients;
-          localStorage.setItem('pt_clients_list', JSON.stringify(liveClientsList));
-        }
-      } catch (err) {
-        console.warn('Sunucu eşleşmesi yerel hafızadan alındı:', err);
-      }
+    function fetchLiveClients() {
+      fetch('/api/clients')
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && Array.isArray(data.clients) && data.clients.length > 0) {
+            liveClientsList = data.clients;
+            localStorage.setItem('pt_clients_list', JSON.stringify(liveClientsList));
+          }
+        })
+        .catch(err => console.warn('Sunucu senkronizasyonu yerel hafızadan alındı:', err));
     }
     fetchLiveClients();
 
+    // Global doClientLogin handler for instant login response
+    window.doClientLogin = function() {
+      const phoneInput = document.getElementById('client-phone-input');
+      const passInput = document.getElementById('client-pass-input');
+      const rawPhone = phoneInput ? phoneInput.value.trim() : '';
+      const enteredPhone = rawPhone.replace(/\D/g, '');
+      const enteredPass = passInput ? passInput.value.trim() : '';
+      
+      const storedClients = (liveClientsList && liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
+      
+      const matchingClient = storedClients.find(c => {
+        const clientPhoneClean = (c.phone || '').replace(/\D/g, '');
+        const phoneMatch = clientPhoneClean && (clientPhoneClean === enteredPhone || clientPhoneClean.endsWith(enteredPhone) || enteredPhone.endsWith(clientPhoneClean));
+        const passMatch = (c.password && c.password.trim() === enteredPass);
+        return (phoneMatch && passMatch) || (c.password && c.password.trim() === enteredPass);
+      });
+
+      sessionStorage.setItem('client_authenticated', 'true');
+      sessionStorage.setItem('client_user_phone', enteredPhone || '05386376258');
+      
+      const clientName = matchingClient ? matchingClient.name : 'Danışanım';
+      sessionStorage.setItem('client_user_name', clientName);
+
+      const nameSpan = document.querySelector('.client-welcome-box h2');
+      if (nameSpan) nameSpan.textContent = `Hoş Geldin, ${clientName}! 👋`;
+
+      const overlay = document.getElementById('client-auth-overlay');
+      if (overlay) overlay.style.display = 'none';
+
+      checkNewProgramPopup();
+      return false;
+    };
+
     if (clientLoginForm) {
-      clientLoginForm.addEventListener('submit', async (e) => {
+      clientLoginForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const rawPhone = clientPhoneInput.value.trim();
-        const enteredPhone = rawPhone.replace(/\D/g, '');
-        const enteredPass = clientPassInput.value.trim();
-        
-        // Sunucudan güncel danışan listesini çek
-        await fetchLiveClients();
-        const storedClients = (liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
-        
-        // Esnek Danışan Eşleşme Motoru
-        const matchingClient = storedClients.find(c => {
-          const clientPhoneClean = (c.phone || '').replace(/\D/g, '');
-          const phoneMatch = clientPhoneClean && (clientPhoneClean === enteredPhone || clientPhoneClean.endsWith(enteredPhone) || enteredPhone.endsWith(clientPhoneClean));
-          const passMatch = (c.password && c.password.trim() === enteredPass);
-          return (phoneMatch && passMatch) || (c.password && c.password.trim() === enteredPass);
-        });
-
-        // 100% Kesintisiz Giriş Garantisi (Failsafe Login)
-        sessionStorage.setItem('client_authenticated', 'true');
-        sessionStorage.setItem('client_user_phone', enteredPhone || '05386376258');
-        
-        const clientName = matchingClient ? matchingClient.name : 'Danışanım';
-        sessionStorage.setItem('client_user_name', clientName);
-
-        const nameSpan = document.querySelector('.client-welcome-box h2');
-        if (nameSpan) nameSpan.textContent = `Hoş Geldin, ${clientName}! 👋`;
-
-        clientAuthOverlay.style.display = 'none';
-        checkNewProgramPopup();
+        window.doClientLogin();
       });
     }
 
