@@ -352,7 +352,7 @@
       <h3 style="color: #FFFFFF; font-size: 1.4rem; margin-bottom: 0.4rem; text-align: center;">PT Umut Altun — Danışan Paneli Girişi</h3>
       <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; text-align: center;">Programınıza erişmek için Telefon Numarası ve Şifreniz ile giriş yapın.</p>
 
-      <form id="client-login-form">
+      <form id="client-login-form" onsubmit="window.doClientLogin(); return false;">
         <div class="calc-form-group" style="margin-bottom: 1rem;">
           <label class="calc-label" for="client-phone-input">Telefon Numarası *</label>
           <input type="tel" id="client-phone-input" class="input-field" placeholder="Örn: 05XX XXX XX XX" required autofocus>
@@ -367,7 +367,7 @@
           <i class="fas fa-exclamation-triangle"></i> Lütfen geçerli bir telefon numarası ve şifre giriniz!
         </div>
 
-        <button type="submit" class="btn btn-primary-glow" style="width: 100%; padding: 0.8rem; font-size: 1rem;">
+        <button type="button" class="btn btn-primary-glow" style="width: 100%; padding: 0.8rem; font-size: 1rem;" onclick="window.doClientLogin();">
           <i class="fas fa-sign-in-alt"></i> Danışan Paneline Giriş Yap
         </button>
 
@@ -877,17 +877,20 @@
 
     function showClientAuthOverlay() {
       sessionStorage.removeItem('client_authenticated');
-      const overlay = document.getElementById('client-auth-overlay');
-      if (overlay) {
-        overlay.style.setProperty('display', 'flex', 'important');
-      }
+      localStorage.removeItem('client_authenticated');
+      window.location.reload();
     }
     window.showClientAuthOverlay = showClientAuthOverlay;
 
-    if (sessionStorage.getItem('client_authenticated') === 'true') {
-      if (clientAuthOverlay) clientAuthOverlay.style.display = 'none';
+    if (sessionStorage.getItem('client_authenticated') === 'true' || localStorage.getItem('client_authenticated') === 'true') {
+      if (clientAuthOverlay) {
+        clientAuthOverlay.style.setProperty('display', 'none', 'important');
+        try { clientAuthOverlay.remove(); } catch(e){}
+      }
     } else {
-      if (clientAuthOverlay) clientAuthOverlay.style.display = 'flex';
+      if (clientAuthOverlay) {
+        clientAuthOverlay.style.setProperty('display', 'flex', 'important');
+      }
     }
 
     // Live Clients Fetching Engine (Sunucu REST API Senkronizasyonu)
@@ -928,6 +931,8 @@
       }
 
       sessionStorage.setItem('client_authenticated', 'true');
+      localStorage.setItem('client_authenticated', 'true');
+
       const finalPhone = (matchingClient && matchingClient.phone) ? matchingClient.phone : (enteredPhone || '05386376258');
       const finalName = (matchingClient && matchingClient.name) ? matchingClient.name : 'Danışanım';
 
@@ -940,9 +945,11 @@
       const overlay = document.getElementById('client-auth-overlay');
       if (overlay) {
         overlay.style.setProperty('display', 'none', 'important');
+        try { overlay.remove(); } catch(e){}
       }
 
       checkNewProgramPopup();
+      return false;
     };
 
     if (clientLoginForm) {
