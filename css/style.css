@@ -1447,4 +1447,85 @@ html, body {
   .section-title {
     font-size: 1.5rem !important;
   }
+
+  /* Header Navbar Mobile Fix (No Overflow) */
+  .nav-container {
+    padding: 0 0.6rem !important;
+    gap: 0.3rem !important;
+  }
+
+  .brand-logo {
+    font-size: 0.9rem !important;
+    gap: 0.4rem !important;
+  }
+
+  .brand-logo span {
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.85rem !important;
+  }
+
+  .logo-icon {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .navbar .btn.open-modal-btn {
+    padding: 0.38rem 0.65rem !important;
+    font-size: 0.72rem !important;
+    border-radius: var(--radius-full) !important;
+    white-space: nowrap;
+  }
+
+  /* Footer Mobile Single Column Fix */
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+    text-align: left !important;
+  }
+
+  .footer-col h4 {
+    margin-bottom: 0.6rem !important;
+    font-size: 1rem !important;
+  }
+
+  /* Certificates Table Mobile Touch Scroll & Padding Fix */
+  .certificates-table-container {
+    padding: 1rem 0.6rem !important;
+    margin-top: 1.5rem !important;
+    border-radius: var(--radius-md) !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .certificates-table-container h3 {
+    font-size: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .certificates-table-container table {
+    display: block !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+  }
+
+  .certificates-table-container th,
+  .certificates-table-container td {
+    padding: 0.65rem 0.5rem !important;
+    font-size: 0.78rem !important;
+  }
+
+  /* Floating WhatsApp Button Mobile Positioning */
+  .whatsapp-float {
+    bottom: 1.25rem !important;
+    right: 1rem !important;
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 1.5rem !important;
+    z-index: 99999 !important;
+  }
 }
