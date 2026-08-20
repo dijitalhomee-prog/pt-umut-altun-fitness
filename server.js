@@ -10,8 +10,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// Persistent Database Directory & File Path
-const DB_DIR = path.join(__dirname, 'data');
+// Persistent Database Directory & File Path (Railway Persistent Volume Support)
+const DB_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || process.env.DATA_PATH || path.join(__dirname, 'data');
 const DB_FILE = path.join(DB_DIR, 'db.json');
 
 // Ensure Database File Exists
