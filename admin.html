@@ -604,10 +604,32 @@
       alert('🥗 Beslenme planı başarıyla kaydedildi & danışan paneline iletildi!');
     });
 
-    // Save Program Notification
-    document.getElementById('save-program-btn').addEventListener('click', () => {
-      alert('✅ Program başarıyla kaydedildi! Danışan paneline anında aktarıldı ve bildirim gönderildi.');
-    });
+    // Save Program Notification & Client Validation
+    const saveProgBtn = document.getElementById('save-program-btn');
+    if (saveProgBtn) {
+      saveProgBtn.addEventListener('click', () => {
+        if (!clients || clients.length === 0 || !selectedClientId) {
+          alert('⚠️ Lütfen önce sol listeden program yazmak istediğiniz danışanı seçin veya "Yeni Danışan Ekle" butonuna basın!');
+          return;
+        }
+
+        const targetClient = clients.find(c => c.id === selectedClientId) || clients[0];
+        if (!targetClient) {
+          alert('⚠️ Lütfen soldaki listeden geçerli bir danışan seçin.');
+          return;
+        }
+
+        // Set live notification flag for client panel popup
+        localStorage.setItem('pt_new_program_notification_' + targetClient.id, 'true');
+        localStorage.setItem('pt_new_program_notification_global', JSON.stringify({
+          clientId: targetClient.id,
+          clientName: targetClient.name,
+          date: new Date().toISOString()
+        }));
+
+        alert(`✅ Program başarıyla kaydedildi!\n\n📌 Alıcı Danışan: ${targetClient.name}\n\n${targetClient.name} danışan paneline girdiğinde "Yeni Programınız Geldi!" bildirimi popup olarak karşısına çıkacaktır.`);
+      });
+    }
   </script>
 
   <!-- Modal: Yeni Ücretsiz / Ücretli Danışan Ekle -->

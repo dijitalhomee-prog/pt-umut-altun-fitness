@@ -899,12 +899,52 @@
             if (nameSpan) nameSpan.textContent = `Hoş Geldin, ${matchingClient.name}! 👋`;
           }
           clientAuthOverlay.style.display = 'none';
+          checkNewProgramPopup();
         } else {
           clientLoginError.style.display = 'block';
           clientLoginError.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Girdiğiniz telefon numarası veya şifre hatalı!';
         }
       });
     }
+
+    // Live New Program Popup Notification Checker
+    function checkNewProgramPopup() {
+      const isAuth = (sessionStorage.getItem('client_authenticated') === 'true');
+      const hasNotification = localStorage.getItem('pt_new_program_notification_global');
+
+      if (isAuth && hasNotification && !document.getElementById('new-program-popup-modal')) {
+        const modalDiv = document.createElement('div');
+        modalDiv.id = 'new-program-popup-modal';
+        modalDiv.style.cssText = 'position: fixed; inset: 0; background: rgba(8, 8, 10, 0.95); z-index: 999999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(15px); padding: 1.5rem;';
+        
+        modalDiv.innerHTML = `
+          <div class="glass-panel" style="max-width: 460px; width: 100%; padding: 2.5rem; border-radius: var(--radius-lg); border: 2px solid #10B981; box-shadow: 0 0 45px rgba(16, 185, 129, 0.35); text-align: center;">
+            <div style="width: 76px; height: 76px; background: rgba(16, 185, 129, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem auto; border: 2px solid #10B981;">
+              <i class="fas fa-bullhorn" style="font-size: 2.2rem; color: #10B981;"></i>
+            </div>
+            <span style="font-size: 0.75rem; font-weight: 800; color: #10B981; background: rgba(16,185,129,0.15); padding: 0.3rem 0.8rem; border-radius: 100px; text-transform: uppercase;">
+              🎉 YENİ PROGRAM GÜNCELLEMESİ
+            </span>
+            <h3 style="color: #FFFFFF; font-size: 1.45rem; margin: 0.8rem 0 0.4rem 0;">Yeni Programınız Geldi!</h3>
+            <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.8rem;">
+              Umut Hoca yeni kişiselleştirilmiş antrenman ve beslenme programınızı hazırladı ve profilinize aktardı. Kontrol edip antrenmanlarınıza başlamaya hazır mısınız?
+            </p>
+            <button class="btn btn-primary-glow" id="dismiss-new-prog-alert-btn" style="width: 100%; padding: 0.85rem; font-size: 1rem; background: #10B981; border-color: #10B981; cursor: pointer;">
+              <i class="fas fa-check-circle"></i> Anladım, Programı İncele 🚀
+            </button>
+          </div>
+        `;
+        document.body.appendChild(modalDiv);
+
+        document.getElementById('dismiss-new-prog-alert-btn').addEventListener('click', () => {
+          localStorage.removeItem('pt_new_program_notification_global');
+          modalDiv.remove();
+        });
+      }
+    }
+
+    // Run popup check on load
+    setTimeout(checkNewProgramPopup, 500);
 
     // Tab switching logic
     document.querySelectorAll('.dash-tab-btn').forEach(btn => {
