@@ -280,21 +280,28 @@ app.post('/api/clients/verify-auth', (req, res) => {
     });
   }
 
-  const client = db.clients.find(c => (c.phone || '').replace(/\D/g, '') === cleanPhone || (c.phone || '').replace(/\D/g, '').endsWith(cleanPhone.slice(-10)));
+  const client = db.clients.find(c => 
+    (c.phone || '').replace(/\D/g, '') === cleanPhone || 
+    (cleanPhone && cleanPhone.length >= 10 && (c.phone || '').replace(/\D/g, '').endsWith(cleanPhone.slice(-10)))
+  );
 
   if (!client) {
     return res.status(404).json({
       success: false,
       deleted: true,
-      message: '🚫 HESAP BULUNAMADI VEYA SİLİNDİ: Eğitmeniniz Umut Altun tarafından hesabınız sistemden silinmiştir.'
+      message: '🚫 DANIŞAN HESABI BULUNAMADI: Girilen telefon numarasına ait aktif üyelik bulunamadı.'
     });
   }
 
-  if (password && client.password && client.password !== password) {
+  // Strict Password Verification
+  const expectedPass = String(client.password || '').trim();
+  const givenPass = String(password || '').trim();
+
+  if (expectedPass && givenPass !== expectedPass) {
     return res.status(401).json({
       success: false,
       deleted: false,
-      message: '⚠️ Giriş şifreniz hatalıdır. Lütfen kontrol edip tekrar deneyin.'
+      message: '⚠️ Giriş şifreniz hatalıdır! Lütfen şifrenizi kontrol edip tekrar deneyiniz.'
     });
   }
 
