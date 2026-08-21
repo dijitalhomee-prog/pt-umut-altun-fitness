@@ -281,6 +281,9 @@
             <button class="builder-tab-btn" data-builder-tab="tab-nutrition-builder">
               <i class="fas fa-utensils"></i> Beslenme & Makro Listesi Yaz
             </button>
+            <button class="builder-tab-btn" data-builder-tab="tab-supplement-builder">
+              <i class="fas fa-pills"></i> Takviye & Supplement Rehberi Yaz
+            </button>
             <button class="builder-tab-btn" data-builder-tab="tab-note-builder">
               <i class="fas fa-edit"></i> Eğitmen Notu & Değerlendirme
             </button>
@@ -420,19 +423,56 @@
               </div>
             </div>
 
-            <button type="button" class="btn btn-primary-glow btn-block" id="save-nutrition-btn" style="margin-top: 1.5rem;">
+            <button type="button" class="btn btn-primary-glow btn-block save-prog-action-btn" id="save-nutrition-btn" style="margin-top: 1.5rem;">
               <i class="fas fa-paper-plane"></i> Beslenme Planını Kaydet & Danışana Gönder
             </button>
           </div>
 
-          <!-- TAB 3: TRAINER NOTE BUILDER -->
+          <!-- TAB 3: SUPPLEMENT BUILDER -->
+          <div id="tab-supplement-builder" class="builder-pane" style="display: none;">
+            <div class="glass-panel" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+              <h4 style="color: #FFFFFF; font-size: 1.1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-pills" style="color: var(--accent-red);"></i> Danışana Özel Takviye & Supplement Planı
+              </h4>
+
+              <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.2rem;">
+                <div class="calc-form-group">
+                  <label class="calc-label">Whey / Protein Tozu Dozajı</label>
+                  <input type="text" id="supp-whey" class="input-field" value="Antrenman sonrası 1 ölçek (30g) su ile" placeholder="Dozaj ve zamanlama...">
+                </div>
+                <div class="calc-form-group">
+                  <label class="calc-label">Kreatin Monohidrat Dozajı</label>
+                  <input type="text" id="supp-creatine" class="input-field" value="Her gün kahvaltı sonrası 5g" placeholder="Dozaj ve zamanlama...">
+                </div>
+                <div class="calc-form-group">
+                  <label class="calc-label">Omega-3 & Multivitamin</label>
+                  <input type="text" id="supp-vitamins" class="input-field" value="Sabah kahvaltısı ile 1 kapsül" placeholder="Dozaj ve zamanlama...">
+                </div>
+                <div class="calc-form-group">
+                  <label class="calc-label">ZMA / Çinko - Magnezyum</label>
+                  <input type="text" id="supp-zma" class="input-field" value="Gece yatmadan 30 dk önce 1 kapsül" placeholder="Dozaj ve zamanlama...">
+                </div>
+              </div>
+
+              <div class="calc-form-group">
+                <label class="calc-label">Özel Takviye & Kullanım Rehberi Notunuz</label>
+                <textarea id="supp-notes" class="input-field" rows="4" placeholder="Danışanınıza özel supplement kullanım zamanlamaları ve ekstra vitamin tavsiyeleriniz...">Supplementleri düzenli saatlerde ve bol su ile tüketmeye özen gösterin. Mide hassasiyetiniz olursa yemeklerden hemen sonra alabilirsiniz.</textarea>
+              </div>
+            </div>
+
+            <button type="button" class="btn btn-primary-glow btn-block save-prog-action-btn" id="save-supplements-btn" style="margin-top: 1.5rem;">
+              <i class="fas fa-paper-plane"></i> Supplement Planını Kaydet & Danışana Gönder
+            </button>
+          </div>
+
+          <!-- TAB 4: TRAINER NOTE BUILDER -->
           <div id="tab-note-builder" class="builder-pane" style="display: none;">
             <div class="calc-form-group">
               <label class="calc-label">Haftalık Eğitmen Notunuz & Motivasyon Mesajınız</label>
               <textarea id="builder-coach-note" class="input-field" rows="5" placeholder="Danışanınıza bu haftalık özel talimat ve tavsiyelerinizi yazın..."></textarea>
             </div>
 
-            <button type="button" class="btn btn-primary-glow btn-block" id="send-note-btn" style="margin-top: 1rem;">
+            <button type="button" class="btn btn-primary-glow btn-block save-prog-action-btn" id="send-note-btn" style="margin-top: 1rem;">
               <i class="fas fa-paper-plane"></i> Notu Gönder & Danışan Paneline İlet
             </button>
           </div>
@@ -829,13 +869,44 @@
         return;
       }
 
-      // Save active inputs to matrix state
+      // 1. Save active workout inputs to matrix state
       saveCurrentInputsToState();
 
-      // Save program start date
+      // 2. Save program start date
       const startDateInput = document.getElementById('builder-start-date');
       const chosenStartDate = startDateInput ? startDateInput.value : new Date().toISOString().split('T')[0];
       targetClient.startDate = chosenStartDate;
+
+      // 3. Save Nutrition data
+      const kcal = document.getElementById('builder-kcal')?.value || '2100';
+      const protein = document.getElementById('builder-protein')?.value || '160';
+      const carb = document.getElementById('builder-carb')?.value || '210';
+      const fat = document.getElementById('builder-fat')?.value || '58';
+
+      const meals = [];
+      document.querySelectorAll('.meal-row-item').forEach((row, idx) => {
+        const title = row.querySelector('.calc-label')?.textContent || `Öğün ${idx + 1}`;
+        const text = row.querySelector('.meal-input-text')?.value || '';
+        if (text) meals.push({ title, text });
+      });
+
+      const nutritionData = { kcal, protein, carb, fat, meals };
+      targetClient.nutrition = nutritionData;
+
+      // 4. Save Supplement data
+      const suppWhey = document.getElementById('supp-whey')?.value || '';
+      const suppCreatine = document.getElementById('supp-creatine')?.value || '';
+      const suppVitamins = document.getElementById('supp-vitamins')?.value || '';
+      const suppZma = document.getElementById('supp-zma')?.value || '';
+      const suppNotes = document.getElementById('supp-notes')?.value || '';
+
+      const supplementData = { whey: suppWhey, creatine: suppCreatine, vitamins: suppVitamins, zma: suppZma, notes: suppNotes };
+      targetClient.supplements = supplementData;
+
+      // 5. Save Coach Note
+      const coachNoteInput = document.getElementById('builder-coach-note');
+      const writtenNote = coachNoteInput ? coachNoteInput.value.trim() : '';
+      targetClient.coachNote = writtenNote;
 
       // Mark program as officially assigned to this client
       targetClient.hasAssignedProgram = true;
@@ -847,32 +918,32 @@
         localStorage.setItem('pt_assigned_program_' + targetClient.id, 'true');
         localStorage.setItem('pt_matrix_program_' + targetClient.id, JSON.stringify(window.adminProgramState));
         localStorage.setItem('pt_start_date_' + targetClient.id, chosenStartDate);
+        localStorage.setItem('pt_coach_note_' + targetClient.id, writtenNote);
+        localStorage.setItem('pt_nutrition_' + targetClient.id, JSON.stringify(nutritionData));
+        localStorage.setItem('pt_supplements_' + targetClient.id, JSON.stringify(supplementData));
       }
       if (cleanP) {
         localStorage.setItem('pt_assigned_program_' + cleanP, 'true');
         localStorage.setItem('pt_matrix_program_' + cleanP, JSON.stringify(window.adminProgramState));
         localStorage.setItem('pt_start_date_' + cleanP, chosenStartDate);
+        localStorage.setItem('pt_coach_note_' + cleanP, writtenNote);
+        localStorage.setItem('pt_nutrition_' + cleanP, JSON.stringify(nutritionData));
+        localStorage.setItem('pt_supplements_' + cleanP, JSON.stringify(supplementData));
       }
-      localStorage.setItem('pt_matrix_program_global', JSON.stringify(window.adminProgramState));
-      localStorage.setItem('pt_start_date_global', chosenStartDate);
 
-      // Save written coach note for selected client
-      const coachNoteInput = document.getElementById('builder-coach-note');
-      if (coachNoteInput && coachNoteInput.value.trim()) {
-        targetClient.coachNote = coachNoteInput.value.trim();
-        saveClients();
-        fetch(`/api/clients/${targetClient.id}/profile`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ coachNote: coachNoteInput.value.trim(), hasAssignedProgram: true })
-        }).catch(err => console.warn('Offline fallback', err));
-      } else {
-        fetch(`/api/clients/${targetClient.id}/profile`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ hasAssignedProgram: true })
-        }).catch(err => console.warn('Offline fallback', err));
-      }
+      // Perform backend REST API sync
+      fetch(`/api/clients/${targetClient.id}/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          hasAssignedProgram: true,
+          programMatrix: window.adminProgramState,
+          startDate: chosenStartDate,
+          coachNote: writtenNote,
+          nutrition: nutritionData,
+          supplements: supplementData
+        })
+      }).catch(err => console.warn('Offline fallback', err));
 
       // Set live notification flag for client panel popup
       localStorage.setItem('pt_new_program_notification_' + targetClient.id, 'true');
@@ -882,7 +953,7 @@
         date: new Date().toISOString()
       }));
 
-      alert(`✅ 4 Haftalık Uzaktan Eğitim Programı Başarıyla Kaydedildi & Gönderildi!\n\n📌 Alıcı Danışan: ${targetClient.name}\n\n${targetClient.name} danışan paneline girdiğinde sizin hazırladığınız kişisel 4 haftalık antrenman ve beslenme programını anında görecek ve "Yeni Programınız Geldi!" bildirimi karşısına çıkacaktır.`);
+      alert(`✅ 4-Haftalık Antrenman, Beslenme ve Takviye Programı Başarıyla Kaydedildi & Gönderildi!\n\n📌 Alıcı Danışan: ${targetClient.name}\n\n${targetClient.name} kendi paneline girdiğinde sizin hazırladığınız 4 haftalık antrenman matrisini, beslenme makrolarını, supplement kullanım rehberini ve özel notunuzu anında görecektir.`);
     }
     window.executeProgramSave = executeProgramSave;
 

@@ -1499,8 +1499,12 @@
               if (myClient.startDate) {
                 localStorage.setItem('pt_start_date_' + cleanPhone, myClient.startDate);
               }
-              if (myClient.coachNote) {
-                localStorage.setItem('pt_coach_note_' + cleanPhone, myClient.coachNote);
+              if (myClient.supplements) {
+                localStorage.setItem('pt_supplements_' + cleanPhone, JSON.stringify(myClient.supplements));
+                renderClientSupplements(myClient.supplements);
+              }
+              if (myClient.nutrition) {
+                localStorage.setItem('pt_nutrition_' + cleanPhone, JSON.stringify(myClient.nutrition));
               }
 
               // Re-render Client UI elements with fresh backend data
@@ -1521,7 +1525,23 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', syncClientProgramFromBackend);
+    function renderClientSupplements(suppData) {
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
+      const cleanPhone = userPhone.replace(/\D/g, '');
+      const supp = suppData || JSON.parse(localStorage.getItem('pt_supplements_' + cleanPhone));
+      if (!supp) return;
+
+      if (document.getElementById('client-supp-whey')) document.getElementById('client-supp-whey').textContent = supp.whey || 'Tavsiye edilmedi';
+      if (document.getElementById('client-supp-creatine')) document.getElementById('client-supp-creatine').textContent = supp.creatine || 'Tavsiye edilmedi';
+      if (document.getElementById('client-supp-vitamins')) document.getElementById('client-supp-vitamins').textContent = supp.vitamins || 'Tavsiye edilmedi';
+      if (document.getElementById('client-supp-zma')) document.getElementById('client-supp-zma').textContent = supp.zma || 'Tavsiye edilmedi';
+      if (document.getElementById('client-supp-notes')) document.getElementById('client-supp-notes').textContent = supp.notes || 'Düzenli kullanım ve bol su tüketimi tavsiye edilir.';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      syncClientProgramFromBackend();
+      renderClientSupplements();
+    });
     setTimeout(syncClientProgramFromBackend, 300);
 
     function getClientProgramMatrix() {
