@@ -1707,9 +1707,15 @@
 
     function mergeClientLists(serverList) {
       if (!Array.isArray(serverList)) return;
+      const deletedPhones = JSON.parse(localStorage.getItem('pt_deleted_phones')) || [];
+
       serverList.forEach(srvClient => {
         if (!srvClient || (!srvClient.id && !srvClient.phone)) return;
         const cleanP = (srvClient.phone || '').replace(/\D/g, '');
+        if (deletedPhones.includes(cleanP) || deletedPhones.includes(srvClient.id) || deletedPhones.some(dp => cleanP && cleanP.length >= 10 && cleanP.endsWith(dp.slice(-10)))) {
+          return; // Skip deleted client
+        }
+
         const idx = clients.findIndex(c => c.id === srvClient.id || (cleanP && c.phone && c.phone.replace(/\D/g, '') === cleanP));
         if (idx >= 0) {
           clients[idx] = { ...clients[idx], ...srvClient };
@@ -1717,11 +1723,23 @@
           clients.push(srvClient);
         }
       });
+
+      clients = clients.filter(c => {
+        const cleanP = (c.phone || '').replace(/\D/g, '');
+        return !deletedPhones.includes(cleanP) && !deletedPhones.includes(c.id) && !deletedPhones.some(dp => cleanP && cleanP.length >= 10 && cleanP.endsWith(dp.slice(-10)));
+      });
+
       localStorage.setItem('pt_clients_list', JSON.stringify(clients));
     }
     window.mergeClientLists = mergeClientLists;
 
     function saveClients() {
+      const deletedPhones = JSON.parse(localStorage.getItem('pt_deleted_phones')) || [];
+      clients = clients.filter(c => {
+        const cleanP = (c.phone || '').replace(/\D/g, '');
+        return !deletedPhones.includes(cleanP) && !deletedPhones.includes(c.id) && !deletedPhones.some(dp => cleanP && cleanP.length >= 10 && cleanP.endsWith(dp.slice(-10)));
+      });
+
       localStorage.setItem('pt_clients_list', JSON.stringify(clients));
       fetch('/api/clients/sync', {
         method: 'POST',

@@ -66,29 +66,32 @@ function readDb() {
     const raw = fs.readFileSync(DB_FILE, 'utf8');
     const dbData = JSON.parse(raw);
 
-    // Ensure default master client exists if clients array is empty
-    if (!Array.isArray(dbData.clients) || dbData.clients.length === 0) {
-      dbData.clients = [
-        {
-          id: "client-egemen",
-          name: "Furkan Egemen Güneş",
-          phone: "05386376258",
-          password: "123456",
-          package: "👑 12 Aylık VIP Şampiyon Dönüşüm",
-          stage: "1. Hafta (Aktif Üye)",
-          expiryDate: "2027-12-31",
-          status: "active",
-          note: "Aktif VIP Üyelik Devam Ediyor",
-          createdAt: "2026-08-20T12:00:00.000Z"
-        }
-      ];
-      writeDb(dbData);
+    if (!Array.isArray(dbData.clients)) {
+      dbData.clients = [];
+    }
+
+    if (!Array.isArray(dbData.deletedPhones)) {
+      dbData.deletedPhones = [];
+    }
+
+    // Filter out any clients that were marked as deleted
+    if (dbData.deletedPhones.length > 0) {
+      const initialLen = dbData.clients.length;
+      dbData.clients = dbData.clients.filter(c => {
+        const cleanP = (c.phone || '').replace(/\D/g, '');
+        return !dbData.deletedPhones.includes(cleanP) && 
+               !dbData.deletedPhones.includes(c.id) && 
+               !dbData.deletedPhones.some(dp => cleanP && cleanP.length >= 10 && cleanP.endsWith(dp.slice(-10)));
+      });
+      if (dbData.clients.length < initialLen) {
+        writeDb(dbData);
+      }
     }
 
     return dbData;
   } catch (err) {
     console.error('Error reading database:', err);
-    return { clients: [], programs: {}, trainerPin: "586158" };
+    return { clients: [], programs: {}, deletedPhones: [], trainerPin: "586158" };
   }
 }
 
