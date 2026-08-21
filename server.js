@@ -1305,7 +1305,7 @@ app.put('/api/clients/:id/sessions/:sessionId', requireTrainer, (req, res) => {
   }
 
   writeDb(db);
-  res.json({ success: true, session: sess, entitlements: client.entitlements });
+  res.json({ success: true, session: sess, entitlements: client.entitlements, client });
 });
 
 // DELETE /api/clients/:id/sessions/:sessionId — Seans Sil (TRAINER ONLY)
