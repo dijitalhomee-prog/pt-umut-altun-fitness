@@ -288,16 +288,31 @@
 
           <!-- TAB 1: WORKOUT BUILDER -->
           <div id="tab-workout-builder" class="builder-pane active">
+            <!-- Program Başlangıç Tarihi Seçici Bar (Ay Ortalı & Ay Sonu Üyelik Takibi) -->
+            <div style="margin-bottom: 1.2rem; background: rgba(0,0,0,0.4); padding: 1rem 1.2rem; border-radius: var(--radius-md); border: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <label style="font-size: 0.78rem; color: var(--accent-red); font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 0.2rem; letter-spacing: 0.04em;">
+                  📆 PROGRAM BAŞLANGIÇ TARİHİ (AY ORTASI / AY SONU ÜYELİK TAKİBİ)
+                </label>
+                <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">
+                  Danışanın uzaktan eğitim paketinin başlayacağı tarihi seçin. 4 haftalık tarihler otomatik hesaplanır.
+                </p>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.8rem;">
+                <input type="date" id="builder-start-date" class="input-field" style="max-width: 190px; padding: 0.5rem 0.8rem; font-size: 0.9rem; font-weight: bold; color: #FFF; background: rgba(255,255,255,0.08); border-color: var(--accent-red);">
+              </div>
+            </div>
+
             <!-- 4-Haftalık Aylık Sezon Planlayıcısı -->
             <div style="margin-bottom: 1.2rem; background: rgba(0,0,0,0.3); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
               <label style="font-size: 0.78rem; color: var(--accent-red); font-weight: 800; text-transform: uppercase; margin-bottom: 0.6rem; display: block; letter-spacing: 0.04em;">
                 🗓️ AYLIK UZAKTAN EĞİTİM PROGRAMI (HAFTA SEÇİNİZ)
               </label>
               <div class="week-selector-bar" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <button type="button" class="btn btn-outline admin-week-btn active" data-week="1" style="flex: 1; border-color: var(--accent-red); color: #FFF; background: rgba(239, 68, 68, 0.15); font-size: 0.85rem; padding: 0.5rem 0.8rem;">📅 1. Hafta (Adaptasyon)</button>
-                <button type="button" class="btn btn-outline admin-week-btn" data-week="2" style="flex: 1; font-size: 0.85rem; padding: 0.5rem 0.8rem;">📅 2. Hafta (Hacim Artışı)</button>
-                <button type="button" class="btn btn-outline admin-week-btn" data-week="3" style="flex: 1; font-size: 0.85rem; padding: 0.5rem 0.8rem;">📅 3. Hafta (Hipertrofi)</button>
-                <button type="button" class="btn btn-outline admin-week-btn" data-week="4" style="flex: 1; font-size: 0.85rem; padding: 0.5rem 0.8rem;">📅 4. Hafta (De-load & Zirve)</button>
+                <button type="button" class="btn btn-outline admin-week-btn active" data-week="1" id="admin-week-btn-1" style="flex: 1; border-color: var(--accent-red); color: #FFF; background: rgba(239, 68, 68, 0.15); font-size: 0.82rem; padding: 0.55rem 0.8rem;">📅 1. Hafta</button>
+                <button type="button" class="btn btn-outline admin-week-btn" data-week="2" id="admin-week-btn-2" style="flex: 1; font-size: 0.82rem; padding: 0.55rem 0.8rem;">📅 2. Hafta</button>
+                <button type="button" class="btn btn-outline admin-week-btn" data-week="3" id="admin-week-btn-3" style="flex: 1; font-size: 0.82rem; padding: 0.55rem 0.8rem;">📅 3. Hafta</button>
+                <button type="button" class="btn btn-outline admin-week-btn" data-week="4" id="admin-week-btn-4" style="flex: 1; font-size: 0.82rem; padding: 0.55rem 0.8rem;">📅 4. Hafta</button>
               </div>
             </div>
 
@@ -544,6 +559,46 @@
     let currentAdminWeek = 1;
     let currentAdminDay = 1;
 
+    function updateAdminWeekDateBadges() {
+      const dateInput = document.getElementById('builder-start-date');
+      if (!dateInput) return;
+
+      const startDateVal = dateInput.value || new Date().toISOString().split('T')[0];
+      const start = new Date(startDateVal);
+
+      for (let w = 1; w <= 4; w++) {
+        const wStart = new Date(start);
+        wStart.setDate(start.getDate() + (w - 1) * 7);
+
+        const wEnd = new Date(wStart);
+        wEnd.setDate(wStart.getDate() + 6);
+
+        const startMonth = wStart.toLocaleDateString('tr-TR', { month: 'short' });
+        const endMonth = wEnd.toLocaleDateString('tr-TR', { month: 'short' });
+
+        let dateRangeStr = '';
+        if (startMonth === endMonth) {
+          dateRangeStr = `${wStart.getDate()} - ${wEnd.getDate()} ${startMonth}`;
+        } else {
+          dateRangeStr = `${wStart.getDate()} ${startMonth} - ${wEnd.getDate()} ${endMonth}`;
+        }
+
+        const btn = document.getElementById(`admin-week-btn-${w}`);
+        if (btn) {
+          btn.textContent = `📅 ${w}. Hafta (${dateRangeStr})`;
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const dateInput = document.getElementById('builder-start-date');
+      if (dateInput) {
+        dateInput.value = new Date().toISOString().split('T')[0];
+        updateAdminWeekDateBadges();
+        dateInput.addEventListener('change', updateAdminWeekDateBadges);
+      }
+    });
+
     // 4-Week x 4-Day Exercise Matrix Memory Store
     window.adminProgramState = {
       "1_1": [
@@ -777,6 +832,11 @@
       // Save active inputs to matrix state
       saveCurrentInputsToState();
 
+      // Save program start date
+      const startDateInput = document.getElementById('builder-start-date');
+      const chosenStartDate = startDateInput ? startDateInput.value : new Date().toISOString().split('T')[0];
+      targetClient.startDate = chosenStartDate;
+
       // Mark program as officially assigned to this client
       targetClient.hasAssignedProgram = true;
       targetClient.programMatrix = window.adminProgramState;
@@ -786,12 +846,15 @@
       if (targetClient.id) {
         localStorage.setItem('pt_assigned_program_' + targetClient.id, 'true');
         localStorage.setItem('pt_matrix_program_' + targetClient.id, JSON.stringify(window.adminProgramState));
+        localStorage.setItem('pt_start_date_' + targetClient.id, chosenStartDate);
       }
       if (cleanP) {
         localStorage.setItem('pt_assigned_program_' + cleanP, 'true');
         localStorage.setItem('pt_matrix_program_' + cleanP, JSON.stringify(window.adminProgramState));
+        localStorage.setItem('pt_start_date_' + cleanP, chosenStartDate);
       }
       localStorage.setItem('pt_matrix_program_global', JSON.stringify(window.adminProgramState));
+      localStorage.setItem('pt_start_date_global', chosenStartDate);
 
       // Save written coach note for selected client
       const coachNoteInput = document.getElementById('builder-coach-note');

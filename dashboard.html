@@ -1556,6 +1556,37 @@
     }
     window.renderMatrixExercises = renderMatrixExercises;
 
+    function updateClientWeekDateBadges() {
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
+      const cleanPhone = userPhone.replace(/\D/g, '');
+      const startDateVal = localStorage.getItem('pt_start_date_' + cleanPhone) || localStorage.getItem('pt_start_date_global') || new Date().toISOString().split('T')[0];
+      const start = new Date(startDateVal);
+
+      document.querySelectorAll('.client-week-btn').forEach(btn => {
+        const w = parseInt(btn.getAttribute('data-week'));
+        const wStart = new Date(start);
+        wStart.setDate(start.getDate() + (w - 1) * 7);
+
+        const wEnd = new Date(wStart);
+        wEnd.setDate(wStart.getDate() + 6);
+
+        const startMonth = wStart.toLocaleDateString('tr-TR', { month: 'short' });
+        const endMonth = wEnd.toLocaleDateString('tr-TR', { month: 'short' });
+
+        let dateRangeStr = '';
+        if (startMonth === endMonth) {
+          dateRangeStr = `${wStart.getDate()} - ${wEnd.getDate()} ${startMonth}`;
+        } else {
+          dateRangeStr = `${wStart.getDate()} ${startMonth} - ${wEnd.getDate()} ${endMonth}`;
+        }
+
+        btn.textContent = `📅 ${w}. Hafta (${dateRangeStr})`;
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', updateClientWeekDateBadges);
+    setTimeout(updateClientWeekDateBadges, 300);
+
     // Bind Client Week Buttons
     document.querySelectorAll('.client-week-btn').forEach(btn => {
       btn.addEventListener('click', () => {
