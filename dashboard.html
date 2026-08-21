@@ -2444,6 +2444,7 @@
         if (downloadWorkoutBtn) downloadWorkoutBtn.style.display = 'inline-flex';
         const dlNutriBtn = document.getElementById('download-nutrition-pdf-btn');
         if (dlNutriBtn) dlNutriBtn.style.display = 'inline-flex';
+        renderClientDayBar();
         renderMatrixExercises(clientCurrentWeek, clientCurrentDay);
       }
     }
@@ -2456,6 +2457,9 @@
       if (currentClientData) {
         if (typeof renderAssignedProgramState === 'function') {
           renderAssignedProgramState(currentClientData);
+        }
+        if (typeof renderClientDayBar === 'function') {
+          renderClientDayBar();
         }
         if (typeof renderMatrixExercises === 'function') {
           renderMatrixExercises(clientCurrentWeek, clientCurrentDay);
@@ -2791,6 +2795,8 @@
         btn.style.borderColor = 'var(--accent-red)';
         btn.style.background = 'rgba(239, 68, 68, 0.15)';
         const w = parseInt(btn.getAttribute('data-week'));
+        clientCurrentWeek = w;
+        renderClientDayBar();
         renderMatrixExercises(w, clientCurrentDay);
       });
     });
