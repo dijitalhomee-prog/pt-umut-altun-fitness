@@ -552,6 +552,20 @@
     <div class="container">
       
 
+      <!-- New Program Notification Banner Container -->
+      <div id="new-program-notification-banner" style="display: none; background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(18,18,22,0.95) 100%); border: 2px solid #10B981; border-radius: var(--radius-md); padding: 1rem 1.2rem; margin-bottom: 1.5rem; justify-content: space-between; align-items: center; box-shadow: 0 0 25px rgba(16,185,129,0.3); flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.8rem;">
+          <i class="fas fa-bell" style="font-size: 1.5rem; color: #10B981;"></i>
+          <div>
+            <strong style="color: #FFF; font-size: 0.98rem; display: block;">🎉 Umut Hoca Tarafından Kişisel Antrenman & Beslenme Programınız Güncellendi!</strong>
+            <span style="font-size: 0.82rem; color: var(--text-muted);">Yeni antrenman ve beslenme detaylarınızı aşağıdaki sekmelerden inceleyebilirsiniz.</span>
+          </div>
+        </div>
+        <button onclick="window.dismissClientProgramNotification();" class="btn btn-primary-glow" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #10B981; border-color: #10B981;">
+          <i class="fas fa-check"></i> Anladım & Kapat
+        </button>
+      </div>
+
       <!-- Top Welcome & Status Banner -->
       <div class="user-welcome-card glass-panel">
         <div class="user-info-box">
@@ -1168,6 +1182,10 @@
             currentClientData = data.client;
             hideClientAuthOverlay();
             renderClientProfileMetrics(data.client);
+
+            if (data.client.hasNewProgramNotification) {
+              showNewProgramNotificationBanner();
+            }
             return;
           }
         }
@@ -1177,6 +1195,22 @@
         console.warn('Sunucu bağlantısı kurulamadı:', err);
       }
     }
+
+    function showNewProgramNotificationBanner() {
+      const banner = document.getElementById('new-program-notification-banner');
+      if (banner) banner.style.display = 'flex';
+    }
+
+    async function dismissClientProgramNotification() {
+      const banner = document.getElementById('new-program-notification-banner');
+      if (banner) banner.style.display = 'none';
+      try {
+        await clientFetch('/api/me/dismiss-notification', { method: 'POST' });
+      } catch (err) {
+        console.warn('Dismiss notification error:', err);
+      }
+    }
+    window.dismissClientProgramNotification = dismissClientProgramNotification;
 
     async function doClientLogin() {
       const phoneInput = document.getElementById('client-phone-input');

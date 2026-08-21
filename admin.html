@@ -6,8 +6,8 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Eğitmen Yönetim Paneli | PT Umut Altun Koçluk Sistemi</title>
-  <meta name="description" content="PT Umut Altun Eğitmen Paneli - Danışanlara özel antrenman ve beslenme programı oluşturma, güncellenme ve form kontrol yönetimi.">
+  <title>Eğitmen Yönetim Paneli | PT Umut Altun</title>
+  <meta name="description" content="PT Umut Altun Eğitmen Yönetim Paneli - Danışanlarınıza özel antrenman programı, beslenme listesi ve takip araçları.">
 
   <!-- Favicon Brand Icon -->
   <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
@@ -23,132 +23,132 @@
 
   <!-- Custom CSS -->
   <link rel="stylesheet" href="css/style.css">
+
   <style>
     .admin-page {
-      padding-top: 5.5rem;
+      padding-top: 5rem;
       min-height: 100vh;
-      background: #070A10;
+      background: var(--bg-primary);
     }
-    .admin-header-card {
-      padding: 1.5rem 2rem;
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.08) 100%);
-      border: 1px solid var(--border-glow);
-      border-radius: var(--radius-lg);
-      margin-bottom: 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-    .admin-grid {
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 2rem;
-    }
-    .client-list-panel {
-      background: var(--bg-card);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-lg);
-      padding: 1.5rem;
-    }
-    .client-item-card {
-      padding: 1rem;
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-md);
-      margin-bottom: 0.8rem;
-      cursor: pointer;
-      background: rgba(255, 255, 255, 0.02);
-      transition: var(--transition-fast);
-    }
-    .client-item-card:hover {
-      border-color: var(--border-glow);
-      background: rgba(255, 255, 255, 0.05);
-    }
-    .client-item-card.active {
-      border-color: var(--accent-primary);
-      background: rgba(16, 185, 129, 0.12);
-    }
-    .client-item-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.3rem;
-    }
-    .client-item-header h4 {
-      font-size: 1rem;
-    }
-    .package-tag {
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 0.2rem 0.5rem;
-      border-radius: var(--radius-full);
-      background: rgba(6, 182, 212, 0.15);
-      color: var(--accent-secondary);
-    }
-
-    /* Program Builder Workspace */
-    .builder-workspace {
-      background: var(--bg-card);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-lg);
-      padding: 2rem;
-    }
-    .builder-tabs {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 2rem;
+    
+    /* Sticky Top Client Selector Bar */
+    .sticky-client-bar {
+      position: sticky;
+      top: 4.2rem;
+      z-index: 90;
+      background: rgba(18, 18, 22, 0.98);
+      backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border-light);
-      padding-bottom: 0.5rem;
+      padding: 0.8rem 1.2rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      margin-bottom: 1.5rem;
+      border-radius: var(--radius-md);
     }
-    .builder-tab-btn {
-      padding: 0.7rem 1.2rem;
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-family: var(--font-heading);
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      border-radius: var(--radius-sm);
-      transition: var(--transition-fast);
-    }
-    .builder-tab-btn.active {
-      background: rgba(16, 185, 129, 0.15);
-      color: var(--accent-primary);
-      border: 1px solid var(--border-glow);
-    }
-
-    .form-section-title {
-      font-size: 1.2rem;
-      margin-bottom: 1.2rem;
-      color: var(--text-main);
+    
+    /* Wizard Progress Bar */
+    .wizard-progress-bar {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.4rem;
     }
-    .exercise-row-input {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr 40px;
-      gap: 0.8rem;
-      align-items: center;
-      margin-bottom: 0.8rem;
-      padding: 0.8rem;
-      background: rgba(0,0,0,0.3);
+    
+    .wizard-step-pill {
+      flex: 1;
+      min-width: 140px;
+      padding: 0.65rem 0.8rem;
+      background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border-light);
       border-radius: var(--radius-sm);
-    }
-    .remove-row-btn {
-      background: rgba(239, 68, 68, 0.15);
-      color: #EF4444;
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      width: 36px;
-      height: 36px;
-      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
       cursor: pointer;
+      transition: var(--transition-fast);
+      user-select: none;
+    }
+    
+    .wizard-step-pill:hover {
+      background: rgba(239, 68, 68, 0.08);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+    
+    .wizard-step-pill.active {
+      background: rgba(239, 68, 68, 0.18);
+      border: 2px solid var(--accent-red);
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.25);
+    }
+    
+    .wizard-step-pill.completed {
+      border-color: #10B981;
+    }
+    
+    .wizard-step-pill .step-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
       display: flex;
       align-items: center;
       justify-content: center;
+      font-weight: 800;
+      font-size: 0.8rem;
+      color: #FFF;
+    }
+    
+    .wizard-step-pill.active .step-num {
+      background: var(--accent-red);
+    }
+    
+    .wizard-step-pill.completed .step-num {
+      background: #10B981;
+    }
+    
+    .wizard-step-pill .step-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #E5E7EB;
+      white-space: nowrap;
+    }
+
+    .wizard-step-pane {
+      display: none;
+    }
+
+    .wizard-step-pane.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    /* Wizard Action Navigation Footer Bar */
+    .wizard-nav-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 2rem;
+      padding-top: 1.2rem;
+      border-top: 1px solid var(--border-light);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .exercise-row-item {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      padding: 0.8rem;
+      margin-bottom: 0.8rem;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1.2fr 40px;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    @media (max-width: 992px) {
+      .exercise-row-item {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -185,12 +185,12 @@
     <div class="container nav-container">
       <a href="index.html" class="brand-logo">
         <div class="logo-icon">UA</div>
-        <span>PT UMUT ALTUN | EĞİTMEN PANELİ</span>
+        <span>PT UMUT ALTUN | EĞİTMEN SİHİRBAZI</span>
       </a>
 
       <nav class="nav-links">
-        <a href="index.html" class="nav-link"><i class="fas fa-globe"></i> Web Sitesini Gör</a>
-        <a href="dashboard.html" class="nav-link"><i class="fas fa-user"></i> Danışan Paneli Demo</a>
+        <a href="index.html" class="nav-link"><i class="fas fa-globe"></i> Web Sitesi</a>
+        <a href="dashboard.html" class="nav-link" target="_blank"><i class="fas fa-user"></i> Danışan Paneli Canlı Gör</a>
       </nav>
 
       <div style="display: flex; align-items: center; gap: 0.8rem;">
@@ -207,939 +207,457 @@
   <main class="admin-page">
     <div class="container">
       
-      <!-- Top Admin Header -->
-      <div class="admin-header-card">
-        <div>
-          <h2><i class="fas fa-user-ninja" style="color: var(--accent-primary);"></i> Danışan Program & Beslenme Yönetimi</h2>
-          <p style="color: var(--text-muted); font-size: 0.9rem;">
-            Google E-Tablo / Excel kullanmadan, danışanlarınıza doğrudan sistem içerisinden kişiselleştirilmiş program yazın ve iletin.
-          </p>
-        </div>
+      <!-- STICKY TOP CLIENT SELECTOR BAR -->
+      <div class="sticky-client-bar">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; flex: 1; min-width: 280px;">
+            <div style="position: relative; min-width: 220px;">
+              <input type="text" id="wizard-client-search" class="input-field" placeholder="🔍 Danışan Ara (Ad / Tel)..." style="padding: 0.45rem 0.8rem; font-size: 0.82rem; margin: 0;">
+            </div>
+            
+            <div style="flex: 1; min-width: 240px;">
+              <select id="wizard-client-select" class="input-field" style="padding: 0.45rem 0.8rem; font-size: 0.85rem; font-weight: bold; margin: 0; border-color: var(--accent-red);">
+                <option value="">-- Lütfen Danışan Seçiniz --</option>
+              </select>
+            </div>
+          </div>
 
-        <div style="display: flex; gap: 1rem;">
-          <button class="btn btn-outline" id="load-template-btn">
-            <i class="fas fa-magic"></i> Hazır Şablon Yükle
-          </button>
-          <button class="btn btn-primary-glow" id="save-program-btn">
-            <i class="fas fa-save"></i> Programı Kaydet & Danışana İlet
-          </button>
-        </div>
-      </div>
+          <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
+            <span id="wizard-client-badge" style="font-size: 0.82rem; font-weight: 700; color: #FFF; background: rgba(239, 68, 68, 0.2); padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--accent-red);">
+              <i class="fas fa-user-clock"></i> Henüz Danışan Seçilmedi
+            </span>
 
-      <div class="admin-grid">
-        
-        <!-- Left Column: Client List & Management -->
-        <div class="client-list-panel">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
-            <h3 style="font-size: 1.05rem; margin-bottom: 0; color: var(--text-main);">
-              <i class="fas fa-users" style="color: var(--accent-red);"></i> Danışanlar (<span id="client-count">3</span>)
-            </h3>
-            <button id="open-add-client-btn" class="btn btn-primary-glow" style="padding: 0.35rem 0.75rem; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+            <span id="wizard-unsaved-badge" style="display: none; font-size: 0.75rem; font-weight: 800; color: #F59E0B; background: rgba(245,158,11,0.2); padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid #F59E0B;">
+              ⚠️ Kaydedilmemiş Değişiklikler Var!
+            </span>
+
+            <button id="open-add-client-btn" class="btn btn-primary-glow" style="padding: 0.45rem 0.9rem; font-size: 0.82rem;">
               <i class="fas fa-user-plus"></i> Yeni Danışan Ekle
             </button>
           </div>
+        </div>
+      </div>
 
-          <!-- Status Filter Buttons -->
-          <div style="display: flex; gap: 0.4rem; margin-bottom: 1rem;">
-            <button class="filter-status-btn active" data-filter="all" style="padding: 0.3rem 0.7rem; font-size: 0.75rem; background: rgba(255,255,255,0.08); border: 1px solid var(--border-light); border-radius: var(--radius-sm); color: #fff; cursor: pointer; font-weight: bold;">Tümü</button>
-            <button class="filter-status-btn" data-filter="active" style="padding: 0.3rem 0.7rem; font-size: 0.75rem; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: var(--radius-sm); color: #10B981; cursor: pointer; font-weight: bold;">🟢 Aktif</button>
-            <button class="filter-status-btn" data-filter="passive" style="padding: 0.3rem 0.7rem; font-size: 0.75rem; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: var(--radius-sm); color: var(--accent-red); cursor: pointer; font-weight: bold;">🔴 Pasif / Biten</button>
+      <!-- MAIN WIZARD CONTAINER -->
+      <div id="wizard-container-box" class="glass-panel" style="padding: 2rem; border-radius: var(--radius-lg); border: 1px solid var(--border-light); position: relative;">
+        
+        <!-- Disabled State Lock Overlay when no client selected -->
+        <div id="wizard-lock-overlay" style="position: absolute; inset: 0; background: rgba(8, 8, 10, 0.88); backdrop-filter: blur(8px); z-index: 80; border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; padding: 2rem; text-align: center;">
+          <div style="max-width: 450px;">
+            <i class="fas fa-user-lock" style="font-size: 3rem; color: var(--accent-red); margin-bottom: 1rem; display: block;"></i>
+            <h3 style="color: #FFF; font-size: 1.3rem; margin-bottom: 0.5rem;">Sihirbaz Kullanımı İçin Danışan Seçin</h3>
+            <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.5rem;">
+              Program yazmak, beslenme listesini düzenlemek veya eğitmen notu eklemek için yukarıdaki bar üzerinden bir danışan seçiniz veya yeni üye kaydı açınız.
+            </p>
+            <button class="btn btn-primary-glow" onclick="document.getElementById('open-add-client-btn').click();">
+              <i class="fas fa-user-plus"></i> Yeni Danışan Ekle
+            </button>
           </div>
+        </div>
 
-          <!-- Dynamic Client Cards Container -->
-          <div id="clients-container">
-            <!-- Rendered dynamically by JavaScript -->
+        <!-- 6-STEP WIZARD PROGRESS BAR -->
+        <div class="wizard-progress-bar">
+          <div class="wizard-step-pill active" data-wizard-step="1" onclick="window.goToWizardStep(1);">
+            <span class="step-num">1</span>
+            <span class="step-label">👤 Profil & Paket</span>
           </div>
+          <div class="wizard-step-pill" data-wizard-step="2" onclick="window.goToWizardStep(2);">
+            <span class="step-num">2</span>
+            <span class="step-label">🏋️‍♂️ Antrenman</span>
+          </div>
+          <div class="wizard-step-pill" data-wizard-step="3" onclick="window.goToWizardStep(3);">
+            <span class="step-num">3</span>
+            <span class="step-label">🥗 Beslenme</span>
+          </div>
+          <div class="wizard-step-pill" data-wizard-step="4" onclick="window.goToWizardStep(4);">
+            <span class="step-num">4</span>
+            <span class="step-label">💊 Takviyeler</span>
+          </div>
+          <div class="wizard-step-pill" data-wizard-step="5" onclick="window.goToWizardStep(5);">
+            <span class="step-num">5</span>
+            <span class="step-label">💬 Eğitmen Notu</span>
+          </div>
+          <div class="wizard-step-pill" data-wizard-step="6" onclick="window.goToWizardStep(6);">
+            <span class="step-num">6</span>
+            <span class="step-label">👁️ Önizleme & Kaydet</span>
+          </div>
+        </div>
 
-          <!-- Admin Bulk Actions & Data Tools -->
-          <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-light); border-radius: var(--radius-md);">
-            <h4 style="font-size: 0.85rem; color: var(--accent-red); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.4rem;">
-              <i class="fas fa-tools"></i> ⚡ Eğitmen Toplu İşlem & Temizlik Araçları
-            </h4>
+        <!-- STEP 1: 👤 DANIŞAN & PAKET BİLGİLERİ -->
+        <div class="wizard-step-pane active" id="wizard-pane-1">
+          <h3 style="color: #FFF; font-size: 1.15rem; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-user-cog" style="color: var(--accent-red);"></i> Adım 1: Danışan Profil, Paket & Vücut Ölçüleri
+          </h3>
 
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-              <button class="btn btn-outline" style="font-size: 0.75rem; padding: 0.45rem 0.6rem; border-color: rgba(245,158,11,0.4); color: #F59E0B; width: 100%; text-align: left;" onclick="window.triggerPassivateAllClients();">
-                <i class="fas fa-user-slash" style="width: 18px;"></i> Tüm Üyelikleri Pasife Al
-              </button>
-              <button class="btn btn-outline" style="font-size: 0.75rem; padding: 0.45rem 0.6rem; border-color: rgba(59,130,246,0.4); color: #3B82F6; width: 100%; text-align: left;" onclick="window.triggerRevokeAllSessions();">
-                <i class="fas fa-key" style="width: 18px;"></i> Tüm Oturumları Sonlandır
-              </button>
-              <button class="btn btn-outline" style="font-size: 0.75rem; padding: 0.45rem 0.6rem; border-color: rgba(16,185,129,0.4); color: #10B981; width: 100%; text-align: left;" onclick="window.openImportClientsModal();">
-                <i class="fas fa-file-import" style="width: 18px;"></i> Eski Danışan Listesini İçe Aktar (Import)
-              </button>
-              <button class="btn btn-outline" style="font-size: 0.75rem; padding: 0.45rem 0.6rem; border-color: rgba(239,68,68,0.4); color: var(--accent-red); width: 100%; text-align: left;" onclick="window.triggerPurgeAllClients();">
-                <i class="fas fa-trash-alt" style="width: 18px;"></i> Tüm Danışanları Sıfırla (Yedekli Purge)
-              </button>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.2rem; margin-bottom: 1.5rem;">
+            <div class="calc-form-group">
+              <label class="calc-label">Danışan Adı Soyadı *</label>
+              <input type="text" id="wiz-client-name" class="input-field" placeholder="Örn: Hilal Öztürk">
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label">Giriş Telefonu (10 Hane) *</label>
+              <input type="text" id="wiz-client-phone" class="input-field" placeholder="05303008936">
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label">Giriş Şifresi *</label>
+              <input type="text" id="wiz-client-password" class="input-field" placeholder="Giriş şifresi">
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label">Satın Alınan Paket</label>
+              <select id="wiz-client-package" class="input-field">
+                <option value="6 Aylık Vücut Yenileme & Hipertrofi Paketi">6 Aylık Vücut Yenileme & Hipertrofi Paketi</option>
+                <option value="3 Aylık Başlangıç & Disiplin Paketi">3 Aylık Başlangıç & Disiplin Paketi</option>
+                <option value="12 Aylık VIP Şampiyon Dönüşüm Paketi">12 Aylık VIP Şampiyon Dönüşüm Paketi</option>
+                <option value="Cevahir MACFit Hibrit Koçluk Paketi">Cevahir MACFit Hibrit Koçluk Paketi</option>
+                <option value="Cevahir AVM Birebir PT Paketi">Cevahir AVM Birebir PT Paketi</option>
+              </select>
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label">Süreç / Hafta Aşaması</label>
+              <input type="text" id="wiz-client-stage" class="input-field" placeholder="Örn: 1. Hafta (Yeni Başladı)">
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label">Paket Bitiş Tarihi</label>
+              <input type="date" id="wiz-client-expiry" class="input-field">
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label">Üyelik Durumu</label>
+              <select id="wiz-client-status" class="input-field">
+                <option value="active">🟢 Aktif Üyelik</option>
+                <option value="passive">🔴 Pasif / Biten Üyelik</option>
+              </select>
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label">Başlangıç Kilosu (kg)</label>
+              <input type="number" id="wiz-client-startweight" class="input-field" placeholder="Örn: 78.5" step="0.1">
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label">Güncel Kilo (kg)</label>
+              <input type="number" id="wiz-client-currweight" class="input-field" placeholder="Örn: 75.2" step="0.1">
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label">Hedef Kilo (kg)</label>
+              <input type="number" id="wiz-client-targetweight" class="input-field" placeholder="Örn: 70.0" step="0.1">
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label">Boy (cm)</label>
+              <input type="number" id="wiz-client-height" class="input-field" placeholder="Örn: 175">
             </div>
           </div>
         </div>
 
-        <!-- Right Column: Program Builder Workspace -->
-        <div class="builder-workspace">
-          
-          <!-- Active Target Client Banner for Program Customization -->
-          <div id="active-client-banner" style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--accent-red); border-radius: var(--radius-md); padding: 1rem 1.2rem; margin-bottom: 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem;">
-            <div>
-              <span style="font-size: 0.72rem; font-weight: 800; color: var(--accent-red); background: rgba(239, 68, 68, 0.15); padding: 0.25rem 0.6rem; border-radius: var(--radius-full); text-transform: uppercase;">
-                SEÇİLİ DANIŞAN PROGRAM YAZMA ALANI
-              </span>
-              <h3 style="color: #FFFFFF; font-size: 1.15rem; margin-top: 0.3rem;" id="target-client-name">
-                <i class="fas fa-user-edit" style="color: var(--accent-red);"></i> Program Yazılan Danışan: <span style="color: var(--accent-red);" id="target-client-title-name">Ahmet Yılmaz</span>
-              </h3>
-              <span style="font-size: 0.8rem; color: var(--text-muted);" id="target-client-pkg-info">3 Aylık Başlangıç & Disiplin Paketi | 1. Hafta</span>
-            </div>
+        <!-- STEP 2: 🏋️‍♂️ ANTRENMAN PROGRAMI MATRİSİ -->
+        <div class="wizard-step-pane" id="wizard-pane-2">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1rem;">
+            <h3 style="color: #FFF; font-size: 1.15rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+              <i class="fas fa-dumbbell" style="color: var(--accent-red);"></i> Adım 2: Kişiselleştirilmiş Antrenman Programı Matrisi
+            </h3>
 
-            <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
-              <span style="font-size: 0.78rem; color: #10B981; background: rgba(16,185,129,0.15); padding: 0.4rem 0.8rem; border-radius: var(--radius-full); font-weight: 700;" id="target-client-status-badge">
-                🟢 Üyelik Aktif
-              </span>
-              <button type="button" class="btn btn-primary-glow save-prog-action-btn" style="padding: 0.65rem 1.2rem; font-size: 0.92rem; background: #10B981; border-color: #10B981; color: #FFF; font-weight: 800; cursor: pointer; border-radius: var(--radius-md);">
-                <i class="fas fa-paper-plane"></i> Programı Kaydet & Danışana Gönder 🚀
+            <!-- Quick Template & Clone Actions -->
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button type="button" class="btn btn-outline" style="font-size: 0.78rem; padding: 0.4rem 0.8rem; border-color: rgba(16,185,129,0.4); color: #10B981;" onclick="window.openPresetModal();">
+                <i class="fas fa-magic"></i> Hazır Şablon Yükle
+              </button>
+              <button type="button" class="btn btn-outline" style="font-size: 0.78rem; padding: 0.4rem 0.8rem; border-color: rgba(245,158,11,0.4); color: #F59E0B;" onclick="window.copyCurrentWeekToOtherWeeks();">
+                <i class="fas fa-copy"></i> Diğer Haftalara Kopyala
+              </button>
+              <button type="button" class="btn btn-outline" style="font-size: 0.78rem; padding: 0.4rem 0.8rem; border-color: rgba(59,130,246,0.4); color: #3B82F6;" onclick="window.openCloneFromClientModal();">
+                <i class="fas fa-user-friends"></i> Başka Danışandan Kopyala
               </button>
             </div>
           </div>
 
-          <div class="builder-tabs">
-            <button type="button" class="builder-tab-btn active" data-builder-tab="tab-workout-builder" onclick="switchAdminBuilderTab('tab-workout-builder')">
-              <i class="fas fa-dumbbell"></i> Antrenman Programı Yaz
-            </button>
-            <button type="button" class="builder-tab-btn" data-builder-tab="tab-nutrition-builder" onclick="switchAdminBuilderTab('tab-nutrition-builder')">
-              <i class="fas fa-utensils"></i> Beslenme & Makro Listesi Yaz
-            </button>
-            <button type="button" class="builder-tab-btn" data-builder-tab="tab-supplement-builder" onclick="switchAdminBuilderTab('tab-supplement-builder')">
-              <i class="fas fa-pills"></i> Takviye & Supplement Rehberi Yaz
-            </button>
-            <button type="button" class="builder-tab-btn" data-builder-tab="tab-photo-inspector" onclick="switchAdminBuilderTab('tab-photo-inspector')">
-              <i class="fas fa-camera"></i> Form Fotoğrafları İncele (4 Cephe)
-            </button>
-            <button type="button" class="builder-tab-btn" data-builder-tab="tab-note-builder" onclick="switchAdminBuilderTab('tab-note-builder')">
-              <i class="fas fa-edit"></i> Eğitmen Notu & Değerlendirme
-            </button>
+          <!-- Week Tabs -->
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+            <button class="wiz-week-btn active" data-week="1" onclick="window.setWizardWeek(1);" style="padding: 0.4rem 1rem; border-radius: 4px; background: rgba(239,68,68,0.2); border: 1px solid var(--accent-red); color: #fff; font-weight: bold; cursor: pointer;">1. Hafta</button>
+            <button class="wiz-week-btn" data-week="2" onclick="window.setWizardWeek(2);" style="padding: 0.4rem 1rem; border-radius: 4px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-light); color: #E5E7EB; font-weight: bold; cursor: pointer;">2. Hafta</button>
+            <button class="wiz-week-btn" data-week="3" onclick="window.setWizardWeek(3);" style="padding: 0.4rem 1rem; border-radius: 4px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-light); color: #E5E7EB; font-weight: bold; cursor: pointer;">3. Hafta</button>
+            <button class="wiz-week-btn" data-week="4" onclick="window.setWizardWeek(4);" style="padding: 0.4rem 1rem; border-radius: 4px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-light); color: #E5E7EB; font-weight: bold; cursor: pointer;">4. Hafta</button>
           </div>
 
-          <!-- TAB 1: WORKOUT BUILDER -->
-          <div id="tab-workout-builder" class="builder-pane active">
-            <!-- Program Başlangıç Tarihi Seçici Bar (Ay Ortalı & Ay Sonu Üyelik Takibi) -->
-            <div style="margin-bottom: 1.2rem; background: rgba(0,0,0,0.4); padding: 1rem 1.2rem; border-radius: var(--radius-md); border: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-              <div>
-                <label style="font-size: 0.78rem; color: var(--accent-red); font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 0.2rem; letter-spacing: 0.04em;">
-                  📆 PROGRAM BAŞLANGIÇ TARİHİ (AY ORTASI / AY SONU ÜYELİK TAKİBİ)
-                </label>
-                <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">
-                  Danışanın uzaktan eğitim paketinin başlayacağı tarihi seçin. 4 haftalık tarihler otomatik hesaplanır.
-                </p>
-              </div>
-              <div style="display: flex; align-items: center; gap: 0.8rem;">
-                <input type="date" id="builder-start-date" class="input-field" style="max-width: 190px; padding: 0.5rem 0.8rem; font-size: 0.9rem; font-weight: bold; color: #FFF; background: rgba(255,255,255,0.08); border-color: var(--accent-red);">
-              </div>
-            </div>
-
-            <!-- 4-Haftalık Aylık Sezon Planlayıcısı -->
-            <div style="margin-bottom: 1.2rem; background: rgba(0,0,0,0.3); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
-              <label style="font-size: 0.78rem; color: var(--accent-red); font-weight: 800; text-transform: uppercase; margin-bottom: 0.6rem; display: block; letter-spacing: 0.04em;">
-                🗓️ AYLIK UZAKTAN EĞİTİM PROGRAMI (HAFTA SEÇİNİZ)
-              </label>
-              <div class="week-selector-bar" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <button type="button" class="btn btn-outline admin-week-btn active" data-week="1" id="admin-week-btn-1" style="flex: 1; border-color: var(--accent-red); color: #FFF; background: rgba(239, 68, 68, 0.15); font-size: 0.82rem; padding: 0.55rem 0.8rem;">📅 1. Hafta</button>
-                <button type="button" class="btn btn-outline admin-week-btn" data-week="2" id="admin-week-btn-2" style="flex: 1; font-size: 0.82rem; padding: 0.55rem 0.8rem;">📅 2. Hafta</button>
-                <button type="button" class="btn btn-outline admin-week-btn" data-week="3" id="admin-week-btn-3" style="flex: 1; font-size: 0.82rem; padding: 0.55rem 0.8rem;">📅 3. Hafta</button>
-                <button type="button" class="btn btn-outline admin-week-btn" data-week="4" id="admin-week-btn-4" style="flex: 1; font-size: 0.82rem; padding: 0.55rem 0.8rem;">📅 4. Hafta</button>
-              </div>
-            </div>
-
-            <!-- Gün Bölüm Seçici -->
-            <div style="margin-bottom: 1.2rem;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <label style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-bottom: 0;">
-                  🏋️ HANGİ GÜNÜ DÜZENLİYORSUNUZ?
-                </label>
-                <button type="button" class="btn btn-outline" id="add-new-day-btn" style="padding: 0.35rem 0.75rem; font-size: 0.78rem; border-color: #10B981; color: #10B981; background: rgba(16,185,129,0.1); font-weight: bold;">
-                  <i class="fas fa-plus-circle"></i> Yeni Gün Ekle (Gün 5, Gün 6...)
-                </button>
-              </div>
-              <div class="admin-day-bar" id="admin-day-bar-container" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <!-- Rendered dynamically by script -->
-              </div>
-            </div>
-
-            <div class="form-section-title">
-              <span><i class="fas fa-list-ol" style="color: var(--accent-primary);"></i> <span id="admin-current-target-title">1. Hafta — Gün 1 Hareketleri</span></span>
-              <div style="display: flex; gap: 0.5rem;">
-                <button type="button" class="btn btn-outline" id="copy-day-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-color: #10B981; color: #10B981;" title="Bu günü diğer haftalara kopyala">
-                  <i class="fas fa-copy"></i> Diğer Haftalara Kopyala
-                </button>
-                <button type="button" class="btn btn-outline" id="add-exercise-btn" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
-                  <i class="fas fa-plus"></i> Hareket Ekle
-                </button>
-              </div>
-            </div>
-
-            <div id="exercise-rows-container">
-              <div class="exercise-row-input">
-                <input type="text" class="input-field ex-name" value="Goblet Squat (Dambıl ile Squat)" placeholder="Hareket Adı">
-                <input type="text" class="input-field ex-sets" value="3 Set" placeholder="Set">
-                <input type="text" class="input-field ex-reps" value="12-15 Tekrar" placeholder="Tekrar">
-                <input type="text" class="input-field ex-rest" value="60 sn Dinlenme" placeholder="Dinlenme">
-                <button class="remove-row-btn">&times;</button>
-              </div>
-              <div class="exercise-row-input">
-                <input type="text" class="input-field ex-name" value="Dumbbell Chest Press (Düz Sehpa)" placeholder="Hareket Adı">
-                <input type="text" class="input-field ex-sets" value="3 Set" placeholder="Set">
-                <input type="text" class="input-field ex-reps" value="12 Tekrar" placeholder="Tekrar">
-                <input type="text" class="input-field ex-rest" value="60 sn Dinlenme" placeholder="Dinlenme">
-                <button class="remove-row-btn">&times;</button>
-              </div>
-            </div>
-
-            <!-- Workspace Bottom Send Button (STRICTLY OUTSIDE exercise-rows-container) -->
-            <div style="margin-top: 1.8rem; padding-top: 1.2rem; border-top: 1px dashed var(--border-light); text-align: center;">
-              <button type="button" class="btn btn-primary-glow save-prog-action-btn" style="width: 100%; max-width: 500px; padding: 0.9rem 1.5rem; font-size: 1.05rem; background: var(--accent-red); border-color: var(--accent-red); color: #FFF; font-weight: 800; cursor: pointer; border-radius: var(--radius-md); box-shadow: 0 0 25px rgba(239,68,68,0.35);">
-                <i class="fas fa-paper-plane"></i> Programı Kaydet & Danışana Gönder 🚀
-              </button>
-            </div>
+          <!-- Days List & Exercises Editor -->
+          <div id="wiz-exercises-container">
+            <!-- Exercise Editor Rows -->
           </div>
+        </div>
 
-          <!-- TAB 2: NUTRITION BUILDER -->
-          <div id="tab-nutrition-builder" class="builder-pane" style="display: none;">
-            <div class="form-grid" style="margin-bottom: 1.5rem;">
-              <div class="calc-form-group">
-                <label class="calc-label">Günlük Kalori Hedefi (kcal)</label>
-                <input type="number" id="builder-kcal" class="input-field" value="2100">
-              </div>
-              <div class="calc-form-group">
-                <label class="calc-label">Protein Target (g)</label>
-                <input type="number" id="builder-protein" class="input-field" value="160">
-              </div>
-              <div class="calc-form-group">
-                <label class="calc-label">Karbonhidrat Target (g)</label>
-                <input type="number" id="builder-carb" class="input-field" value="210">
-              </div>
-              <div class="calc-form-group">
-                <label class="calc-label">Yağ Target (g)</label>
-                <input type="number" id="builder-fat" class="input-field" value="58">
-              </div>
-            </div>
+        <!-- STEP 3: 🥗 BESLENME & MAKRO GÜNLÜĞÜ -->
+        <div class="wizard-step-pane" id="wizard-pane-3">
+          <h3 style="color: #FFF; font-size: 1.15rem; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-utensils" style="color: var(--accent-red);"></i> Adım 3: Günlük Makro Hedefleri & Öğün Planı
+          </h3>
 
-            <div class="form-section-title">
-              <span><i class="fas fa-hamburger" style="color: var(--accent-primary);"></i> Öğün Detayları</span>
-              <button class="btn btn-outline" id="add-meal-btn" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
-                <i class="fas fa-plus"></i> Yeni Öğün Ekle
-              </button>
-            </div>
-
-            <div id="meals-container">
-              <div class="calc-form-group meal-row-item">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-                  <label class="calc-label" style="margin-bottom: 0;">Öğün 1 (Kahvaltı)</label>
-                  <button type="button" class="remove-meal-btn" style="background: none; border: none; color: #EF4444; cursor: pointer; font-size: 0.8rem;"><i class="fas fa-trash"></i> Sil</button>
-                </div>
-                <textarea class="input-field meal-input-text" rows="2">3 Yumurta + 50g Lor Peyniri + 50g Yulaf Ezmesi + 5 Ceviz</textarea>
-              </div>
-
-              <div class="calc-form-group meal-row-item">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-                  <label class="calc-label" style="margin-bottom: 0;">Öğün 2 (Öğle / Ana Öğün)</label>
-                  <button type="button" class="remove-meal-btn" style="background: none; border: none; color: #EF4444; cursor: pointer; font-size: 0.8rem;"><i class="fas fa-trash"></i> Sil</button>
-                </div>
-                <textarea class="input-field meal-input-text" rows="2">180g Izgara Tavuk Göğsü / Köfte + 200g Pişmiş Pirinç + Mevsim Salatası</textarea>
-              </div>
-
-              <div class="calc-form-group meal-row-item">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-                  <label class="calc-label" style="margin-bottom: 0;">Öğün 3 (Antrenman Sonrası / Ara Öğün)</label>
-                  <button type="button" class="remove-meal-btn" style="background: none; border: none; color: #EF4444; cursor: pointer; font-size: 0.8rem;"><i class="fas fa-trash"></i> Sil</button>
-                </div>
-                <textarea class="input-field meal-input-text" rows="2">1 Ölçek Whey Protein veya 150g Yoğurt + 1 Muz</textarea>
-              </div>
-            </div>
-
-            <button type="button" class="btn btn-primary-glow btn-block save-prog-action-btn" id="save-nutrition-btn" style="margin-top: 1.5rem;">
-              <i class="fas fa-paper-plane"></i> Beslenme Planını Kaydet & Danışana Gönder
-            </button>
-          </div>
-
-          <!-- TAB 3: SUPPLEMENT BUILDER -->
-          <div id="tab-supplement-builder" class="builder-pane" style="display: none;">
-            <div class="glass-panel" style="padding: 1.5rem; margin-bottom: 1.5rem;">
-              <h4 style="color: #FFFFFF; font-size: 1.1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                <i class="fas fa-pills" style="color: var(--accent-red);"></i> Danışana Özel Takviye & Supplement Planı
-              </h4>
-
-              <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.2rem;">
-                <div class="calc-form-group">
-                  <label class="calc-label">Whey / Protein Tozu Dozajı</label>
-                  <input type="text" id="supp-whey" class="input-field" value="Antrenman sonrası 1 ölçek (30g) su ile" placeholder="Dozaj ve zamanlama...">
-                </div>
-                <div class="calc-form-group">
-                  <label class="calc-label">Kreatin Monohidrat Dozajı</label>
-                  <input type="text" id="supp-creatine" class="input-field" value="Her gün kahvaltı sonrası 5g" placeholder="Dozaj ve zamanlama...">
-                </div>
-                <div class="calc-form-group">
-                  <label class="calc-label">Omega-3 & Multivitamin</label>
-                  <input type="text" id="supp-vitamins" class="input-field" value="Sabah kahvaltısı ile 1 kapsül" placeholder="Dozaj ve zamanlama...">
-                </div>
-                <div class="calc-form-group">
-                  <label class="calc-label">ZMA / Çinko - Magnezyum</label>
-                  <input type="text" id="supp-zma" class="input-field" value="Gece yatmadan 30 dk önce 1 kapsül" placeholder="Dozaj ve zamanlama...">
-                </div>
-              </div>
-
-              <div class="calc-form-group">
-                <label class="calc-label">Özel Takviye & Kullanım Rehberi Notunuz</label>
-                <textarea id="supp-notes" class="input-field" rows="4" placeholder="Danışanınıza özel supplement kullanım zamanlamaları ve ekstra vitamin tavsiyeleriniz...">Supplementleri düzenli saatlerde ve bol su ile tüketmeye özen gösterin. Mide hassasiyetiniz olursa yemeklerden hemen sonra alabilirsiniz.</textarea>
-              </div>
-            </div>
-
-            <button type="button" class="btn btn-primary-glow btn-block save-prog-action-btn" id="save-supplements-btn" style="margin-top: 1.5rem;">
-              <i class="fas fa-paper-plane"></i> Supplement Planını Kaydet & Danışana Gönder
-            </button>
-          </div>
-
-          <!-- TAB 4: FORM PHOTO INSPECTOR FOR TRAINER -->
-          <div id="tab-photo-inspector" class="builder-pane" style="display: none;">
-            <div class="glass-panel" style="padding: 1.5rem; margin-bottom: 1.5rem;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.6rem;">
-                <h4 style="color: #FFFFFF; font-size: 1.1rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                  <i class="fas fa-camera" style="color: #10B981;"></i> <span id="photo-inspector-client-name">Seçili Danışan</span> — Form Fotoğrafları & 4 Cephe Gelişim Analizi
-                </h4>
-                <button type="button" class="btn btn-outline" onclick="fetchServerClients()" style="font-size: 0.78rem; padding: 0.35rem 0.8rem; border-color: #10B981; color: #10B981;">
-                  <i class="fas fa-sync-alt"></i> Fotoğrafları Yenile
-                </button>
-              </div>
-              <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.2rem;">
-                Danışanın kendi panelinden yüklediği Ön, Arka (Sırt), Sağ Yan ve Sol Yan görselleri aşağıda gösterilmektedir. Görselleri tam ekranda incelemek için üzerlerine tıklayın.
-              </p>
-
-              <div id="admin-client-photos-container" style="display: grid; grid-template-columns: 1fr; gap: 1.2rem;">
-                <!-- Rendered dynamically for selected client -->
-              </div>
-            </div>
-          </div>
-
-          <!-- TAB 5: TRAINER NOTE BUILDER -->
-          <div id="tab-note-builder" class="builder-pane" style="display: none;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-bottom: 1.5rem;">
             <div class="calc-form-group">
-              <label class="calc-label">Haftalık Eğitmen Notunuz & Motivasyon Mesajınız</label>
-              <textarea id="builder-coach-note" class="input-field" rows="5" placeholder="Danışanınıza bu haftalık özel talimat ve tavsiyelerinizi yazın..."></textarea>
+              <label class="calc-label">Günlük Kalori Hedefi (kcal)</label>
+              <input type="number" id="wiz-nutri-calories" class="input-field" placeholder="Örn: 2200">
             </div>
 
-            <button type="button" class="btn btn-primary-glow btn-block save-prog-action-btn" id="send-note-btn" style="margin-top: 1rem;">
-              <i class="fas fa-paper-plane"></i> Notu Gönder & Danışan Paneline İlet
+            <div class="calc-form-group">
+              <label class="calc-label">Protein Hedefi (g)</label>
+              <input type="number" id="wiz-nutri-protein" class="input-field" placeholder="Örn: 160">
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label">Karbonhidrat Hedefi (g)</label>
+              <input type="number" id="wiz-nutri-carbs" class="input-field" placeholder="Örn: 220">
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label">Yağ Hedefi (g)</label>
+              <input type="number" id="wiz-nutri-fat" class="input-field" placeholder="Örn: 65">
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label">Günlük Su Hedefi (Litre)</label>
+              <input type="text" id="wiz-nutri-water" class="input-field" placeholder="Örn: 3.5 Litre">
+            </div>
+          </div>
+
+          <div class="calc-form-group" style="margin-bottom: 1.5rem;">
+            <label class="calc-label">Öğün Detayları & Esnek Beslenme Kuralları</label>
+            <textarea id="wiz-nutri-meals" class="input-field" rows="5" placeholder="Örn: Öğün 1: 3 Yumurta + 60g Yulaf..."></textarea>
+          </div>
+        </div>
+
+        <!-- STEP 4: 💊 TAKVİYE & SUPPLEMENT REHBERİ -->
+        <div class="wizard-step-pane" id="wizard-pane-4">
+          <h3 style="color: #FFF; font-size: 1.15rem; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-pills" style="color: var(--accent-red);"></i> Adım 4: Takviye & Supplement Rehberi
+          </h3>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.2rem; margin-bottom: 1.5rem;">
+            <div class="calc-form-group">
+              <label class="calc-label">Whey Protein Dozajı</label>
+              <input type="text" id="wiz-supp-whey" class="input-field" placeholder="Örn: Antrenman sonrası 1 ölçek (30g)">
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label">Kreatin Monohidrat Dozajı</label>
+              <input type="text" id="wiz-supp-creatine" class="input-field" placeholder="Örn: Her gün kahvaltı sonrası 5g">
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label">Pre-Workout / Kafein</label>
+              <input type="text" id="wiz-supp-preworkout" class="input-field" placeholder="Örn: Antrenmandan 30 dk önce 1 ölçek">
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label">Multivitamin & Mineral</label>
+              <input type="text" id="wiz-supp-multivitamin" class="input-field" placeholder="Örn: Sabah kahvaltısı ile 1 tablet">
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label">Omega-3 Balık Yağı</label>
+              <input type="text" id="wiz-supp-omega3" class="input-field" placeholder="Örn: Öğle yemeği sonrası 2 kapsül">
+            </div>
+
+            <div class="calc-form-group">
+              <label class="calc-label">ZMA / Magnezyum</label>
+              <input type="text" id="wiz-supp-zma" class="input-field" placeholder="Örn: Gece yatmadan 30 dk önce 1 kapsül">
+            </div>
+          </div>
+
+          <div class="calc-form-group" style="margin-bottom: 1.5rem;">
+            <label class="calc-label">Özel Takviye Notları & Kullanım Kuralları</label>
+            <textarea id="wiz-supp-notes" class="input-field" rows="3" placeholder="Örn: Kreatini bol su ile tüketin. Çinko ve magnezyumu süt ürünleriyle aynı anda almayın."></textarea>
+          </div>
+        </div>
+
+        <!-- STEP 5: 💬 EĞİTMEN NOTU -->
+        <div class="wizard-step-pane" id="wizard-pane-5">
+          <h3 style="color: #FFF; font-size: 1.15rem; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-comment-dots" style="color: var(--accent-red);"></i> Adım 5: Danışana Özel Kişisel Eğitmen Notu
+          </h3>
+
+          <div class="calc-form-group" style="margin-bottom: 1.5rem;">
+            <label class="calc-label">Umut Altun Özel Koçluk Notu *</label>
+            <textarea id="wiz-coach-note" class="input-field" rows="6" placeholder="Danışanınıza özel karşılama, motivasyon, form tavsiyesi ve periyot notunuzu yazınız..."></textarea>
+          </div>
+        </div>
+
+        <!-- STEP 6: 👁️ ÖNİZLEME & TEK TIK KAYDET -->
+        <div class="wizard-step-pane" id="wizard-pane-6">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <h3 style="color: #FFF; font-size: 1.15rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-eye" style="color: #10B981;"></i> Adım 6: Canlı Danışan Paneli Önizleme & Tek Tık Kaydet
+              </h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
+                Danışanın panelinde görünecek canlı içerik aşağıdadır. Kontrol edip onayladıktan sonra tek tıkla canlıya iletebilirsiniz.
+              </p>
+            </div>
+
+            <button type="button" class="btn btn-primary-glow" onclick="window.executeWizardSingleSave();" style="padding: 0.8rem 1.6rem; font-size: 1.05rem; background: #10B981; border-color: #10B981; font-weight: 900;">
+              <i class="fas fa-paper-plane"></i> Programı Kaydet & Danışana Gönder 🚀
             </button>
           </div>
 
+          <!-- Live Client Panel Preview Container -->
+          <div style="background: rgba(0,0,0,0.5); border: 2px solid #10B981; border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.8rem;">
+              <h4 style="color: #10B981; margin: 0; font-size: 1.1rem;"><i class="fas fa-mobile-alt"></i> Danışan Ekran Görünümü</h4>
+              <span id="wiz-preview-date" style="font-size: 0.8rem; color: var(--text-muted);">Son Senkron: Şimdi</span>
+            </div>
+
+            <div id="wiz-live-preview-content">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- WIZARD NAVIGATION FOOTER BAR -->
+        <div class="wizard-nav-footer">
+          <button type="button" id="wiz-btn-prev" class="btn btn-outline" onclick="window.wizardPrevStep();">
+            <i class="fas fa-arrow-left"></i> ⬅️ Geri
+          </button>
+
+          <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+            <button type="button" id="wiz-btn-skip" class="btn btn-outline" style="border-color: rgba(255,255,255,0.2); color: var(--text-muted);" onclick="window.wizardSkipStep();">
+              ⏭️ Bu Adımı Atla
+            </button>
+
+            <button type="button" id="wiz-btn-next" class="btn btn-primary-glow" onclick="window.wizardNextStep();">
+              İleri ➡️
+            </button>
+
+            <button type="button" id="wiz-btn-final-save" class="btn btn-primary-glow" style="display: none; background: #10B981; border-color: #10B981; font-weight: 900;" onclick="window.executeWizardSingleSave();">
+              <i class="fas fa-paper-plane"></i> Programı Kaydet & Danışana Gönder 🚀
+            </button>
+          </div>
         </div>
 
       </div>
 
-      <!-- YENİ: Eğitmen Danışan Takip & Form Kontrol Hatırlatıcı Takvimi -->
-      <div class="glass-panel" style="margin-top: 2rem; padding: 2rem; border-radius: var(--radius-lg); border: 1px solid var(--accent-red); background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(18, 18, 22, 0.95) 100%);">
-        
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
-          <div>
-            <h3 style="color: #FFFFFF; font-size: 1.2rem; display: flex; align-items: center; gap: 0.6rem;">
-              <i class="fas fa-calendar-alt" style="color: var(--accent-red);"></i> Tüm Danışanlar Form Kontrol & Etkinlik Takvimi
-            </h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
-              Tüm üyelerinizin yaklaşan form yükleme günleri, salon randevuları ve görüntülü görüşme tarihleri.
-            </p>
-          </div>
+      <!-- SEPARATE SYSTEM MANAGEMENT & BULK TOOLS SECTION -->
+      <div class="glass-panel" style="margin-top: 2.5rem; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-light);">
+        <h3 style="color: #FFF; font-size: 1.1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fas fa-cogs" style="color: var(--accent-red);"></i> ⚙️ Sistem Yönetimi, İçe Aktarma & Toplu İşlem Araçları
+        </h3>
 
-          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <span style="font-size: 0.75rem; background: rgba(239,68,68,0.15); color: var(--accent-red); padding: 0.35rem 0.75rem; border-radius: var(--radius-full); border: 1px solid rgba(239,68,68,0.3); font-weight: 700;">
-              📸 Form Kontrol Sıralaması
-            </span>
-            <span style="font-size: 0.75rem; background: rgba(245,158,11,0.15); color: #F59E0B; padding: 0.35rem 0.75rem; border-radius: var(--radius-full); border: 1px solid rgba(245,158,11,0.3); font-weight: 700;">
-              ⚠️ Paket Sonu Takibi
-            </span>
-            <span style="font-size: 0.75rem; background: rgba(16,185,129,0.15); color: #10B981; padding: 0.35rem 0.75rem; border-radius: var(--radius-full); border: 1px solid rgba(16,185,129,0.3); font-weight: 700;">
-              📍 MACFit Birebir Dersi
-            </span>
-          </div>
-        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.8rem;">
+          <button class="btn btn-outline" style="border-color: rgba(245,158,11,0.4); color: #F59E0B;" onclick="window.triggerPassivateAllClients();">
+            <i class="fas fa-user-slash"></i> Tüm Üyelikleri Pasife Al
+          </button>
 
-        <!-- Critical Form Check-in & Package Expiration Reminders Alert Box -->
-        <div style="background: rgba(239, 68, 68, 0.12); border-left: 4px solid var(--accent-red); padding: 1.2rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-          <div>
-            <h4 style="color: #FFFFFF; font-size: 1rem; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.5rem;">
-              <i class="fas fa-bell" style="color: var(--accent-red);"></i> Eğitmen Hatırlatıcı Paneli (Form Kontrol & Paket Sonu Uyarıları)
-            </h4>
-            <div id="calendar-reminders-list" style="font-size: 0.85rem; color: #E5E7EB; line-height: 1.6;">
-              <i class="fas fa-info-circle" style="color: var(--accent-red);"></i> Sisteme danışan eklediğinizde yaklaşan form kontrolleri, paket sonu tarihleri ve salon randevuları otomatik olarak burada hatırlatılacaktır.
-            </div>
-          </div>
-          <button class="btn btn-primary-glow" style="font-size: 0.8rem; padding: 0.5rem 1rem;" onclick="document.getElementById('open-add-client-btn').click();">
-            <i class="fas fa-user-plus"></i> Yeni Danışan Ekle
+          <button class="btn btn-outline" style="border-color: rgba(59,130,246,0.4); color: #3B82F6;" onclick="window.triggerRevokeAllSessions();">
+            <i class="fas fa-key"></i> Tüm Oturumları Kapat
+          </button>
+
+          <button class="btn btn-outline" style="border-color: rgba(16,185,129,0.4); color: #10B981;" onclick="window.openImportClientsModal();">
+            <i class="fas fa-file-import"></i> Eski Danışan Listesini İçe Aktar (Import)
+          </button>
+
+          <button class="btn btn-outline" style="border-color: rgba(239,68,68,0.4); color: var(--accent-red);" onclick="window.triggerPurgeAllClients();">
+            <i class="fas fa-trash-alt"></i> Tüm Danışanları Sıfırla (Yedekli Purge)
           </button>
         </div>
-
-        <!-- Dynamic Master Calendar Grid for Admin -->
-        <div style="border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1.2rem; background: rgba(0,0,0,0.35);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-            <h4 style="color: var(--accent-red); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-              <i class="fas fa-calendar-alt"></i> <span id="admin-calendar-title">Ağustos 2026 — Danışan Takvim Notu & Etkinlik Matrisi</span>
-            </h4>
-            <span style="font-size: 0.8rem; color: #10B981; font-weight: 700; background: rgba(16,185,129,0.15); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid #10B981;">
-              💡 İpucu: Gün kutularına basarak <span id="admin-active-client-note-target" style="color: #FFF; font-weight: 800;">Seçili Danışan</span> için takvim notu ekleyin.
-            </span>
-          </div>
-
-          <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.4rem; text-align: center; margin-bottom: 0.5rem;">
-            <!-- Weekday Titles -->
-            <div style="font-weight: 800; font-size: 0.75rem; color: var(--accent-red); padding: 0.4rem; background: rgba(239,68,68,0.15); border-radius: 4px;">Pzt</div>
-            <div style="font-weight: 800; font-size: 0.75rem; color: var(--accent-red); padding: 0.4rem; background: rgba(239,68,68,0.15); border-radius: 4px;">Sal</div>
-            <div style="font-weight: 800; font-size: 0.75rem; color: var(--accent-red); padding: 0.4rem; background: rgba(239,68,68,0.15); border-radius: 4px;">Çar</div>
-            <div style="font-weight: 800; font-size: 0.75rem; color: var(--accent-red); padding: 0.4rem; background: rgba(239,68,68,0.15); border-radius: 4px;">Per</div>
-            <div style="font-weight: 800; font-size: 0.75rem; color: var(--accent-red); padding: 0.4rem; background: rgba(239,68,68,0.15); border-radius: 4px;">Cum</div>
-            <div style="font-weight: 800; font-size: 0.75rem; color: var(--accent-red); padding: 0.4rem; background: rgba(239,68,68,0.15); border-radius: 4px;">Cmt</div>
-            <div style="font-weight: 800; font-size: 0.75rem; color: var(--accent-red); padding: 0.4rem; background: rgba(239,68,68,0.15); border-radius: 4px;">Paz</div>
-          </div>
-
-          <!-- DYNAMIC INTERACTIVE CALENDAR DAYS CONTAINER -->
-          <div id="admin-calendar-days-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.4rem; text-align: center;">
-            <!-- Rendered dynamically by renderAdminCalendar() -->
-          </div>
-        </div>
-
       </div>
+
     </div>
   </main>
 
-  <!-- Modal: Danışana Takvim Notu Ekle (Eğitmen Paneli) -->
-  <div id="admin-calendar-note-modal" style="position: fixed; inset: 0; background: rgba(8, 8, 10, 0.92); z-index: 9999999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(12px); padding: 1.5rem;">
-    <div class="glass-panel" style="max-width: 520px; width: 100%; padding: 2rem; border-radius: var(--radius-lg); border: 2px solid var(--accent-red); box-shadow: 0 0 35px rgba(239, 68, 68, 0.3); position: relative; text-align: left;">
-      <button type="button" onclick="closeAdminCalendarNoteModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
-      
-      <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.8rem;">
-        <div style="width: 46px; height: 46px; background: rgba(239, 68, 68, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--accent-red); flex-shrink: 0;">
-          <i class="fas fa-pin" style="color: var(--accent-red); font-size: 1.3rem;"></i>
-        </div>
-        <div>
-          <h4 style="color: #FFFFFF; font-size: 1.15rem; margin: 0 0 0.2rem 0;" id="admin-modal-client-name">Danışan Takvim Notu</h4>
-          <span style="font-size: 0.8rem; color: var(--accent-red); font-weight: 700;" id="admin-modal-target-date">21 Ağustos 2026</span>
-        </div>
-      </div>
-
-      <!-- Quick Shortcut Badges -->
-      <div style="margin-bottom: 1rem;">
-        <label class="calc-label" style="font-size: 0.78rem;">Hızlı Not Şablonu Seçin:</label>
-        <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
-          <button type="button" class="btn btn-outline" style="font-size: 0.72rem; padding: 0.25rem 0.55rem; border-color: #25D366; color: #25D366;" onclick="applyCalendarNotePreset('📍 MACFit Birebir Salon Dersi (16:00)')">📍 Salon Dersi 16:00</button>
-          <button type="button" class="btn btn-outline" style="font-size: 0.72rem; padding: 0.25rem 0.55rem; border-color: #10B981; color: #10B981;" onclick="applyCalendarNotePreset('📸 Haftalık Form Görseli Yükleme Günü')">📸 Form Görseli Günü</button>
-          <button type="button" class="btn btn-outline" style="font-size: 0.72rem; padding: 0.25rem 0.55rem; border-color: #F59E0B; color: #F59E0B;" onclick="applyCalendarNotePreset('⚖️ Haftalık Kilo & Tartı Kontrolü')">⚖️ Tartı & Kilo Günü</button>
-          <button type="button" class="btn btn-outline" style="font-size: 0.72rem; padding: 0.25rem 0.55rem; border-color: #3B82F6; color: #3B82F6;" onclick="applyCalendarNotePreset('🥗 Yüksek Karbonhidrat Yükleme Günü')">🥗 Yüksek Karb Günü</button>
-        </div>
-      </div>
-
-      <div class="calc-form-group" style="margin-bottom: 1.2rem;">
-        <label class="calc-label">Danışanın Takviminde Görünecek Özel Notunuz:</label>
-        <textarea id="admin-calendar-note-input" class="input-field" rows="3" placeholder="Örn: Saat 16:00 MACFit stüdyomuzda Birebir Bacak dersimiz var. Çantana kilit almayı unutma!"></textarea>
-      </div>
-
-      <div style="display: flex; gap: 0.6rem;">
-        <button type="button" class="btn btn-primary-glow" onclick="saveAdminCalendarNote()" style="flex-grow: 1; padding: 0.75rem; font-size: 0.92rem; background: var(--accent-red); border-color: var(--accent-red); font-weight: 800;">
-          <i class="fas fa-save"></i> Takvim Notunu Kaydet & Danışan Paneline İşle
-        </button>
-        <button type="button" class="btn btn-outline" onclick="deleteAdminCalendarNote()" style="padding: 0.75rem; font-size: 0.92rem; border-color: rgba(239, 68, 68, 0.4); color: #EF4444;" title="Notu Sil">
-          <i class="fas fa-trash-alt"></i> Sil
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <footer style="padding: 2rem 0; border-top: 1px solid var(--border-light); margin-top: 3rem;">
-    <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">&copy; 2026 PT Umut Altun Yönetim Sistemleri. Tüm hakları saklıdır.</p>
-      <a href="https://dijitalgru.com" target="_blank" rel="noopener noreferrer" class="dijitalgru-badge">
-        <span class="dijitalgru-brand">dijital<span style="color:#F7EBD3;">g</span>ru</span>
-        <span class="dijitalgru-label">DijitalGru™ Yazılım Teknolojisi</span>
-      </a>
-    </div>
-  </footer>
-
-  <script>
-    let currentAdminWeek = 1;
-    let currentAdminDay = 1;
-
-    function updateAdminWeekDateBadges() {
-      const dateInput = document.getElementById('builder-start-date');
-      if (!dateInput) return;
-
-      const startDateVal = dateInput.value || new Date().toISOString().split('T')[0];
-      const start = new Date(startDateVal);
-
-      for (let w = 1; w <= 4; w++) {
-        const wStart = new Date(start);
-        wStart.setDate(start.getDate() + (w - 1) * 7);
-
-        const wEnd = new Date(wStart);
-        wEnd.setDate(wStart.getDate() + 6);
-
-        const startMonth = wStart.toLocaleDateString('tr-TR', { month: 'short' });
-        const endMonth = wEnd.toLocaleDateString('tr-TR', { month: 'short' });
-
-        let dateRangeStr = '';
-        if (startMonth === endMonth) {
-          dateRangeStr = `${wStart.getDate()} - ${wEnd.getDate()} ${startMonth}`;
-        } else {
-          dateRangeStr = `${wStart.getDate()} ${startMonth} - ${wEnd.getDate()} ${endMonth}`;
-        }
-
-        const btn = document.getElementById(`admin-week-btn-${w}`);
-        if (btn) {
-          btn.textContent = `📅 ${w}. Hafta (${dateRangeStr})`;
-        }
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const dateInput = document.getElementById('builder-start-date');
-      if (dateInput) {
-        dateInput.value = new Date().toISOString().split('T')[0];
-        updateAdminWeekDateBadges();
-        dateInput.addEventListener('change', updateAdminWeekDateBadges);
-      }
-    });
-
-    // 4-Week x 4-Day Exercise Matrix Memory Store
-    window.adminProgramState = {
-      "1_1": [
-        { name: "Dumbbell Chest Press (Düz Sehpa)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
-        { name: "Incline Dumbbell Fly", sets: "3 Set", reps: "12-15 Tekrar", rest: "60 sn Dinlenme" },
-        { name: "Barbell Biceps Curl (Ön Kol)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" }
-      ],
-      "1_2": [
-        { name: "Lat Pulldown (Göğse Çekiş)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
-        { name: "Seated Cable Row (Kürek)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
-        { name: "Triceps Rope Pushdown (Arka Kol)", sets: "3 Set", reps: "15 Tekrar", rest: "60 sn Dinlenme" }
-      ],
-      "1_3": [
-        { name: "Goblet Squat (Dambıl ile Squat)", sets: "4 Set", reps: "10-12 Tekrar", rest: "90 sn Dinlenme" },
-        { name: "Leg Press", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
-        { name: "Seated Dumbbell Shoulder Press (Omuz)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" }
-      ],
-      "1_4": [
-        { name: "Plank Hold", sets: "3 Set", reps: "45 sn", rest: "45 sn Dinlenme" },
-        { name: "Hanging Leg Raise (Alt Karın)", sets: "3 Set", reps: "15 Tekrar", rest: "45 sn Dinlenme" },
-        { name: "Eğimli Yürüyüş Kardiyo", sets: "1 Seans", reps: "25 dk (Eğim 8, Hız 5.5)", rest: "Antrenman Sonu" }
-      ]
-    };
-
-    function saveCurrentInputsToState() {
-      const currentKey = `${currentAdminWeek}_${currentAdminDay}`;
-      const rows = [];
-      document.querySelectorAll('#exercise-rows-container .exercise-row-input').forEach(row => {
-        const nameInput = row.querySelector('.ex-name');
-        const setsInput = row.querySelector('.ex-sets');
-        const repsInput = row.querySelector('.ex-reps');
-        const restInput = row.querySelector('.ex-rest');
-
-        const name = nameInput ? nameInput.value.trim() : '';
-        if (name) {
-          rows.push({
-            name: name,
-            sets: setsInput ? setsInput.value.trim() : '3 Set',
-            reps: repsInput ? repsInput.value.trim() : '12 Tekrar',
-            rest: restInput ? restInput.value.trim() : '60 sn Dinlenme'
-          });
-        }
-      });
-      window.adminProgramState[currentKey] = rows;
-    }
-
-    function loadInputsFromState() {
-      const container = document.getElementById('exercise-rows-container');
-      if (!container) return;
-      container.innerHTML = '';
-
-      const currentKey = `${currentAdminWeek}_${currentAdminDay}`;
-      const savedRows = window.adminProgramState[currentKey] || [];
-
-      if (savedRows.length === 0) {
-        createRowElement('', '3 Set', '12 Tekrar', '60 sn Dinlenme');
-      } else {
-        savedRows.forEach(item => {
-          createRowElement(item.name, item.sets, item.reps, item.rest);
-        });
-      }
-    }
-
-    function createRowElement(name = '', sets = '3 Set', reps = '12 Tekrar', rest = '60 sn Dinlenme') {
-      const container = document.getElementById('exercise-rows-container');
-      if (!container) return;
-      const newRow = document.createElement('div');
-      newRow.className = 'exercise-row-input';
-      newRow.innerHTML = `
-        <input type="text" class="input-field ex-name" value="${(name || '').replace(/"/g, '&quot;')}" placeholder="Hareket Adı (Örn: Leg Press)">
-        <input type="text" class="input-field ex-sets" value="${(sets || '3 Set').replace(/"/g, '&quot;')}" placeholder="Set">
-        <input type="text" class="input-field ex-reps" value="${(reps || '12 Tekrar').replace(/"/g, '&quot;')}" placeholder="Tekrar">
-        <input type="text" class="input-field ex-rest" value="${(rest || '60 sn Dinlenme').replace(/"/g, '&quot;')}" placeholder="Dinlenme">
-        <button type="button" class="remove-row-btn">&times;</button>
-      `;
-      container.appendChild(newRow);
-
-      newRow.querySelector('.remove-row-btn').addEventListener('click', () => {
-        newRow.remove();
-        saveCurrentInputsToState();
-      });
-    }
-
-    // Week selector buttons in admin
-    document.querySelectorAll('.admin-week-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        saveCurrentInputsToState();
-        document.querySelectorAll('.admin-week-btn').forEach(b => {
-          b.classList.remove('active');
-          b.style.borderColor = 'var(--border-light)';
-          b.style.background = 'none';
-        });
-        btn.classList.add('active');
-        btn.style.borderColor = 'var(--accent-red)';
-        btn.style.background = 'rgba(239, 68, 68, 0.15)';
-        currentAdminWeek = parseInt(btn.getAttribute('data-week'));
-        updateAdminTargetTitle();
-        loadInputsFromState();
-      });
-    });
-
-    window.adminDayList = [
-      { id: 1, title: 'Göğüs & Ön Kol' },
-      { id: 2, title: 'Sırt & Arka Kol' },
-      { id: 3, title: 'Bacak & Omuz' },
-      { id: 4, title: 'Kardiyo & Karın' }
-    ];
-
-    function renderAdminDayButtons() {
-      const container = document.getElementById('admin-day-bar-container');
-      if (!container) return;
-
-      container.innerHTML = '';
-      window.adminDayList.forEach(d => {
-        const isActive = (d.id === currentAdminDay);
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = `btn btn-outline admin-day-btn ${isActive ? 'active' : ''}`;
-        btn.setAttribute('data-day', d.id);
-        btn.style.cssText = isActive ? 
-          'border-color: var(--accent-red); color: #FFF; background: rgba(239,68,68,0.18); font-weight: bold; font-size: 0.85rem; padding: 0.5rem 0.9rem;' :
-          'font-size: 0.85rem; padding: 0.5rem 0.9rem;';
-        
-        btn.textContent = `Gün ${d.id}: ${d.title}`;
-
-        btn.addEventListener('click', () => {
-          saveCurrentInputsToState();
-          currentAdminDay = d.id;
-          renderAdminDayButtons();
-          updateAdminTargetTitle();
-          loadInputsFromState();
-        });
-
-        container.appendChild(btn);
-      });
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      renderAdminDayButtons();
-      const addDayBtn = document.getElementById('add-new-day-btn');
-      if (addDayBtn) {
-        addDayBtn.addEventListener('click', () => {
-          saveCurrentInputsToState();
-          const nextDayNum = window.adminDayList.length + 1;
-          const customTitle = prompt(`Yeni gün başlığını girin (Örn: Kol & Omuz Focus / Gün ${nextDayNum}):`, `Gün ${nextDayNum} Antrenmanı`);
-          if (customTitle && customTitle.trim()) {
-            window.adminDayList.push({ id: nextDayNum, title: customTitle.trim() });
-            currentAdminDay = nextDayNum;
-            renderAdminDayButtons();
-            updateAdminTargetTitle();
-            loadInputsFromState();
-          }
-        });
-      }
-    });
-
-    function updateAdminTargetTitle() {
-      const titleEl = document.getElementById('admin-current-target-title');
-      const activeObj = window.adminDayList.find(d => d.id === currentAdminDay);
-      const dayName = activeObj ? activeObj.title : `Gün ${currentAdminDay}`;
-      if (titleEl) {
-        titleEl.textContent = `${currentAdminWeek}. Hafta — Gün ${currentAdminDay}: ${dayName} Hareketleri`;
-      }
-    }
-
-    // Copy Day to Other Weeks button
-    const copyDayBtn = document.getElementById('copy-day-btn');
-    if (copyDayBtn) {
-      copyDayBtn.addEventListener('click', () => {
-        saveCurrentInputsToState();
-        const currentKey = `${currentAdminWeek}_${currentAdminDay}`;
-        const sourceRows = window.adminProgramState[currentKey] || [];
-        for (let w = 1; w <= 4; w++) {
-          if (w !== currentAdminWeek) {
-            window.adminProgramState[`${w}_${currentAdminDay}`] = JSON.parse(JSON.stringify(sourceRows));
-          }
-        }
-        alert(`✅ ${currentAdminWeek}. Hafta — Gün ${currentAdminDay} hareketleri tüm haftalara (1, 2, 3 ve 4. Hafta) kopyalandı! Artık dilediğiniz haftaya tıklayıp hareketleri bağımsız olarak güncelleyebilirsiniz.`);
-      });
-    }
-
-    // Add Exercise Row
-    document.getElementById('add-exercise-btn').addEventListener('click', () => {
-      createRowElement('', '3 Set', '12 Tekrar', '60 sn Dinlenme');
-    });
-
-    // Remove row event listener for initial items
-    document.querySelectorAll('.remove-row-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.target.closest('.exercise-row-input').remove();
-      });
-    });
-
-    // Dynamic Meal Addition
-    let mealCount = 3;
-    document.getElementById('add-meal-btn').addEventListener('click', () => {
-      mealCount++;
-      const container = document.getElementById('meals-container');
-      const mealItem = document.createElement('div');
-      mealItem.className = 'calc-form-group meal-row-item';
-      mealItem.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-          <label class="calc-label" style="margin-bottom: 0;">Öğün ${mealCount} (Ara Öğün / Gece)</label>
-          <button type="button" class="remove-meal-btn" style="background: none; border: none; color: #EF4444; cursor: pointer; font-size: 0.8rem;"><i class="fas fa-trash"></i> Sil</button>
-        </div>
-        <textarea class="input-field meal-input-text" rows="2" placeholder="Öğün detayını yazın..."></textarea>
-      `;
-      container.appendChild(mealItem);
-
-      mealItem.querySelector('.remove-meal-btn').addEventListener('click', () => {
-        mealItem.remove();
-      });
-    });
-
-    // Remove Meal Item for existing items
-    document.querySelectorAll('.remove-meal-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.target.closest('.meal-row-item').remove();
-      });
-    });
-
-    // Send Note to Client Panel
-    document.getElementById('send-note-btn').addEventListener('click', () => {
-      const noteText = document.getElementById('builder-coach-note').value.trim();
-      if (!noteText) {
-        alert('Lütfen danışana iletilecek notu yazın.');
-        return;
-      }
-      localStorage.setItem('pt_trainer_note', noteText);
-      alert('🚀 Haftalık Eğitmen Notunuz başarıyla gönderildi!\n\nDanışan panelinde (Ahmet Yılmaz) canlı olarak güncellendi.');
-    });
-
-    // Save Nutrition Plan to Client Panel
-    document.getElementById('save-nutrition-btn').addEventListener('click', () => {
-      const kcal = document.getElementById('builder-kcal').value;
-      const protein = document.getElementById('builder-protein').value;
-      const carb = document.getElementById('builder-carb').value;
-      const fat = document.getElementById('builder-fat').value;
-
-      const meals = [];
-      document.querySelectorAll('.meal-row-item').forEach((row, idx) => {
-        const title = row.querySelector('.calc-label').textContent;
-        const text = row.querySelector('.meal-input-text').value;
-        if (text) {
-          meals.push({ title, text });
-        }
-      });
-
-      const nutritionData = { kcal, protein, carb, fat, meals };
-      localStorage.setItem('pt_nutrition_data', JSON.stringify(nutritionData));
-      alert('🥗 Beslenme planı başarıyla kaydedildi & danışan paneline iletildi!');
-    });
-
-    function executeProgramSave() {
-      if (!clients || clients.length === 0 || !selectedClientId) {
-        alert('⚠️ Lütfen önce sol listeden program yazmak istediğiniz danışanı seçin veya "Yeni Danışan Ekle" butonuna basın!');
-        return;
-      }
-
-      const targetClient = clients.find(c => c.id === selectedClientId) || clients[0];
-      if (!targetClient) {
-        alert('⚠️ Lütfen soldaki listeden geçerli bir danışan seçin.');
-        return;
-      }
-
-      // 1. Save active workout inputs to matrix state
-      saveCurrentInputsToState();
-
-      // 2. Save program start date
-      const startDateInput = document.getElementById('builder-start-date');
-      const chosenStartDate = startDateInput ? startDateInput.value : new Date().toISOString().split('T')[0];
-      targetClient.startDate = chosenStartDate;
-
-      // 3. Save Nutrition data
-      const kcal = document.getElementById('builder-kcal')?.value || '2100';
-      const protein = document.getElementById('builder-protein')?.value || '160';
-      const carb = document.getElementById('builder-carb')?.value || '210';
-      const fat = document.getElementById('builder-fat')?.value || '58';
-
-      const meals = [];
-      document.querySelectorAll('.meal-row-item').forEach((row, idx) => {
-        const title = row.querySelector('.calc-label')?.textContent || `Öğün ${idx + 1}`;
-        const text = row.querySelector('.meal-input-text')?.value || '';
-        if (text) meals.push({ title, text });
-      });
-
-      const nutritionData = { kcal, protein, carb, fat, meals };
-      targetClient.nutrition = nutritionData;
-
-      // 4. Save Supplement data
-      const suppWhey = document.getElementById('supp-whey')?.value || '';
-      const suppCreatine = document.getElementById('supp-creatine')?.value || '';
-      const suppVitamins = document.getElementById('supp-vitamins')?.value || '';
-      const suppZma = document.getElementById('supp-zma')?.value || '';
-      const suppNotes = document.getElementById('supp-notes')?.value || '';
-
-      const supplementData = { whey: suppWhey, creatine: suppCreatine, vitamins: suppVitamins, zma: suppZma, notes: suppNotes };
-      targetClient.supplements = supplementData;
-
-      // 5. Save Coach Note
-      const coachNoteInput = document.getElementById('builder-coach-note');
-      const writtenNote = coachNoteInput ? coachNoteInput.value.trim() : '';
-      targetClient.coachNote = writtenNote;
-
-      // Mark program as officially assigned to this client
-      targetClient.hasAssignedProgram = true;
-      targetClient.programMatrix = window.adminProgramState;
-      saveClients();
-
-      const cleanP = (targetClient.phone || '').replace(/\D/g, '');
-      if (targetClient.id) {
-        localStorage.setItem('pt_assigned_program_' + targetClient.id, 'true');
-        localStorage.setItem('pt_matrix_program_' + targetClient.id, JSON.stringify(window.adminProgramState));
-        localStorage.setItem('pt_start_date_' + targetClient.id, chosenStartDate);
-        localStorage.setItem('pt_coach_note_' + targetClient.id, writtenNote);
-        localStorage.setItem('pt_nutrition_' + targetClient.id, JSON.stringify(nutritionData));
-        localStorage.setItem('pt_supplements_' + targetClient.id, JSON.stringify(supplementData));
-      }
-      if (cleanP) {
-        localStorage.setItem('pt_assigned_program_' + cleanP, 'true');
-        localStorage.setItem('pt_matrix_program_' + cleanP, JSON.stringify(window.adminProgramState));
-        localStorage.setItem('pt_start_date_' + cleanP, chosenStartDate);
-        localStorage.setItem('pt_coach_note_' + cleanP, writtenNote);
-        localStorage.setItem('pt_nutrition_' + cleanP, JSON.stringify(nutritionData));
-        localStorage.setItem('pt_supplements_' + cleanP, JSON.stringify(supplementData));
-      }
-
-      // Perform backend REST API sync
-      trainerFetch(`/api/clients/${targetClient.id}/profile`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          hasAssignedProgram: true,
-          programMatrix: window.adminProgramState,
-          startDate: chosenStartDate,
-          coachNote: writtenNote,
-          nutrition: nutritionData,
-          supplements: supplementData
-        })
-      }).catch(err => console.warn('Offline fallback', err));
-
-      // Set live notification flag for client panel popup
-      localStorage.setItem('pt_new_program_notification_' + targetClient.id, 'true');
-      localStorage.setItem('pt_new_program_notification_global', JSON.stringify({
-        clientId: targetClient.id,
-        clientName: targetClient.name,
-        date: new Date().toISOString()
-      }));
-
-      alert(`✅ 4-Haftalık Antrenman, Beslenme ve Takviye Programı Başarıyla Kaydedildi & Gönderildi!\n\n📌 Alıcı Danışan: ${targetClient.name}\n\n${targetClient.name} kendi paneline girdiğinde sizin hazırladığınız 4 haftalık antrenman matrisini, beslenme makrolarını, supplement kullanım rehberini ve özel notunuzu anında görecektir.`);
-    }
-    window.executeProgramSave = executeProgramSave;
-
-    // Bind all save action buttons
-    document.querySelectorAll('.save-prog-action-btn').forEach(btn => {
-      btn.addEventListener('click', executeProgramSave);
-    });
-
-    const saveProgBtn = document.getElementById('save-program-btn');
-    if (saveProgBtn) {
-      saveProgBtn.addEventListener('click', executeProgramSave);
-    }
-  </script>
-
-  <!-- Modal: Yeni Ücretsiz / Ücretli Danışan Ekle -->
+  <!-- Add Client Modal -->
   <div class="modal-overlay" id="add-client-modal">
-    <div class="modal-container" style="max-width: 480px;">
+    <div class="modal-container">
       <button class="close-modal-btn" id="close-add-client-modal">&times;</button>
-      
       <div class="modal-header">
-        <h3><i class="fas fa-user-plus" style="color: var(--accent-red);"></i> Yeni Danışan Kaydı</h3>
-        <p>Sisteme ücretsiz deneme danışanı veya yeni üye ekleyin.</p>
+        <h3><i class="fas fa-user-plus" style="color: var(--accent-red);"></i> Yeni Danışan Kaydı Aç</h3>
+        <p>Eğitmen panelinden danışanın sisteme giriş yapacağı telefon ve şifreyi tanımlayabilirsiniz.</p>
       </div>
 
       <form id="add-client-form">
         <div class="calc-form-group">
           <label class="calc-label" for="new-client-name">Danışan Adı Soyadı *</label>
-          <input type="text" id="new-client-name" class="input-field" placeholder="Örn: Mehmet Kaya" required>
+          <input type="text" id="new-client-name" class="input-field" placeholder="Örn: Hilal Öztürk" required>
         </div>
 
         <div class="calc-form-group">
-          <label class="calc-label" for="new-client-phone">Telefon Numarası (Danışan Girişi İçin) *</label>
-          <input type="tel" id="new-client-phone" class="input-field" placeholder="Örn: 05386376258" required>
+          <label class="calc-label" for="new-client-phone">Giriş Telefon Numarası (10 Hane) *</label>
+          <input type="tel" id="new-client-phone" class="input-field" placeholder="05303008936" required>
         </div>
 
         <div class="calc-form-group">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
-            <label class="calc-label" for="new-client-password" style="margin-bottom: 0;">Danışan Giriş Şifresi *</label>
-            <button type="button" id="auto-gen-pass-btn" style="background: none; border: none; color: var(--accent-red); cursor: pointer; font-size: 0.78rem; font-weight: bold;">
-              <i class="fas fa-random"></i> Otomatik Şifre Üret
-            </button>
-          </div>
-          <input type="text" id="new-client-password" class="input-field" placeholder="Örn: 586142 veya 123456" required>
+          <label class="calc-label" for="new-client-password">Giriş Şifresi *</label>
+          <input type="text" id="new-client-password" class="input-field" placeholder="Örn: 713386 (Boş bırakılırsa rastgele üretilir)">
         </div>
 
         <div class="calc-form-group">
-          <label class="calc-label" for="new-client-package">Paket Türü *</label>
+          <label class="calc-label" for="new-client-package">Paket Seçimi</label>
           <select id="new-client-package" class="input-field">
-            <option value="🎁 Ücretsiz Deneme / Özel Koçluk">🎁 Ücretsiz Deneme / Özel Koçluk</option>
-            <option value="⚡ 1 Aylık Hızlı Değişim & Detoks">⚡ 1 Aylık Hızlı Değişim & Detoks (1.800 ₺)</option>
-            <option value="🌱 3 Aylık Başlangıç & Disiplin">🌱 3 Aylık Başlangıç & Disiplin (4.500 ₺)</option>
-            <option value="🔥 6 Aylık Vücut Yenileme & Hipertrofi">🔥 6 Aylık Vücut Yenileme & Hipertrofi (7.900 ₺)</option>
-            <option value="👑 12 Aylık VIP Şampiyon Dönüşüm">👑 12 Aylık VIP Şampiyon Dönüşüm (13.500 ₺)</option>
-            <option value="📍 Cevahir MACFit Hibrit Koçluk">📍 Cevahir MACFit Hibrit Koçluk (3.900 ₺)</option>
-            <option value="🏋️‍♀️ Cevahir AVM Birebir PT (10 Ders)">🏋️‍♀️ Cevahir AVM Birebir PT (10 Ders)</option>
-            <option value="🏋️‍♂️ Cevahir AVM Birebir PT (20 Ders)">🏋️‍♂️ Cevahir AVM Birebir PT (20 Ders)</option>
-            <option value="🏋️‍♂️ Cevahir AVM Birebir PT (30 Ders)">🏋️‍♂️ Cevahir AVM Birebir PT (30 Ders)</option>
-            <option value="🤝 Özel Çift / Kurumsal Koçluk">🤝 Özel Çift / Kurumsal Koçluk</option>
+            <option value="6 Aylık Vücut Yenileme & Hipertrofi Paketi">6 Aylık Vücut Yenileme & Hipertrofi Paketi</option>
+            <option value="3 Aylık Başlangıç & Disiplin Paketi">3 Aylık Başlangıç & Disiplin Paketi</option>
+            <option value="12 Aylık VIP Şampiyon Dönüşüm Paketi">12 Aylık VIP Şampiyon Dönüşüm Paketi</option>
+            <option value="Cevahir MACFit Hibrit Koçluk Paketi">Cevahir MACFit Hibrit Koçluk Paketi</option>
+            <option value="Cevahir AVM Birebir PT Paketi">Cevahir AVM Birebir PT Paketi</option>
           </select>
         </div>
 
-        <div class="calc-form-group">
-          <label class="calc-label" for="new-client-stage">Aşama & Dönem</label>
-          <input type="text" id="new-client-stage" class="input-field" value="1. Hafta (Yeni Başladı)" required>
-        </div>
-
-        <div class="calc-form-group">
-          <label class="calc-label" for="new-client-status">Başlangıç Durumu</label>
-          <select id="new-client-status" class="input-field">
-            <option value="active">🟢 Aktif Danışan</option>
-            <option value="passive">🔴 Pasif / Paketi Bitti</option>
-          </select>
-        </div>
-
-        <button type="submit" class="btn btn-primary-glow" style="width: 100%; margin-top: 1rem;">
-          <i class="fas fa-plus-circle"></i> Danışanı Sisteme Ekle ve Şifre Üret
+        <button type="submit" class="btn btn-primary-glow btn-block" style="margin-top: 1rem;">
+          <i class="fas fa-check-circle"></i> Danışanı Sisteme Kaydet
         </button>
       </form>
     </div>
   </div>
 
+  <!-- Presets Modal -->
+  <div class="modal-overlay" id="preset-modal">
+    <div class="modal-container">
+      <button class="close-modal-btn" onclick="document.getElementById('preset-modal').classList.remove('active');">&times;</button>
+      <div class="modal-header">
+        <h3><i class="fas fa-magic" style="color: var(--accent-red);"></i> Hazır Antrenman Şablonu Yükle</h3>
+        <p>Seçili danışanın haftalık matrisine hazır antrenman şablonu uygulayın.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
+        <button class="btn btn-outline" style="text-align: left;" onclick="window.applyPreset('hipertrofi');">🔥 4 Günlük Hipertrofi & Kas Kütlesi Şablonu</button>
+        <button class="btn btn-outline" style="text-align: left;" onclick="window.applyPreset('yag_yakimi');">⚡ 3 Günlük Hızlı Yağ Yakımı & Kardiyo Şablonu</button>
+        <button class="btn btn-outline" style="text-align: left;" onclick="window.applyPreset('ev_antrenman');">🏠 3 Günlük Evde Dambıl & Vücut Ağırlığı Şablonu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clone From Client Modal -->
+  <div class="modal-overlay" id="clone-client-modal">
+    <div class="modal-container">
+      <button class="close-modal-btn" onclick="document.getElementById('clone-client-modal').classList.remove('active');">&times;</button>
+      <div class="modal-header">
+        <h3><i class="fas fa-user-friends" style="color: var(--accent-red);"></i> Başka Danışandan Program Kopyala</h3>
+        <p>Sistemdeki başka bir danışanın antrenman matrisini seçili danışana kopyalayın.</p>
+      </div>
+      <div class="calc-form-group" style="margin-top: 1rem;">
+        <label class="calc-label">Programı Alınacak Danışan:</label>
+        <select id="clone-source-client-select" class="input-field"></select>
+      </div>
+      <button class="btn btn-primary-glow btn-block" onclick="window.executeCloneFromClient();" style="margin-top: 1rem;">
+        <i class="fas fa-copy"></i> Programı Kopyala & Sihirbaza Aktar
+      </button>
+    </div>
+  </div>
+
+  <!-- App Scripts -->
   <script>
-    // ==========================================================================
-    // Trainer Authentication Logic & Server Token Engine
-    // ==========================================================================
-    const trainerAuthOverlay = document.getElementById('trainer-auth-overlay');
-    const trainerLoginForm = document.getElementById('trainer-login-form');
-    const trainerPinInput = document.getElementById('trainer-pin-input');
-    const trainerLoginError = document.getElementById('trainer-login-error');
+    // --------------------------------------------------------------------------
+    // STATE & UTILITIES
+    // --------------------------------------------------------------------------
+    let clients = [];
+    let selectedClientId = null;
+    let wizardCurrentStep = 1;
+    let wizardCurrentWeek = 1;
+    let wizardState = {
+      programMatrix: {},
+      dayList: ['1. Gün: Göğüs & Biceps', '2. Gün: Sırt & Triceps', '3. Gün: Bacak & Omuz', '4. Gün: Kardiyo & Karın'],
+      isUnsaved: false
+    };
 
     function getTrainerToken() {
       return sessionStorage.getItem('trainer_session_token') || localStorage.getItem('trainer_session_token') || '';
@@ -1147,810 +665,56 @@
 
     async function trainerFetch(url, options = {}) {
       const token = getTrainerToken();
-      const headers = {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}`, 'x-session-token': token } : {}),
-        ...(options.headers || {})
-      };
+      const headers = options.headers || {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      options.headers = headers;
 
-      const res = await fetch(url, { ...options, headers });
-      if (res.status === 401 && !url.includes('/api/auth/trainer')) {
-        sessionStorage.removeItem('trainer_session_token');
-        sessionStorage.removeItem('trainer_authenticated');
-        if (trainerAuthOverlay) trainerAuthOverlay.style.display = 'flex';
+      const res = await fetch(url, options);
+      if (res.status === 401) {
+        document.getElementById('trainer-auth-overlay').style.display = 'flex';
       }
       return res;
     }
 
-    if (sessionStorage.getItem('trainer_authenticated') === 'true' && getTrainerToken()) {
-      if (trainerAuthOverlay) trainerAuthOverlay.style.display = 'none';
-    } else {
-      if (trainerAuthOverlay) trainerAuthOverlay.style.display = 'flex';
-    }
+    // --------------------------------------------------------------------------
+    // TRAINER AUTH
+    // --------------------------------------------------------------------------
+    document.getElementById('trainer-login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pin = document.getElementById('trainer-pin-input').value.trim();
+      const errBox = document.getElementById('trainer-login-error');
 
-    if (trainerLoginForm) {
-      trainerLoginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const enteredPin = trainerPinInput.value.trim();
-        try {
-          const res = await fetch('/api/auth/trainer', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin: enteredPin })
-          });
-          const data = await res.json();
-          if (res.ok && data.success && data.token) {
-            sessionStorage.setItem('trainer_session_token', data.token);
-            sessionStorage.setItem('trainer_authenticated', 'true');
-            if (trainerAuthOverlay) trainerAuthOverlay.style.display = 'none';
-            if (trainerLoginError) trainerLoginError.style.display = 'none';
-            loadServerClients();
-          } else {
-            if (trainerLoginError) {
-              trainerLoginError.textContent = data.message || '⚠️ Hatalı Şifre!';
-              trainerLoginError.style.display = 'block';
-            }
-            trainerPinInput.value = '';
-            trainerPinInput.focus();
-          }
-        } catch (err) {
-          if (trainerLoginError) {
-            trainerLoginError.textContent = '⚠️ Sunucu bağlantı hatası!';
-            trainerLoginError.style.display = 'block';
-          }
-        }
-      });
-    }
-
-    // ==========================================================================
-    // Dynamic Client Management System & Automatic Expiration Engine
-    // ==========================================================================
-    const defaultClients = [];
-
-    let clients = JSON.parse(localStorage.getItem('pt_clients_list')) || defaultClients;
-    let currentFilter = 'all';
-    let selectedClientId = clients.length > 0 ? clients[0].id : null;
-
-    // Sunucudan (REST API) Kayıtlı Danışanları Canlı Çek ve Birleştir
-    async function loadServerClients() {
       try {
-        const res = await trainerFetch('/api/clients');
-        const data = await res.json();
-        if (data.success && Array.isArray(data.clients)) {
-          mergeClientLists(data.clients);
-          if (!selectedClientId && clients.length > 0) {
-            selectedClientId = clients[0].id;
-          }
-          renderClientsList();
-        }
-      } catch (err) {
-        console.warn('Sunucu danışan verisi yerel hafızadan okundu:', err);
-      }
-    }
-    loadServerClients();
-
-    // Otomatik Paket Bitiş Kontrolü (Süresi geçen üyeleri otomatik pasife düşürür)
-    function checkAutomaticExpirations() {
-      const todayStr = new Date().toISOString().split('T')[0];
-      let changed = false;
-
-      clients.forEach(c => {
-        if (c.expiryDate && c.expiryDate < todayStr && c.status === 'active') {
-          c.status = 'passive';
-          c.note = '🔴 Otomatik Pasife Alındı (Süresi Doldu)';
-          changed = true;
-        }
-      });
-
-      if (changed) {
-        saveClients();
-      }
-    }
-
-    function loadSelectedClientProgramData(client) {
-      if (!client) return;
-
-      const cleanPhone = (client.phone || '').replace(/\D/g, '');
-
-      // 1. Load Program Matrix
-      const clientMatrix = client.programMatrix || 
-                           JSON.parse(localStorage.getItem('pt_matrix_program_' + client.id)) ||
-                           JSON.parse(localStorage.getItem('pt_matrix_program_' + cleanPhone));
-
-      if (clientMatrix) {
-        window.adminProgramState = JSON.parse(JSON.stringify(clientMatrix));
-      } else {
-        // Reset to default matrix state for new client
-        window.adminProgramState = {
-          "1_1": [
-            { name: "Dumbbell Chest Press (Düz Sehpa)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
-            { name: "Incline Dumbbell Fly", sets: "3 Set", reps: "12-15 Tekrar", rest: "60 sn Dinlenme" },
-            { name: "Barbell Biceps Curl (Ön Kol)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" }
-          ],
-          "1_2": [
-            { name: "Lat Pulldown (Göğse Çekiş)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
-            { name: "Seated Cable Row (Kürek)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
-            { name: "Triceps Rope Pushdown (Arka Kol)", sets: "3 Set", reps: "15 Tekrar", rest: "60 sn Dinlenme" }
-          ],
-          "1_3": [
-            { name: "Goblet Squat (Dambıl ile Squat)", sets: "4 Set", reps: "10-12 Tekrar", rest: "90 sn Dinlenme" },
-            { name: "Leg Press", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
-            { name: "Seated Dumbbell Shoulder Press (Omuz)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" }
-          ],
-          "1_4": [
-            { name: "Plank Hold", sets: "3 Set", reps: "45 sn", rest: "45 sn Dinlenme" },
-            { name: "Hanging Leg Raise (Alt Karın)", sets: "3 Set", reps: "15 Tekrar", rest: "45 sn Dinlenme" },
-            { name: "Eğimli Yürüyüş Kardiyo", sets: "1 Seans", reps: "25 dk (Eğim 8, Hız 5.5)", rest: "Antrenman Sonu" }
-          ]
-        };
-      }
-
-      // Load matrix into input fields for active week & day
-      if (typeof loadInputsFromState === 'function') {
-        loadInputsFromState();
-      }
-
-      // 2. Load Start Date
-      const dateInput = document.getElementById('builder-start-date');
-      if (dateInput) {
-        dateInput.value = client.startDate || 
-                          localStorage.getItem('pt_start_date_' + client.id) || 
-                          localStorage.getItem('pt_start_date_' + cleanPhone) || 
-                          new Date().toISOString().split('T')[0];
-        if (typeof updateAdminWeekDateBadges === 'function') {
-          updateAdminWeekDateBadges();
-        }
-      }
-
-      // 3. Load Coach Note
-      const coachNoteInput = document.getElementById('builder-coach-note');
-      if (coachNoteInput) {
-        coachNoteInput.setAttribute('data-client-id', client.id);
-        const storedNote = client.coachNote || 
-                           localStorage.getItem('pt_coach_note_' + client.id) || 
-                           localStorage.getItem('pt_coach_note_' + cleanPhone);
-        if (storedNote) {
-          coachNoteInput.value = storedNote;
-        } else {
-          const firstName = client.name.split(' ')[0];
-          coachNoteInput.value = `${client.package} ailesine hoş geldin ${firstName}! İlk 2 haftamızda temel hedefimiz ağır kitleler kaldırmak değil, hareket formlarını eksiksiz öğrenmek ve vücudunu antrenman ritmine alıştırmaktır. Beslenme listendeki makrolara sadık kal!`;
-        }
-      }
-
-      // 4. Load Custom Day List
-      window.adminDayList = client.dayList || 
-                            JSON.parse(localStorage.getItem('pt_day_list_' + client.id)) ||
-                            JSON.parse(localStorage.getItem('pt_day_list_' + cleanPhone)) || [
-        { id: 1, title: 'Göğüs & Ön Kol' },
-        { id: 2, title: 'Sırt & Arka Kol' },
-        { id: 3, title: 'Bacak & Omuz' },
-        { id: 4, title: 'Kardiyo & Karın' }
-      ];
-      renderAdminDayButtons();
-
-      // 5. Render Client Form Photos & 4 Angle Inspector
-      renderAdminClientPhotos(client);
-
-      // 6. Render Dynamic Calendar for Selected Client
-      renderAdminCalendar();
-    }
-
-    function renderAdminClientPhotos(client) {
-      const container = document.getElementById('admin-client-photos-container');
-      const nameEl = document.getElementById('photo-inspector-client-name');
-      if (nameEl) nameEl.textContent = client.name || 'Danışan';
-      if (!container) return;
-
-      const cleanP = (client.phone || '').replace(/\D/g, '');
-      const photosList = client.photos || client.formPhotos || JSON.parse(localStorage.getItem('pt_client_photos_' + cleanP)) || [];
-
-      if (photosList.length === 0) {
-        container.innerHTML = `
-          <div style="padding: 2rem; background: rgba(0,0,0,0.3); border: 1px dashed var(--border-light); border-radius: var(--radius-md); text-align: center; color: var(--text-muted);">
-            <i class="fas fa-camera-retro" style="font-size: 2rem; color: #10B981; margin-bottom: 0.6rem; display: block;"></i>
-            <strong>${client.name}</strong> henüz 4 cephe form fotoğrafı yüklemedi. Danışan kendi panelinden görsel yüklediğinde anında burada görüntülenecektir.
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = photosList.map((p, idx) => {
-        const frontSrc = p.front || p.dataUrl;
-        const backSrc = p.back || p.dataUrl;
-        const rightSrc = p.right || p.dataUrl;
-        const leftSrc = p.left || p.dataUrl;
-
-        return `
-          <div style="background: rgba(18, 18, 22, 0.95); border: 1px solid #10B981; border-radius: var(--radius-md); padding: 1.2rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.6rem;">
-              <div>
-                <h5 style="color: #FFFFFF; font-size: 1rem; margin: 0 0 0.2rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                  <i class="fas fa-calendar-check" style="color: #10B981;"></i> ${idx + 1}. Form Kontrolü (${p.date || 'Tarih Belirtilmedi'})
-                </h5>
-                <span style="font-size: 0.82rem; color: var(--text-muted);">${p.note ? `📌 Danışan Notu: "${p.note}"` : 'Ek not bırakılmadı'}</span>
-              </div>
-              <span style="font-size: 0.78rem; background: rgba(16,185,129,0.2); color: #10B981; padding: 0.3rem 0.8rem; border-radius: var(--radius-full); border: 1px solid #10B981; font-weight: 800;">
-                📸 4 Cephe Görseli Yüklendi
-              </span>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.8rem;">
-              <div style="text-align: center; background: rgba(0,0,0,0.4); padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
-                <span style="font-size: 0.75rem; color: #10B981; font-weight: 800; display: block; margin-bottom: 0.3rem;">1. ÖN CEPHE</span>
-                <img src="${frontSrc}" alt="Ön" onclick="window.openAdminImageZoom('${frontSrc}')" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid var(--border-light);" title="Tıklayıp Tam Ekranda İncele">
-              </div>
-
-              <div style="text-align: center; background: rgba(0,0,0,0.4); padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
-                <span style="font-size: 0.75rem; color: #10B981; font-weight: 800; display: block; margin-bottom: 0.3rem;">2. ARKA (SIRT)</span>
-                <img src="${backSrc}" alt="Arka" onclick="window.openAdminImageZoom('${backSrc}')" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid var(--border-light);" title="Tıklayıp Tam Ekranda İncele">
-              </div>
-
-              <div style="text-align: center; background: rgba(0,0,0,0.4); padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
-                <span style="font-size: 0.75rem; color: #10B981; font-weight: 800; display: block; margin-bottom: 0.3rem;">3. SAĞ YAN</span>
-                <img src="${rightSrc}" alt="Sağ" onclick="window.openAdminImageZoom('${rightSrc}')" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid var(--border-light);" title="Tıklayıp Tam Ekranda İncele">
-              </div>
-
-              <div style="text-align: center; background: rgba(0,0,0,0.4); padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
-                <span style="font-size: 0.75rem; color: #10B981; font-weight: 800; display: block; margin-bottom: 0.3rem;">4. SOL YAN</span>
-                <img src="${leftSrc}" alt="Sol" onclick="window.openAdminImageZoom('${leftSrc}')" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid var(--border-light);" title="Tıklayıp Tam Ekranda İncele">
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function openAdminImageZoom(src) {
-      let modal = document.getElementById('admin-image-zoom-modal');
-      if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'admin-image-zoom-modal';
-        modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999999; display: flex; align-items: center; justify-content: center; padding: 1.5rem; backdrop-filter: blur(12px);';
-        modal.innerHTML = `
-          <div style="position: relative; max-width: 90vw; max-height: 90vh; text-align: center;">
-            <button onclick="document.getElementById('admin-image-zoom-modal').style.display='none';" style="position: absolute; top: -2.5rem; right: 0; background: none; border: none; color: #FFF; font-size: 2.2rem; cursor: pointer;">&times;</button>
-            <img id="admin-zoom-img" src="" style="max-width: 100%; max-height: 85vh; border-radius: 8px; border: 2px solid #10B981; box-shadow: 0 0 35px rgba(0,0,0,0.8); object-fit: contain;">
-          </div>
-        `;
-        document.body.appendChild(modal);
-        modal.addEventListener('click', (e) => {
-          if (e.target === modal) modal.style.display = 'none';
-        });
-      }
-      document.getElementById('admin-zoom-img').src = src;
-      modal.style.display = 'flex';
-    }
-    window.openAdminImageZoom = openAdminImageZoom;
-
-    // ==========================================================================
-    // Dynamic Interactive Client Calendar Note System (Eğitmen Takvim Notları)
-    // ==========================================================================
-    let selectedCalendarDateKey = null;
-
-    function renderAdminCalendar() {
-      const grid = document.getElementById('admin-calendar-days-grid');
-      const activeTargetSpan = document.getElementById('admin-active-client-note-target');
-      if (!grid) return;
-
-      const currentSelected = clients.find(c => c.id === selectedClientId) || clients[0];
-      if (activeTargetSpan) {
-        activeTargetSpan.textContent = currentSelected ? currentSelected.name : 'Danışan';
-      }
-
-      const cleanPhone = currentSelected ? (currentSelected.phone || '').replace(/\D/g, '') : '';
-      const notesKey = `pt_calendar_notes_${cleanPhone}`;
-      const savedNotes = (currentSelected && currentSelected.calendarNotes) || JSON.parse(localStorage.getItem(notesKey)) || {};
-
-      grid.innerHTML = '';
-      const now = new Date();
-      const today = now.getDate();
-      const totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-
-      for (let day = 1; day <= totalDays; day++) {
-        const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const noteText = savedNotes[dateKey] || savedNotes[day] || savedNotes[String(day)];
-        const isToday = (day === today);
-
-        const cell = document.createElement('div');
-        cell.style.padding = '0.65rem 0.3rem';
-        cell.style.borderRadius = 'var(--radius-sm)';
-        cell.style.fontSize = '0.82rem';
-        cell.style.fontWeight = '700';
-        cell.style.cursor = 'pointer';
-        cell.style.position = 'relative';
-        cell.style.transition = 'var(--transition-fast)';
-
-        if (noteText) {
-          cell.style.background = 'rgba(239, 68, 68, 0.25)';
-          cell.style.border = '2px solid var(--accent-red)';
-          cell.style.color = '#FFFFFF';
-          cell.style.boxShadow = '0 0 10px rgba(239, 68, 68, 0.3)';
-          cell.innerHTML = `${day}<br><span style="font-size: 0.62rem; color: #10B981; font-weight: 800;">📌 Not Var</span>`;
-          cell.title = `Not: "${noteText}" (Düzenlemek için tıklayın)`;
-        } else if (isToday) {
-          cell.style.background = 'rgba(255,255,255,0.06)';
-          cell.style.border = '2px solid var(--accent-red)';
-          cell.style.color = '#FFFFFF';
-          cell.innerHTML = `${day}<br><span style="font-size: 0.62rem; color: var(--accent-red); font-weight: 800;">BUGÜN</span>`;
-          cell.title = 'Not Eklemek İçin Tıklayın';
-        } else {
-          cell.style.background = 'rgba(255,255,255,0.02)';
-          cell.style.border = '1px solid rgba(255,255,255,0.08)';
-          cell.style.color = '#E5E7EB';
-          cell.innerHTML = `${day}`;
-          cell.title = 'Not Eklemek İçin Tıklayın';
-        }
-
-        cell.addEventListener('click', () => {
-          openAdminCalendarNoteModal(day, dateKey);
-        });
-
-        grid.appendChild(cell);
-      }
-    }
-    window.renderAdminCalendar = renderAdminCalendar;
-
-    function openAdminCalendarNoteModal(dayNum, dateKey) {
-      const currentSelected = clients.find(c => c.id === selectedClientId) || clients[0];
-      if (!currentSelected) {
-        alert('Lütfen önce soldaki listeden bir danışan seçin!');
-        return;
-      }
-
-      selectedCalendarDateKey = dateKey || String(dayNum);
-
-      const modal = document.getElementById('admin-calendar-note-modal');
-      const nameEl = document.getElementById('admin-modal-client-name');
-      const dateEl = document.getElementById('admin-modal-target-date');
-      const inputEl = document.getElementById('admin-calendar-note-input');
-
-      if (nameEl) nameEl.textContent = `📌 ${currentSelected.name} — Takvim Notu`;
-      
-      const now = new Date();
-      const monthName = now.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-      if (dateEl) dateEl.textContent = `${dayNum} ${monthName}`;
-
-      const cleanPhone = (currentSelected.phone || '').replace(/\D/g, '');
-      const notesKey = `pt_calendar_notes_${cleanPhone}`;
-      const savedNotes = currentSelected.calendarNotes || JSON.parse(localStorage.getItem(notesKey)) || {};
-
-      if (inputEl) {
-        inputEl.value = savedNotes[selectedCalendarDateKey] || savedNotes[dayNum] || savedNotes[String(dayNum)] || '';
-      }
-
-      if (modal) modal.style.display = 'flex';
-    }
-    window.openAdminCalendarNoteModal = openAdminCalendarNoteModal;
-
-    function closeAdminCalendarNoteModal() {
-      const modal = document.getElementById('admin-calendar-note-modal');
-      if (modal) modal.style.display = 'none';
-    }
-    window.closeAdminCalendarNoteModal = closeAdminCalendarNoteModal;
-
-    function applyCalendarNotePreset(presetText) {
-      const inputEl = document.getElementById('admin-calendar-note-input');
-      if (inputEl) {
-        inputEl.value = presetText;
-      }
-    }
-    window.applyCalendarNotePreset = applyCalendarNotePreset;
-
-    function saveAdminCalendarNote() {
-      const currentSelected = clients.find(c => c.id === selectedClientId) || clients[0];
-      if (!currentSelected || !selectedCalendarDateKey) return;
-
-      const inputEl = document.getElementById('admin-calendar-note-input');
-      const noteText = inputEl ? inputEl.value.trim() : '';
-
-      if (!currentSelected.calendarNotes) {
-        currentSelected.calendarNotes = {};
-      }
-
-      if (noteText) {
-        currentSelected.calendarNotes[selectedCalendarDateKey] = noteText;
-        // Also map to day number for simple lookups
-        const dayOnly = selectedCalendarDateKey.split('-').pop();
-        if (dayOnly) currentSelected.calendarNotes[parseInt(dayOnly, 10)] = noteText;
-      } else {
-        delete currentSelected.calendarNotes[selectedCalendarDateKey];
-        const dayOnly = selectedCalendarDateKey.split('-').pop();
-        if (dayOnly) delete currentSelected.calendarNotes[parseInt(dayOnly, 10)];
-      }
-
-      const cleanPhone = (currentSelected.phone || '').replace(/\D/g, '');
-      const notesKey = `pt_calendar_notes_${cleanPhone}`;
-      localStorage.setItem(notesKey, JSON.stringify(currentSelected.calendarNotes));
-      saveClients();
-
-      // REST API Sync
-      trainerFetch(`/api/clients/${currentSelected.id || cleanPhone}/profile`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ calendarNotes: currentSelected.calendarNotes })
-      }).catch(err => console.log('Calendar note offline sync:', err));
-
-      closeAdminCalendarNoteModal();
-      renderAdminCalendar();
-
-      alert(`✅ Takvim Notu Başarıyla Kaydedildi!\n\n📌 Danışan: ${currentSelected.name}\n📅 Tarih Anahtarı: ${selectedCalendarDateKey}\n📝 Not: "${noteText || 'Silindi'}"\n\nBu not danışanın kendi paneline anında yansıyacaktır.`);
-    }
-    window.saveAdminCalendarNote = saveAdminCalendarNote;
-
-    function deleteAdminCalendarNote() {
-      const inputEl = document.getElementById('admin-calendar-note-input');
-      if (inputEl) inputEl.value = '';
-      saveAdminCalendarNote();
-    }
-    window.deleteAdminCalendarNote = deleteAdminCalendarNote;
-
-    function renderClientsList(isError = false) {
-      checkAutomaticExpirations();
-      const container = document.getElementById('clients-container');
-      const countEl = document.getElementById('client-count');
-      if (!container) return;
-
-      if (isError) {
-        if (countEl) countEl.textContent = '0';
-        container.innerHTML = `
-          <div style="text-align: center; padding: 2rem 1rem; border: 1px dashed var(--accent-red); border-radius: var(--radius-md); background: rgba(239, 68, 68, 0.08);">
-            <i class="fas fa-exclamation-triangle" style="font-size: 2.2rem; color: var(--accent-red); margin-bottom: 0.8rem; display: block;"></i>
-            <h4 style="color: #FFFFFF; font-size: 0.95rem; margin-bottom: 0.3rem;">⚠️ Sunucuya Ulaşılamadı!</h4>
-            <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1rem;">Sunucu bağlantısını veya internetinizi kontrol edip sayfayı yenileyiniz.</p>
-          </div>
-        `;
-        return;
-      }
-
-      const filtered = clients.filter(c => {
-        if (currentFilter === 'active') return c.status === 'active';
-        if (currentFilter === 'passive') return c.status === 'passive';
-        return true;
-      });
-
-      countEl.textContent = clients.length;
-      container.innerHTML = '';
-
-      // Update Target Client Builder Workspace Banner
-      const currentSelected = clients.find(c => c.id === selectedClientId) || clients[0];
-      const titleName = document.getElementById('target-client-title-name');
-      const pkgInfo = document.getElementById('target-client-pkg-info');
-      const statusBadge = document.getElementById('target-client-status-badge');
-
-      if (currentSelected) {
-        if (titleName) titleName.textContent = currentSelected.name;
-        if (pkgInfo) pkgInfo.textContent = `${currentSelected.package} | ${currentSelected.stage}`;
-        if (statusBadge) {
-          if (currentSelected.status === 'active') {
-            statusBadge.innerHTML = '🟢 Üyelik Aktif (Özel Program Yazılabilir)';
-            statusBadge.style.color = '#10B981';
-            statusBadge.style.background = 'rgba(16,185,129,0.15)';
-          } else {
-            statusBadge.innerHTML = '🔴 Pasif / Paketi Bitti';
-            statusBadge.style.color = '#EF4444';
-            statusBadge.style.background = 'rgba(239,68,68,0.15)';
-          }
-        }
-
-        // Dynamically load selected client's personalized program matrix, start date, and coach notes
-        loadSelectedClientProgramData(currentSelected);
-      } else {
-        if (titleName) titleName.textContent = 'Danışan Seçilmedi';
-        if (pkgInfo) pkgInfo.textContent = 'Lütfen soldaki listeden danışan seçin veya yukarıdaki "Yeni Danışan Ekle" butonuna basın.';
-        if (statusBadge) {
-          statusBadge.innerHTML = '⚪ Henüz Danışan Seçilmedi';
-          statusBadge.style.color = 'var(--text-muted)';
-          statusBadge.style.background = 'rgba(255,255,255,0.05)';
-        }
-      }
-
-      if (filtered.length === 0) {
-        container.innerHTML = `
-          <div style="text-align: center; padding: 2.5rem 1rem; border: 1px dashed var(--border-light); border-radius: var(--radius-md); background: rgba(0,0,0,0.2);">
-            <i class="fas fa-users-slash" style="font-size: 2.2rem; color: var(--text-muted); margin-bottom: 0.8rem; display: block;"></i>
-            <h4 style="color: #FFFFFF; font-size: 0.95rem; margin-bottom: 0.3rem;">✨ Sunucuda Kayıtlı Danışan Yok</h4>
-            <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1.2rem;">Yukarıdaki "Yeni Danışan Ekle" butonuna basarak ilk üyenizi kaydedebilirsiniz.</p>
-            <button class="btn btn-primary-glow" style="font-size: 0.78rem; padding: 0.4rem 0.8rem;" onclick="document.getElementById('open-add-client-btn').click();">
-              <i class="fas fa-user-plus"></i> İlk Danışanı Kaydet
-            </button>
-          </div>
-        `;
-        return;
-      }
-
-      filtered.forEach(c => {
-        const isSelected = (c.id === selectedClientId);
-        const isActive = (c.status === 'active');
-
-        const card = document.createElement('div');
-        card.className = `client-item-card ${isSelected ? 'active' : ''}`;
-        card.style.cursor = 'pointer';
-        card.style.opacity = isActive ? '1' : '0.65';
-        card.style.borderLeft = isActive ? '4px solid #10B981' : '4px solid #EF4444';
-        card.style.marginBottom = '0.8rem';
-        card.style.padding = '1rem';
-        card.style.borderRadius = 'var(--radius-md)';
-        card.style.border = isSelected ? '2px solid var(--accent-red)' : '1px solid var(--border-light)';
-        card.style.background = isSelected ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.02)';
-
-        card.innerHTML = `
-          <div class="client-item-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
-            <h4 style="margin: 0; color: #FFFFFF; font-size: 0.95rem;">${c.name}</h4>
-            <span class="package-tag" style="font-size: 0.7rem; padding: 0.2rem 0.5rem; background: ${c.package.includes('VIP') ? 'rgba(245,158,11,0.2)' : 'rgba(239,68,68,0.2)'}; color: ${c.package.includes('VIP') ? '#F59E0B' : '#EF4444'}; border-radius: 4px;">
-              ${c.package}
-            </span>
-          </div>
-          <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 0.3rem 0;">${c.stage}</p>
-
-          <div style="font-size: 0.78rem; color: #E5E7EB; background: rgba(255,255,255,0.04); padding: 0.4rem 0.6rem; border-radius: 4px; margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.08);">
-            <span>📱 <strong>Tel:</strong> ${c.phone || 'Girilmedi'}</span>
-            <span>🔑 <strong>Şifre:</strong> <strong style="color: #F59E0B; font-size: 0.88rem;">${c.password || '123456'}</strong></span>
-          </div>
-
-          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem; flex-wrap: wrap; gap: 0.4rem;">
-            <span style="font-size: 0.75rem; color: ${isActive ? '#10B981' : '#EF4444'};">
-              <i class="fas ${isActive ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${c.note || (isActive ? 'Aktif' : 'Paket Bitti')}
-            </span>
-            
-            <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
-              <button class="send-wa-info-btn" data-phone="${c.phone || ''}" data-name="${c.name}" data-pass="${c.password || '123456'}" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: var(--radius-sm); border: 1px solid #25D366; background: rgba(37,211,102,0.15); color: #25D366; cursor: pointer; font-weight: bold;" title="WhatsApp'tan Giriş Bilgilerini Gönder">
-                <i class="fab fa-whatsapp"></i> Bilgi Gönder
-              </button>
-              <button class="toggle-status-btn" data-id="${c.id}" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: var(--radius-sm); border: 1px solid ${isActive ? '#10B981' : '#EF4444'}; background: ${isActive ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; color: ${isActive ? '#10B981' : '#EF4444'}; cursor: pointer; font-weight: bold;">
-                ${isActive ? '🟢 Aktif' : '🔴 Pasif Yap'}
-              </button>
-              <button class="reset-password-btn" data-id="${c.id}" data-name="${c.name}" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: var(--radius-sm); border: 1px solid #F59E0B; background: rgba(245,158,11,0.15); color: #F59E0B; cursor: pointer; font-weight: bold;" title="Danışanın Şifresini Sıfırla">
-                🔑 Şifre Yenile
-              </button>
-              <button class="delete-client-btn" data-id="${c.id}" data-name="${c.name}" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: var(--radius-sm); border: 1px solid #EF4444; background: rgba(239,68,68,0.2); color: #EF4444; cursor: pointer; font-weight: bold;" title="Danışanı Kalıcı Sil">
-                <i class="fas fa-trash-alt"></i> Sil
-              </button>
-            </div>
-          </div>
-        `;
-
-        // Card select event -> Switch active builder workspace client
-        card.addEventListener('click', (e) => {
-          if (e.target.closest('.toggle-status-btn') || e.target.closest('.delete-client-btn') || e.target.closest('.reset-password-btn')) return;
-          selectedClientId = c.id;
-          renderClientsList();
-        });
-
-        // WhatsApp Send Info Event
-        const sendWaBtn = card.querySelector('.send-wa-info-btn');
-        if (sendWaBtn) {
-          sendWaBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const phoneStr = (c.phone || '').replace(/\D/g, '');
-            const passStr = c.password || '123456';
-            const waText = encodeURIComponent(`Merhaba ${c.name}, PT Umut Altun Danışan Paneline erişim bilgileriniz:\n\n📱 Telefon Numarası: ${c.phone}\n🔑 Giriş Şifreniz: ${passStr}\n\nPanelinize giriş yapmak için linke tıklayabilirsiniz:\nhttps://ptumutaltun.com/dashboard.html`);
-            const waUrl = `https://wa.me/90${phoneStr}?text=${waText}`;
-            window.open(waUrl, '_blank');
-          });
-        }
-
-        // Toggle status event
-        card.querySelector('.toggle-status-btn').addEventListener('click', (e) => {
-          e.stopPropagation();
-          c.status = (c.status === 'active') ? 'passive' : 'active';
-          c.note = (c.status === 'active') ? 'Aktif Üyelik Devam Ediyor' : 'Paketi Bitti / Pasif';
-          saveClients();
-          renderClientsList();
-        });
-
-        // Reset password event
-        const resetBtn = card.querySelector('.reset-password-btn');
-        if (resetBtn) {
-          resetBtn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            const newPass = Math.floor(100000 + Math.random() * 900000).toString();
-            if (confirm(`"${c.name}" isimli danışanın giriş şifresini "${newPass}" olarak yenilemek istediğinize emin misiniz?`)) {
-              c.password = newPass;
-              saveClients();
-
-              // Call REST API
-              try {
-                await trainerFetch(`/api/clients/${c.id}/password`, {
-                  method: 'PUT',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ password: newPass })
-                });
-              } catch(err){}
-
-              const phoneStr = c.phone || '';
-              const waText = encodeURIComponent(`Merhaba ${c.name}, PT Umut Altun Danışan Paneli yeni giriş şifreniz: ${newPass}\n\nPaneline giriş yapmak için: https://ptumutaltun.com/dashboard.html`);
-              const waUrl = `https://wa.me/90${phoneStr}?text=${waText}`;
-
-              alert(`🔑 Şifre Başarıyla Yenilendi!\n\n📌 Danışan: ${c.name}\n📱 Telefon: ${c.phone || 'Tanımsız'}\n🔑 Yeni Şifre: ${newPass}\n\nYeni şifre danışana iletilmeye hazırdır.`);
-              if (phoneStr) {
-                window.open(waUrl, '_blank');
-              }
-            }
-          });
-        }
-
-        // Delete client event
-        card.querySelector('.delete-client-btn').addEventListener('click', async (e) => {
-          e.stopPropagation();
-          const cleanP = (c.phone || '').replace(/\D/g, '');
-          if (confirm(`"${c.name}" isimli danışanı sistemden kalıcı olarak silmek istediğinize emin misiniz?\n\nBu işlem danışanın paneline olan tüm erişim yetkilerini kalıcı olarak kapatacaktır!`)) {
-            // 1. Save to local deleted phones blocklist
-            const deletedPhones = JSON.parse(localStorage.getItem('pt_deleted_phones')) || [];
-            if (cleanP && !deletedPhones.includes(cleanP)) deletedPhones.push(cleanP);
-            if (c.id && !deletedPhones.includes(c.id)) deletedPhones.push(c.id);
-            localStorage.setItem('pt_deleted_phones', JSON.stringify(deletedPhones));
-
-            // 2. Remove from local clients list
-            clients = clients.filter(item => item.id !== c.id && (cleanP ? (item.phone || '').replace(/\D/g, '') !== cleanP : true));
-            localStorage.setItem('pt_clients_list', JSON.stringify(clients));
-
-            // 3. Call backend REST API delete
-            try {
-              await trainerFetch(`/api/clients/${c.id || cleanP}`, { method: 'DELETE' });
-            } catch (err) {
-              console.warn('Backend delete sync completed locally.');
-            }
-
-            if (selectedClientId === c.id) {
-              selectedClientId = clients.length > 0 ? clients[0].id : null;
-            }
-            renderClientsList();
-            alert(`✅ "${c.name}" danışanı sistemden silindi. Hesabın panele olan tüm erişimi kapatılmıştır.`);
-          }
-        });
-
-        container.appendChild(card);
-      });
-    }
-
-    function mergeClientLists(serverList) {
-      if (!Array.isArray(serverList)) return;
-      const deletedPhones = JSON.parse(localStorage.getItem('pt_deleted_phones')) || [];
-
-      serverList.forEach(srvClient => {
-        if (!srvClient || (!srvClient.id && !srvClient.phone)) return;
-        const cleanP = (srvClient.phone || '').replace(/\D/g, '');
-        if (deletedPhones.includes(cleanP) || deletedPhones.includes(srvClient.id) || deletedPhones.some(dp => cleanP && cleanP.length >= 10 && cleanP.endsWith(dp.slice(-10)))) {
-          return; // Skip deleted client
-        }
-
-        const idx = clients.findIndex(c => c.id === srvClient.id || (cleanP && c.phone && c.phone.replace(/\D/g, '') === cleanP));
-        if (idx >= 0) {
-          clients[idx] = { ...clients[idx], ...srvClient };
-        } else {
-          clients.push(srvClient);
-        }
-      });
-
-      clients = clients.filter(c => {
-        const cleanP = (c.phone || '').replace(/\D/g, '');
-        return !deletedPhones.includes(cleanP) && !deletedPhones.includes(c.id) && !deletedPhones.some(dp => cleanP && cleanP.length >= 10 && cleanP.endsWith(dp.slice(-10)));
-      });
-
-      localStorage.setItem('pt_clients_list', JSON.stringify(clients));
-    }
-    window.mergeClientLists = mergeClientLists;
-
-    function saveClients() {
-      const deletedPhones = JSON.parse(localStorage.getItem('pt_deleted_phones')) || [];
-      clients = clients.filter(c => {
-        const cleanP = (c.phone || '').replace(/\D/g, '');
-        return !deletedPhones.includes(cleanP) && !deletedPhones.includes(c.id) && !deletedPhones.some(dp => cleanP && cleanP.length >= 10 && cleanP.endsWith(dp.slice(-10)));
-      });
-
-      localStorage.setItem('pt_clients_list', JSON.stringify(clients));
-      trainerFetch('/api/clients/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clients: clients })
-      }).catch(err => console.warn('Offline sync fallback:', err));
-    }
-
-    // Status Filters
-    document.querySelectorAll('.filter-status-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-status-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentFilter = btn.getAttribute('data-filter');
-        renderClientsList();
-      });
-    });
-
-    // Add Client Modal Listeners
-    const modal = document.getElementById('add-client-modal');
-    const openModalBtn = document.getElementById('open-add-client-btn');
-    const closeModalBtn = document.getElementById('close-add-client-modal');
-    const addClientForm = document.getElementById('add-client-form');
-
-    // Auto Password Generator Button
-    const autoGenBtn = document.getElementById('auto-gen-pass-btn');
-    if (autoGenBtn) {
-      autoGenBtn.addEventListener('click', () => {
-        const randomPass = Math.floor(100000 + Math.random() * 900000).toString();
-        document.getElementById('new-client-password').value = randomPass;
-      });
-    }
-
-    if (openModalBtn) {
-      openModalBtn.addEventListener('click', () => {
-        modal.classList.add('active');
-        // Auto generate password when modal opens if blank
-        const passInput = document.getElementById('new-client-password');
-        if (passInput && !passInput.value) {
-          passInput.value = Math.floor(100000 + Math.random() * 900000).toString();
-        }
-      });
-    }
-
-    if (closeModalBtn) {
-      closeModalBtn.addEventListener('click', () => {
-        modal.classList.remove('active');
-      });
-    }
-
-    if (addClientForm) {
-      addClientForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const name = document.getElementById('new-client-name').value.trim();
-        const rawPhone = document.getElementById('new-client-phone').value.trim();
-        const password = document.getElementById('new-client-password').value.trim();
-        const pkg = document.getElementById('new-client-package').value;
-        const stage = document.getElementById('new-client-stage').value.trim();
-        const status = document.getElementById('new-client-status').value;
-
-        const phone = rawPhone.replace(/\D/g, '');
-
-        if (!name || phone.length < 10) {
-          alert('⚠️ Lütfen danışan adı ve geçerli 10 haneli telefon numarasını giriniz!');
-          return;
-        }
-
-        // Auto Expiry Date Calculation
-        let daysToAdd = 90;
-        if (pkg.includes('1 Aylık')) daysToAdd = 30;
-        if (pkg.includes('3 Aylık')) daysToAdd = 90;
-        if (pkg.includes('6 Aylık')) daysToAdd = 180;
-        if (pkg.includes('12 Aylık')) daysToAdd = 365;
-        if (pkg.includes('Deneme') || pkg.includes('PT') || pkg.includes('Ders') || pkg.includes('Çift')) daysToAdd = 45;
-
-        const expDateObj = new Date();
-        expDateObj.setDate(expDateObj.getDate() + daysToAdd);
-        const expiryDateStr = expDateObj.toISOString().split('T')[0];
-
-        const newClient = {
-          name: name,
-          phone: phone,
-          password: password,
-          package: pkg,
-          stage: stage,
-          expiryDate: expiryDateStr,
-          status: status,
-          note: status === 'active' ? `Aktif (Son Tarih: ${expiryDateStr})` : '🔴 Otomatik Pasife Alındı (Süresi Doldu)'
-        };
-
-        // Single Upsert Request to Server API
-        trainerFetch('/api/clients', {
+        const res = await fetch('/api/auth/trainer', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newClient)
-        }).then(res => res.json()).then(data => {
-          if (data.success && data.client) {
-            const idx = clients.findIndex(c => c.id === data.client.id || (data.client.phone && c.phone && c.phone.endsWith(data.client.phone)));
-            if (idx >= 0) clients[idx] = data.client;
-            else clients.unshift(data.client);
-            selectedClientId = data.client.id;
-            localStorage.setItem('pt_clients_list', JSON.stringify(clients));
-            renderClientsList();
-          }
-        }).catch(err => console.log('Offline fallback', err));
+          body: JSON.stringify({ pin })
+        });
+        const data = await res.json();
 
-        modal.classList.remove('active');
-        addClientForm.reset();
-        alert(`✨ Danışan Başarıyla Sisteme Kaydedildi!\n\n📌 Danışan: ${name}\n📱 Giriş Telefonu: ${rawPhone}\n🔑 Giriş Şifresi: ${password}\n📅 Paket Bitiş Tarihi: ${expiryDateStr}\n\nDanışan bu telefon ve şifre ile danışan paneline giriş yapabilir.`);
-      });
+        if (data.success && data.token) {
+          sessionStorage.setItem('trainer_session_token', data.token);
+          localStorage.setItem('trainer_session_token', data.token);
+          document.getElementById('trainer-auth-overlay').style.display = 'none';
+          fetchServerClients();
+        } else {
+          errBox.style.display = 'block';
+        }
+      } catch (err) {
+        errBox.style.display = 'block';
+      }
+    });
+
+    // Check token on start
+    if (getTrainerToken()) {
+      document.getElementById('trainer-auth-overlay').style.display = 'none';
     }
 
-    // Backend Fetch Sync on init with live status indicator
+    // --------------------------------------------------------------------------
+    // BACKEND SYNC & CLIENT LIST MANAGERS
+    // --------------------------------------------------------------------------
     async function fetchServerClients() {
       const statusBadge = document.getElementById('server-status-badge');
       try {
@@ -1960,161 +724,605 @@
           if (data.success && Array.isArray(data.clients)) {
             clients = data.clients;
             if (statusBadge) {
-              const timeStr = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+              const timeStr = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
               statusBadge.innerHTML = `<i class="fas fa-signal"></i> 🟢 Sunucu Canlı (${timeStr})`;
               statusBadge.style.background = 'rgba(16,185,129,0.15)';
               statusBadge.style.color = '#10B981';
               statusBadge.style.borderColor = '#10B981';
             }
-            renderClientsList(false);
+            populateWizardClientSelect();
             return;
           }
         }
-        throw new Error('API Yanıt Hatası');
+        throw new Error('API Error');
       } catch (err) {
-        console.warn('Sunucu bağlantısı kurulamadı:', err);
         if (statusBadge) {
           statusBadge.innerHTML = `<i class="fas fa-exclamation-triangle"></i> 🔴 Sunucuya Ulaşılamadı`;
           statusBadge.style.background = 'rgba(239,68,68,0.15)';
           statusBadge.style.color = 'var(--accent-red)';
           statusBadge.style.borderColor = 'var(--accent-red)';
         }
-        renderClientsList(true);
       }
     }
 
-    // --------------------------------------------------------------------------
-    // ADMIN BULK ACTIONS & DATA TOOLS
-    // --------------------------------------------------------------------------
-    async function triggerPassivateAllClients() {
-      if (!confirm("⚠️ TÜM DANIŞAN ÜYELİKLERİNİ PASİFE ALMAK İSTEDİĞİNİZE EMİN MİSİNİZ?\n\nTüm danışanların durumu 'pasif' yapılacak ve aktif tüm danışan oturumları sonlandırılacaktır. Geçmiş kayıtlar silinmez.")) {
+    function populateWizardClientSelect() {
+      const select = document.getElementById('wizard-client-select');
+      const searchVal = document.getElementById('wizard-client-search').value.toLowerCase().trim();
+      if (!select) return;
+
+      select.innerHTML = '<option value="">-- Lütfen Danışan Seçiniz --</option>';
+
+      const filtered = clients.filter(c => {
+        const nameMatch = (c.name || '').toLowerCase().includes(searchVal);
+        const phoneMatch = (c.phone || '').includes(searchVal);
+        return nameMatch || phoneMatch;
+      });
+
+      filtered.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.name} (${c.phone || ''}) - ${c.package || ''}`;
+        if (c.id === selectedClientId) opt.selected = true;
+        select.appendChild(opt);
+      });
+
+      updateWizardLockState();
+    }
+
+    document.getElementById('wizard-client-search').addEventListener('input', populateWizardClientSelect);
+
+    document.getElementById('wizard-client-select').addEventListener('change', (e) => {
+      const targetId = e.target.value;
+      if (!targetId) {
+        selectedClientId = null;
+        updateWizardLockState();
         return;
       }
+
+      if (wizardState.isUnsaved) {
+        if (!confirm("⚠️ Kaydedilmemiş değişiklikleriniz var. Yine de danışan değiştirilsin mi?")) {
+          e.target.value = selectedClientId || '';
+          return;
+        }
+      }
+
+      selectClientForWizard(targetId);
+    });
+
+    function selectClientForWizard(clientId) {
+      selectedClientId = clientId;
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+
+      const badge = document.getElementById('wizard-client-badge');
+      if (badge) {
+        badge.innerHTML = `<i class="fas fa-user"></i> ${client.name} | ${client.package} | ${client.status === 'active' ? '🟢 Aktif' : '🔴 Pasif'}`;
+      }
+
+      // Populate Step 1 Form Fields
+      document.getElementById('wiz-client-name').value = client.name || '';
+      document.getElementById('wiz-client-phone').value = client.phone || '';
+      document.getElementById('wiz-client-password').value = client.password || '';
+      document.getElementById('wiz-client-package').value = client.package || '6 Aylık Vücut Yenileme & Hipertrofi Paketi';
+      document.getElementById('wiz-client-stage').value = client.stage || '1. Hafta (Yeni Başladı)';
+      document.getElementById('wiz-client-expiry').value = client.expiryDate || '';
+      document.getElementById('wiz-client-status').value = client.status || 'active';
+      document.getElementById('wiz-client-startweight').value = client.startWeight || '';
+      document.getElementById('wiz-client-currweight').value = client.currentWeight || '';
+      document.getElementById('wiz-client-targetweight').value = client.targetWeight || '';
+      document.getElementById('wiz-client-height').value = client.height || '';
+
+      // Populate Step 3 Nutrition Fields
+      const nutri = client.nutrition || {};
+      document.getElementById('wiz-nutri-calories').value = nutri.calories || '';
+      document.getElementById('wiz-nutri-protein').value = nutri.protein || '';
+      document.getElementById('wiz-nutri-carbs').value = nutri.carbs || '';
+      document.getElementById('wiz-nutri-fat').value = nutri.fat || '';
+      document.getElementById('wiz-nutri-water').value = nutri.water || '';
+      document.getElementById('wiz-nutri-meals').value = nutri.meals || '';
+
+      // Populate Step 4 Supplement Fields
+      const supp = client.supplements || {};
+      document.getElementById('wiz-supp-whey').value = supp.whey || '';
+      document.getElementById('wiz-supp-creatine').value = supp.creatine || '';
+      document.getElementById('wiz-supp-preworkout').value = supp.preworkout || '';
+      document.getElementById('wiz-supp-multivitamin').value = supp.multivitamin || '';
+      document.getElementById('wiz-supp-omega3').value = supp.omega3 || '';
+      document.getElementById('wiz-supp-zma').value = supp.zma || '';
+      document.getElementById('wiz-supp-notes').value = supp.notes || '';
+
+      // Populate Step 5 Coach Note
+      document.getElementById('wiz-coach-note').value = client.coachNote || '';
+
+      // Populate Step 2 Program Matrix
+      wizardState.programMatrix = JSON.parse(JSON.stringify(client.programMatrix || {}));
+      wizardState.dayList = client.dayList || wizardState.dayList;
+      wizardState.isUnsaved = false;
+      document.getElementById('wizard-unsaved-badge').style.display = 'none';
+
+      renderWizardExerciseMatrix();
+      renderWizardLivePreview();
+      updateWizardLockState();
+    }
+
+    function updateWizardLockState() {
+      const lockOverlay = document.getElementById('wizard-lock-overlay');
+      if (lockOverlay) {
+        lockOverlay.style.display = selectedClientId ? 'none' : 'flex';
+      }
+    }
+
+    // Mark as unsaved changes
+    document.querySelectorAll('#wizard-container-box input, #wizard-container-box select, #wizard-container-box textarea').forEach(el => {
+      el.addEventListener('input', () => {
+        wizardState.isUnsaved = true;
+        document.getElementById('wizard-unsaved-badge').style.display = 'inline-block';
+      });
+    });
+
+    // --------------------------------------------------------------------------
+    // WIZARD STEP NAVIGATION CONTROLLER
+    // --------------------------------------------------------------------------
+    function goToWizardStep(stepNum) {
+      if (!selectedClientId && stepNum !== 1) {
+        alert('⚠️ Lütfen önce bir danışan seçiniz!');
+        return;
+      }
+
+      wizardCurrentStep = stepNum;
+
+      // Update progress bar pills
+      document.querySelectorAll('.wizard-step-pill').forEach(pill => {
+        const step = parseInt(pill.getAttribute('data-wizard-step'));
+        pill.classList.remove('active');
+        if (step === stepNum) pill.classList.add('active');
+        if (step < stepNum) pill.classList.add('completed');
+      });
+
+      // Update panes
+      document.querySelectorAll('.wizard-step-pane').forEach(pane => {
+        pane.classList.remove('active');
+      });
+      const targetPane = document.getElementById(`wizard-pane-${stepNum}`);
+      if (targetPane) targetPane.classList.add('active');
+
+      // Update Footer Navigation Buttons
+      const prevBtn = document.getElementById('wiz-btn-prev');
+      const nextBtn = document.getElementById('wiz-btn-next');
+      const finalSaveBtn = document.getElementById('wiz-btn-final-save');
+
+      if (prevBtn) prevBtn.style.visibility = stepNum === 1 ? 'hidden' : 'visible';
+      
+      if (stepNum === 6) {
+        if (nextBtn) nextBtn.style.display = 'none';
+        if (finalSaveBtn) finalSaveBtn.style.display = 'inline-flex';
+        renderWizardLivePreview();
+      } else {
+        if (nextBtn) nextBtn.style.display = 'inline-flex';
+        if (finalSaveBtn) finalSaveBtn.style.display = 'none';
+      }
+    }
+    window.goToWizardStep = goToWizardStep;
+
+    function wizardNextStep() {
+      if (wizardCurrentStep < 6) {
+        goToWizardStep(wizardCurrentStep + 1);
+      }
+    }
+    window.wizardNextStep = wizardNextStep;
+
+    function wizardPrevStep() {
+      if (wizardCurrentStep > 1) {
+        goToWizardStep(wizardCurrentStep - 1);
+      }
+    }
+    window.wizardPrevStep = wizardPrevStep;
+
+    function wizardSkipStep() {
+      wizardNextStep();
+    }
+    window.wizardSkipStep = wizardSkipStep;
+
+    // --------------------------------------------------------------------------
+    // STEP 2: EXERCISE MATRIX EDITOR
+    // --------------------------------------------------------------------------
+    function setWizardWeek(weekNum) {
+      wizardCurrentWeek = weekNum;
+      document.querySelectorAll('.wiz-week-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.style.background = 'rgba(255,255,255,0.05)';
+        btn.style.borderColor = 'var(--border-light)';
+        if (parseInt(btn.getAttribute('data-week')) === weekNum) {
+          btn.classList.add('active');
+          btn.style.background = 'rgba(239,68,68,0.2)';
+          btn.style.borderColor = 'var(--accent-red)';
+        }
+      });
+      renderWizardExerciseMatrix();
+    }
+    window.setWizardWeek = setWizardWeek;
+
+    function renderWizardExerciseMatrix() {
+      const container = document.getElementById('wiz-exercises-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      wizardState.dayList.forEach((dayTitle, dayIdx) => {
+        const dayNum = dayIdx + 1;
+        const matrixKey = `${wizardCurrentWeek}_${dayNum}`;
+        const exercises = wizardState.programMatrix[matrixKey] || [];
+
+        const dayBox = document.createElement('div');
+        dayBox.style.background = 'rgba(255,255,255,0.02)';
+        dayBox.style.border = '1px solid var(--border-light)';
+        dayBox.style.borderRadius = 'var(--radius-md)';
+        dayBox.style.padding = '1rem';
+        dayBox.style.marginBottom = '1rem';
+
+        dayBox.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
+            <input type="text" class="input-field" value="${dayTitle}" onchange="window.updateWizardDayTitle(${dayIdx}, this.value)" style="font-weight: 800; color: var(--accent-red); margin: 0; max-width: 300px;">
+            <button type="button" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="window.addWizardExercise('${matrixKey}')">
+              <i class="fas fa-plus"></i> Egzersiz Ekle
+            </button>
+          </div>
+          <div id="wiz-ex-list-${matrixKey}"></div>
+        `;
+
+        const exListEl = dayBox.querySelector(`#wiz-ex-list-${matrixKey}`);
+        exercises.forEach((ex, exIdx) => {
+          const row = document.createElement('div');
+          row.className = 'exercise-row-item';
+          row.innerHTML = `
+            <input type="text" class="input-field" placeholder="Egzersiz Adı" value="${ex.name || ''}" oninput="window.updateWizardExerciseField('${matrixKey}', ${exIdx}, 'name', this.value)">
+            <input type="text" class="input-field" placeholder="Set" value="${ex.sets || ''}" oninput="window.updateWizardExerciseField('${matrixKey}', ${exIdx}, 'sets', this.value)">
+            <input type="text" class="input-field" placeholder="Tekrar" value="${ex.reps || ''}" oninput="window.updateWizardExerciseField('${matrixKey}', ${exIdx}, 'reps', this.value)">
+            <input type="text" class="input-field" placeholder="Dinlenme" value="${ex.rest || ''}" oninput="window.updateWizardExerciseField('${matrixKey}', ${exIdx}, 'rest', this.value)">
+            <button type="button" style="background: none; border: none; color: #EF4444; cursor: pointer; font-size: 1.1rem;" onclick="window.removeWizardExercise('${matrixKey}', ${exIdx})">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          `;
+          exListEl.appendChild(row);
+        });
+
+        container.appendChild(dayBox);
+      });
+    }
+
+    function updateWizardDayTitle(idx, val) {
+      wizardState.dayList[idx] = val;
+      wizardState.isUnsaved = true;
+    }
+    window.updateWizardDayTitle = updateWizardDayTitle;
+
+    function addWizardExercise(matrixKey) {
+      if (!wizardState.programMatrix[matrixKey]) wizardState.programMatrix[matrixKey] = [];
+      wizardState.programMatrix[matrixKey].push({ name: '', sets: '3 Set', reps: '12 Tekrar', rest: '60 sn' });
+      wizardState.isUnsaved = true;
+      renderWizardExerciseMatrix();
+    }
+    window.addWizardExercise = addWizardExercise;
+
+    function updateWizardExerciseField(matrixKey, exIdx, field, val) {
+      if (wizardState.programMatrix[matrixKey] && wizardState.programMatrix[matrixKey][exIdx]) {
+        wizardState.programMatrix[matrixKey][exIdx][field] = val;
+        wizardState.isUnsaved = true;
+      }
+    }
+    window.updateWizardExerciseField = updateWizardExerciseField;
+
+    function removeWizardExercise(matrixKey, exIdx) {
+      if (wizardState.programMatrix[matrixKey]) {
+        wizardState.programMatrix[matrixKey].splice(exIdx, 1);
+        wizardState.isUnsaved = true;
+        renderWizardExerciseMatrix();
+      }
+    }
+    window.removeWizardExercise = removeWizardExercise;
+
+    function copyCurrentWeekToOtherWeeks() {
+      for (let w = 1; w <= 4; w++) {
+        if (w === wizardCurrentWeek) continue;
+        for (let d = 1; d <= 4; d++) {
+          const srcKey = `${wizardCurrentWeek}_${d}`;
+          const dstKey = `${w}_${d}`;
+          wizardState.programMatrix[dstKey] = JSON.parse(JSON.stringify(wizardState.programMatrix[srcKey] || []));
+        }
+      }
+      wizardState.isUnsaved = true;
+      alert(`✨ ${wizardCurrentWeek}. Hafta antrenman programı 2, 3 ve 4. haftalara kopyalandı!`);
+    }
+    window.copyCurrentWeekToOtherWeeks = copyCurrentWeekToOtherWeeks;
+
+    // Clone matrix from another client
+    function openCloneFromClientModal() {
+      const select = document.getElementById('clone-source-client-select');
+      select.innerHTML = '<option value="">-- Danışan Seçin --</option>';
+      clients.filter(c => c.id !== selectedClientId).forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.name} (${c.package})`;
+        select.appendChild(opt);
+      });
+      document.getElementById('clone-client-modal').classList.add('active');
+    }
+    window.openCloneFromClientModal = openCloneFromClientModal;
+
+    function executeCloneFromClient() {
+      const srcId = document.getElementById('clone-source-client-select').value;
+      if (!srcId) return;
+      const srcClient = clients.find(c => c.id === srcId);
+      if (srcClient && srcClient.programMatrix) {
+        wizardState.programMatrix = JSON.parse(JSON.stringify(srcClient.programMatrix));
+        wizardState.dayList = srcClient.dayList || wizardState.dayList;
+        wizardState.isUnsaved = true;
+        document.getElementById('clone-client-modal').classList.remove('active');
+        renderWizardExerciseMatrix();
+        alert(`✨ "${srcClient.name}" danışanının antrenman matrisi kopyalandı!`);
+      }
+    }
+    window.executeCloneFromClient = executeCloneFromClient;
+
+    // Presets
+    function openPresetModal() {
+      document.getElementById('preset-modal').classList.add('active');
+    }
+    window.openPresetModal = openPresetModal;
+
+    function applyPreset(presetType) {
+      const presetMatrix = {
+        "1_1": [
+          { name: "Dumbbell Bench Press", sets: "4 Set", reps: "10-12 Tekrar", rest: "60 sn" },
+          { name: "Incline Dumbbell Fly", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" },
+          { name: "Barbell Biceps Curl", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" }
+        ],
+        "1_2": [
+          { name: "Lat Pulldown", sets: "4 Set", reps: "10-12 Tekrar", rest: "60 sn" },
+          { name: "Seated Cable Row", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" },
+          { name: "Triceps Rope Pushdown", sets: "3 Set", reps: "15 Tekrar", rest: "60 sn" }
+        ],
+        "1_3": [
+          { name: "Goblet Squat", sets: "4 Set", reps: "10 Tekrar", rest: "90 sn" },
+          { name: "Leg Press", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" },
+          { name: "Dumbbell Shoulder Press", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" }
+        ],
+        "1_4": [
+          { name: "Plank Hold", sets: "3 Set", reps: "45 sn", rest: "45 sn" },
+          { name: "Hanging Leg Raise", sets: "3 Set", reps: "15 Tekrar", rest: "45 sn" }
+        ]
+      };
+
+      for (let w = 1; w <= 4; w++) {
+        for (let d = 1; d <= 4; d++) {
+          wizardState.programMatrix[`${w}_${d}`] = JSON.parse(JSON.stringify(presetMatrix[`1_${d}`] || []));
+        }
+      }
+
+      wizardState.isUnsaved = true;
+      document.getElementById('preset-modal').classList.remove('active');
+      renderWizardExerciseMatrix();
+      alert('✨ Antrenman şablonu yüklendi!');
+    }
+    window.applyPreset = applyPreset;
+
+    // --------------------------------------------------------------------------
+    // STEP 6: LIVE PREVIEW & SINGLE ATOMIC SAVE
+    // --------------------------------------------------------------------------
+    function renderWizardLivePreview() {
+      const container = document.getElementById('wiz-live-preview-content');
+      if (!container) return;
+
+      const name = document.getElementById('wiz-client-name').value || 'Danışan';
+      const pkg = document.getElementById('wiz-client-package').value || 'Özel Koçluk';
+      const stage = document.getElementById('wiz-client-stage').value || '1. Hafta';
+      const coachNote = document.getElementById('wiz-coach-note').value || 'Eğitmeniniz henüz özel not yazmadı.';
+      const calories = document.getElementById('wiz-nutri-calories').value || '2200';
+      const whey = document.getElementById('wiz-supp-whey').value || 'Tanımsız';
+
+      container.innerHTML = `
+        <div style="background: rgba(18,18,22,0.9); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1.2rem;">
+          <h3 style="color: #FFF; font-size: 1.2rem; margin-bottom: 0.3rem;">Hoş Geldin, <span style="color: #10B981;">${name}</span> 👋</h3>
+          <div style="font-size: 0.82rem; color: #10B981; margin-bottom: 1rem; font-weight: bold;">
+            <i class="fas fa-shield-alt"></i> ${pkg} (${stage})
+          </div>
+
+          <div style="background: rgba(16,185,129,0.1); border-left: 4px solid #10B981; padding: 1rem; border-radius: 4px; margin-bottom: 1.2rem;">
+            <strong style="color: #10B981; display: block; margin-bottom: 0.3rem;"><i class="fas fa-comment-dots"></i> Umut Hoca'nın Notu:</strong>
+            <span style="color: #E5E7EB; font-size: 0.9rem;">"${coachNote}"</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.8rem; margin-bottom: 1rem;">
+            <div style="background: rgba(255,255,255,0.05); padding: 0.8rem; border-radius: 4px; text-align: center;">
+              <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">Günlük Kalori</span>
+              <strong style="color: #FFF; font-size: 1.1rem;">${calories} kcal</strong>
+            </div>
+            <div style="background: rgba(255,255,255,0.05); padding: 0.8rem; border-radius: 4px; text-align: center;">
+              <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">Whey Protein</span>
+              <strong style="color: #FFF; font-size: 0.9rem;">${whey}</strong>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('wiz-preview-date').textContent = 'Son Canlı Önizleme: ' + new Date().toLocaleTimeString('tr-TR');
+    }
+
+    async function executeWizardSingleSave() {
+      if (!selectedClientId) {
+        alert('⚠️ Lütfen önce bir danışan seçiniz!');
+        return;
+      }
+
+      const clientData = {
+        name: document.getElementById('wiz-client-name').value.trim(),
+        phone: document.getElementById('wiz-client-phone').value.trim(),
+        password: document.getElementById('wiz-client-password').value.trim(),
+        package: document.getElementById('wiz-client-package').value,
+        stage: document.getElementById('wiz-client-stage').value.trim(),
+        expiryDate: document.getElementById('wiz-client-expiry').value,
+        status: document.getElementById('wiz-client-status').value,
+        startWeight: document.getElementById('wiz-client-startweight').value,
+        currentWeight: document.getElementById('wiz-client-currweight').value,
+        targetWeight: document.getElementById('wiz-client-targetweight').value,
+        height: document.getElementById('wiz-client-height').value,
+        hasAssignedProgram: true,
+        programMatrix: wizardState.programMatrix,
+        dayList: wizardState.dayList,
+        coachNote: document.getElementById('wiz-coach-note').value,
+        nutrition: {
+          calories: document.getElementById('wiz-nutri-calories').value,
+          protein: document.getElementById('wiz-nutri-protein').value,
+          carbs: document.getElementById('wiz-nutri-carbs').value,
+          fat: document.getElementById('wiz-nutri-fat').value,
+          water: document.getElementById('wiz-nutri-water').value,
+          meals: document.getElementById('wiz-nutri-meals').value
+        },
+        supplements: {
+          whey: document.getElementById('wiz-supp-whey').value,
+          creatine: document.getElementById('wiz-supp-creatine').value,
+          preworkout: document.getElementById('wiz-supp-preworkout').value,
+          multivitamin: document.getElementById('wiz-supp-multivitamin').value,
+          omega3: document.getElementById('wiz-supp-omega3').value,
+          zma: document.getElementById('wiz-supp-zma').value,
+          notes: document.getElementById('wiz-supp-notes').value
+        }
+      };
+
+      try {
+        const res = await trainerFetch(`/api/clients/${selectedClientId}/profile`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(clientData)
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          wizardState.isUnsaved = false;
+          document.getElementById('wizard-unsaved-badge').style.display = 'none';
+          alert(`✨ PROGRAM BAŞARIYLA KAYDEDİLDİ VE DANIŞANA AKTARILDI!\n\n📌 Danışan: ${clientData.name}\n🚀 Danışan kendi paneline girdiğinde yeni antrenman, beslenme ve eğitmen notunu anında görecektir.`);
+          fetchServerClients();
+        } else {
+          alert('⚠️ Program kaydedilemedi: ' + (data.message || 'Sunucu hatası'));
+        }
+      } catch (err) {
+        alert('⚠️ Sunucu bağlantı hatası! Program kaydedilemedi.');
+      }
+    }
+    window.executeWizardSingleSave = executeWizardSingleSave;
+
+    // --------------------------------------------------------------------------
+    // BULK ADMIN ACTIONS
+    // --------------------------------------------------------------------------
+    async function triggerPassivateAllClients() {
+      if (!confirm("⚠️ TÜM DANIŞAN ÜYELİKLERİNİ PASİFE ALMAK İSTEDİĞİNİZE EMİN MİSİNİZ?\n\nTüm danışanların durumu 'pasif' yapılacak ve aktif tüm danışan oturumları sonlandırılacaktır.")) return;
       try {
         const res = await trainerFetch('/api/admin/passivate-all-clients', { method: 'POST' });
         const data = await res.json();
         if (data.success) {
-          alert(data.message || '✨ Tüm üyelikler başarıyla pasife alındı!');
+          alert(data.message);
           fetchServerClients();
-        } else {
-          alert('⚠️ İşlem başarısız: ' + (data.message || 'Bilinmeyen hata'));
         }
       } catch (err) {
-        alert('⚠️ Sunucu bağlantı hatası: İşlem tamamlanamadı.');
+        alert('⚠️ Sunucu bağlantı hatası!');
       }
     }
     window.triggerPassivateAllClients = triggerPassivateAllClients;
 
     async function triggerRevokeAllSessions() {
-      if (!confirm("⚠️ TÜM DANIŞAN OTURUMLARINI SONLANDIRMAK İSTEDİĞİNİZE EMİN MİSİNİZ?\n\nHalen açık olan tüm danışan sekmeleri ilk yenilemede giriş ekranına düşecektir.")) {
-        return;
-      }
+      if (!confirm("⚠️ TÜM DANIŞAN OTURUMLARINI SONLANDIRMAK İSTEDİĞİNİZE EMİN MİSİNİZ?")) return;
       try {
         const res = await trainerFetch('/api/admin/revoke-all-sessions', { method: 'POST' });
         const data = await res.json();
-        if (data.success) {
-          alert(data.message || '✨ Tüm aktif oturumlar sonlandırıldı!');
-        } else {
-          alert('⚠️ İşlem başarısız: ' + (data.message || 'Bilinmeyen hata'));
-        }
+        if (data.success) alert(data.message);
       } catch (err) {
-        alert('⚠️ Sunucu bağlantı hatası: İşlem tamamlanamadı.');
+        alert('⚠️ Sunucu bağlantı hatası!');
       }
     }
     window.triggerRevokeAllSessions = triggerRevokeAllSessions;
 
     async function triggerPurgeAllClients() {
-      if (!confirm("⚠️ TÜM DANIŞAN KAYITLARINI SIFIRLAMAK İSTEDİĞİNİZE EMİN MİSİNİZ?\n\nSilme işleminden önce sunucuda zaman damgalı otomatik veritabanı yedeği alınacaktır.")) {
-        return;
-      }
+      if (!confirm("⚠️ TÜM DANIŞAN KAYITLARINI SIFIRLAMAK İSTEDİĞİNİZE EMİN MİSİNİZ?\n\nOtomatik yedek oluşturulacaktır.")) return;
       try {
         const res = await trainerFetch('/api/admin/purge-all-clients', { method: 'POST' });
         const data = await res.json();
         if (data.success) {
-          alert(data.message || '✨ Veritabanı sıfırlandı ve otomatik yedek oluşturuldu!');
+          alert(data.message);
           fetchServerClients();
-        } else {
-          alert('⚠️ İşlem başarısız: ' + (data.message || 'Bilinmeyen hata'));
         }
       } catch (err) {
-        alert('⚠️ Sunucu bağlantı hatası: İşlem tamamlanamadı.');
+        alert('⚠️ Sunucu bağlantı hatası!');
       }
     }
     window.triggerPurgeAllClients = triggerPurgeAllClients;
 
     async function openImportClientsModal() {
-      const jsonStr = prompt("📌 İçe Aktarılacak Danışan Listesi JSON Verisini Yapıştırın:\n\n(Eski alan adındaki DevTools console'da `copy(localStorage.getItem('pt_clients_list'))` yazarak kopyaladığınız JSON metnini buraya yapıştırabilirsiniz.)");
+      const jsonStr = prompt("📌 İçe Aktarılacak Danışan Listesi JSON Verisini Yapıştırın:");
       if (!jsonStr || !jsonStr.trim()) return;
-
       try {
         const parsed = JSON.parse(jsonStr.trim());
-        const incomingClients = Array.isArray(parsed) ? parsed : [parsed];
-
         const res = await trainerFetch('/api/admin/import-clients', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ clients: incomingClients })
+          body: JSON.stringify({ clients: Array.isArray(parsed) ? parsed : [parsed] })
         });
         const data = await res.json();
         if (data.success) {
-          alert(data.message || '✨ Danışanlar başarıyla içe aktarıldı!');
+          alert(data.message);
           fetchServerClients();
-        } else {
-          alert('⚠️ İçe aktarma başarısız: ' + (data.message || 'Bilinmeyen hata'));
         }
       } catch (err) {
-        alert('⚠️ Geçersiz JSON verisi veya sunucu hatası! Lütfen kopyaladığınız veriyi kontrol ediniz.');
+        alert('⚠️ Geçersiz JSON verisi veya sunucu hatası!');
       }
     }
     window.openImportClientsModal = openImportClientsModal;
 
-    function switchAdminBuilderTab(targetTabId) {
-      // 1. Remove active class from all tab buttons
-      document.querySelectorAll('.builder-tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-        const tabAttr = btn.getAttribute('data-builder-tab');
-        const onclickAttr = btn.getAttribute('onclick') || '';
-        if (tabAttr === targetTabId || onclickAttr.includes(targetTabId)) {
-          btn.classList.add('active');
-        }
-      });
-
-      // 2. Hide all builder panes
-      document.querySelectorAll('.builder-pane').forEach(pane => {
-        pane.style.display = 'none';
-      });
-
-      // 3. Show target builder pane
-      const targetPane = document.getElementById(targetTabId);
-      if (targetPane) {
-        targetPane.style.display = 'block';
-      }
-
-      // If photo inspector tab is opened, re-render photos for currently selected client!
-      if (targetTabId === 'tab-photo-inspector') {
-        const currentSelected = clients.find(c => c.id === selectedClientId) || clients[0];
-        if (currentSelected) {
-          renderAdminClientPhotos(currentSelected);
-        }
-      }
-    }
-    window.switchAdminBuilderTab = switchAdminBuilderTab;
-
-    // Attach click listeners to builder tabs
-    document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('.builder-tab-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-          e.preventDefault();
-          const targetTabId = this.getAttribute('data-builder-tab');
-          if (targetTabId) {
-            switchAdminBuilderTab(targetTabId);
-          }
-        });
-      });
+    // Add Client Modal Event Listeners
+    document.getElementById('open-add-client-btn').addEventListener('click', () => {
+      document.getElementById('add-client-modal').classList.add('active');
     });
 
-    // Initial render & sync
-    renderClientsList();
+    document.getElementById('close-add-client-modal').addEventListener('click', () => {
+      document.getElementById('add-client-modal').classList.remove('active');
+    });
+
+    document.getElementById('add-client-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('new-client-name').value.trim();
+      const phone = document.getElementById('new-client-phone').value.trim();
+      const password = document.getElementById('new-client-password').value.trim();
+      const pkg = document.getElementById('new-client-package').value;
+
+      try {
+        const res = await trainerFetch('/api/clients', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, phone, password, package: pkg })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          document.getElementById('add-client-modal').classList.remove('active');
+          document.getElementById('add-client-form').reset();
+          alert(`✨ Danışan Sisteme Kaydedildi!\n\n📌 Danışan: ${data.client.name}\n📱 Telefon: ${data.client.phone}\n🔑 Şifre: ${data.client.password}`);
+          await fetchServerClients();
+          selectClientForWizard(data.client.id);
+        } else {
+          alert('⚠️ Kayıt hatası: ' + (data.message || 'Bilinmeyen hata'));
+        }
+      } catch (err) {
+        alert('⚠️ Sunucu bağlantı hatası!');
+      }
+    });
+
+    // Before unload unsaved warning
+    window.addEventListener('beforeunload', (e) => {
+      if (wizardState.isUnsaved) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
+
+    // Initial load
     fetchServerClients();
   </script>
 </body>

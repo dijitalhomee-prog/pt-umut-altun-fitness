@@ -678,25 +678,28 @@ app.put('/api/clients/:id/profile', requireTrainer, (req, res) => {
     return res.status(404).json({ success: false, message: 'Danışan bulunamadı.' });
   }
 
-  if (height) client.height = height;
-  if (startWeight) client.startWeight = startWeight;
-  if (currentWeight) client.currentWeight = currentWeight;
-  if (targetWeight) client.targetWeight = targetWeight;
-  if (coachNote) client.coachNote = coachNote;
+  if (height !== undefined) client.height = height;
+  if (startWeight !== undefined) client.startWeight = startWeight;
+  if (currentWeight !== undefined) client.currentWeight = currentWeight;
+  if (targetWeight !== undefined) client.targetWeight = targetWeight;
+  if (coachNote !== undefined) client.coachNote = coachNote;
   if (hasAssignedProgram !== undefined) {
     client.hasAssignedProgram = hasAssignedProgram;
     if (hasAssignedProgram) {
       client.hasNewProgramNotification = true;
+      client.programUpdatedAt = new Date().toISOString();
     }
   }
-  if (programMatrix) client.programMatrix = programMatrix;
-  if (startDate) client.startDate = startDate;
-  if (nutrition) client.nutrition = nutrition;
-  if (supplements) client.supplements = supplements;
-  if (measurements) client.measurements = measurements;
-  if (photos) client.photos = photos;
-  if (dayList) client.dayList = dayList;
-  if (calendarNotes) client.calendarNotes = calendarNotes;
+  if (programMatrix !== undefined) client.programMatrix = programMatrix;
+  if (startDate !== undefined) client.startDate = startDate;
+  if (nutrition !== undefined) client.nutrition = nutrition;
+  if (supplements !== undefined) client.supplements = supplements;
+  if (measurements !== undefined) client.measurements = measurements;
+  if (photos !== undefined) client.photos = photos;
+  if (dayList !== undefined) client.dayList = dayList;
+  if (calendarNotes !== undefined) client.calendarNotes = calendarNotes;
+  if (req.body.package !== undefined) client.package = req.body.package;
+  if (req.body.stage !== undefined) client.stage = req.body.stage;
 
   writeDb(db);
   res.json({ success: true, client });
