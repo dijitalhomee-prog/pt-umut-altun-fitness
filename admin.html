@@ -1494,19 +1494,24 @@
     // RENDER SELECTED CLIENT MANAGEMENT CARD (BÖLÜM 1)
     function renderClientManagementCard() {
       const container = document.getElementById('selected-client-management-card');
+      const listSection = document.getElementById('client-list-grid-section');
       if (!container) return;
 
       if (!selectedClientId) {
         container.style.display = 'none';
         container.innerHTML = '';
+        if (listSection) listSection.style.display = 'block';
         return;
       }
 
       const client = clients.find(c => c.id === selectedClientId);
       if (!client) {
         container.style.display = 'none';
+        if (listSection) listSection.style.display = 'block';
         return;
       }
+
+      if (listSection) listSection.style.display = 'none';
 
       const remainingDays = getRemainingDays(client.expiryDate);
       let expText = client.expiryDate || 'Belirtilmedi';
@@ -1850,7 +1855,19 @@
     window.toggleCardPasswordVisibility = toggleCardPasswordVisibility;
 
     function deselectWizardClient() {
+      selectedClientId = null;
+      const card = document.getElementById('selected-client-management-card');
+      if (card) {
+        card.style.display = 'none';
+        card.innerHTML = '';
+      }
+      const listSection = document.getElementById('client-list-grid-section');
+      if (listSection) {
+        listSection.style.display = 'block';
+        listSection.scrollIntoView({ behavior: 'smooth' });
+      }
       resetWizardStateAndForm();
+      renderClientListGrid();
     }
     window.deselectWizardClient = deselectWizardClient;
 
@@ -1979,6 +1996,9 @@
 
     function selectClientForWizard(clientId, stepNum) {
       selectedClientId = clientId;
+      const listSection = document.getElementById('client-list-grid-section');
+      if (listSection) listSection.style.display = 'none';
+
       const client = clients.find(c => c.id === clientId);
       if (!client) return;
 
