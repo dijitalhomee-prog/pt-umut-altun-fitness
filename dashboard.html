@@ -1934,10 +1934,27 @@
     setTimeout(syncClientProgramFromBackend, 300);
 
     function getClientProgramMatrix() {
-      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
       const cleanPhone = userPhone.replace(/\D/g, '');
 
-      let matrix = JSON.parse(localStorage.getItem('pt_matrix_program_' + cleanPhone)) || {
+      // 1. Check live client object from server synchronization
+      const storedClients = (liveClientsList && liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
+      const matchingClient = storedClients.find(c => (c.phone || '').replace(/\D/g, '') === cleanPhone || (cleanPhone && cleanPhone.length >= 10 && (c.phone || '').replace(/\D/g, '').endsWith(cleanPhone.slice(-10))));
+
+      if (matchingClient && matchingClient.programMatrix && typeof matchingClient.programMatrix === 'object' && Object.keys(matchingClient.programMatrix).length > 0) {
+        return matchingClient.programMatrix;
+      }
+
+      // 2. Check local storage key
+      if (cleanPhone) {
+        let matrix = JSON.parse(localStorage.getItem('pt_matrix_program_' + cleanPhone));
+        if (matrix && typeof matrix === 'object' && Object.keys(matrix).length > 0) {
+          return matrix;
+        }
+      }
+
+      // 3. Demo fallback matrix
+      return {
         "1_1": [
           { name: "Dumbbell Chest Press (Düz Sehpa)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
           { name: "Incline Dumbbell Fly", sets: "3 Set", reps: "12-15 Tekrar", rest: "60 sn Dinlenme" },
@@ -1959,7 +1976,6 @@
           { name: "Eğimli Yürüyüş Kardiyo", sets: "1 Seans", reps: "25 dk (Eğim 8, Hız 5.5)", rest: "Antrenman Sonu" }
         ]
       };
-      return matrix;
     }
 
     function renderMatrixExercises(week, day) {
