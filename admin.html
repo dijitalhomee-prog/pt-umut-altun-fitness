@@ -1549,6 +1549,10 @@
               <i class="fas fa-external-link-alt"></i> Danışan Gözüyle Aç
             </a>
 
+            <button class="btn btn-outline" style="border-color: #8B5CF6; color: #8B5CF6; font-size: 0.8rem; padding: 0.4rem 0.75rem;" onclick="window.openTrainerProgressComparisonModal('${client.id}')">
+              <i class="fas fa-images"></i> 📸 Gelişimi Gör (Karşılaştır)
+            </button>
+
             ${client.status !== 'archived' ? `
               <button class="btn btn-outline" style="border-color: rgba(239,68,68,0.5); color: #EF4444; font-size: 0.8rem; padding: 0.4rem 0.75rem;" onclick="window.archiveClientSoftDelete('${client.id}')">
                 📦 Danışanı Arşivle
@@ -1583,6 +1587,129 @@
       resetWizardStateAndForm();
     }
     window.deselectWizardClient = deselectWizardClient;
+
+    function openTrainerProgressComparisonModal(clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+
+      let modal = document.getElementById('trainer-progress-comparison-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'trainer-progress-comparison-modal';
+        modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999999; display: flex; align-items: center; justify-content: center; padding: 1.5rem; backdrop-filter: blur(10px);';
+        document.body.appendChild(modal);
+      }
+
+      const photos = client.formPhotos || client.photos || [];
+      let photosHtml = '';
+
+      if (photos.length === 0) {
+        photosHtml = `<div style="padding: 2rem; text-align: center; color: var(--text-muted);">Henüz yüklenmiş form fotoğrafı yok.</div>`;
+      } else if (photos.length === 1) {
+        const p = photos[0];
+        photosHtml = `
+          <div style="text-align: center; padding: 1.5rem; background: rgba(255,255,255,0.02); border-radius: var(--radius-md);">
+            <h4 style="color: #10B981; margin-bottom: 0.8rem;">📍 Danışanın İlk Yüklemesi (${p.date || 'Tarih Belirtilmedi'})</h4>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; max-width: 600px; margin: 0 auto;">
+              <div><span style="font-size: 0.7rem; color: var(--text-muted);">Ön Açı</span><img src="${p.front || p.dataUrl}" style="width: 100%; height: 100px; object-fit: cover; border-radius: 4px;"></div>
+              <div><span style="font-size: 0.7rem; color: var(--text-muted);">Arka Sırt</span><img src="${p.back || p.dataUrl}" style="width: 100%; height: 100px; object-fit: cover; border-radius: 4px;"></div>
+              <div><span style="font-size: 0.7rem; color: var(--text-muted);">Sağ Yan</span><img src="${p.right || p.dataUrl}" style="width: 100%; height: 100px; object-fit: cover; border-radius: 4px;"></div>
+              <div><span style="font-size: 0.7rem; color: var(--text-muted);">Sol Yan</span><img src="${p.left || p.dataUrl}" style="width: 100%; height: 100px; object-fit: cover; border-radius: 4px;"></div>
+            </div>
+          </div>
+        `;
+      } else {
+        const initialP = photos[photos.length - 1];
+        const latestP = photos[0];
+
+        photosHtml = `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <!-- Left: Initial -->
+            <div style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-light); text-align: center;">
+              <span style="font-size: 0.8rem; font-weight: bold; color: #10B981; display: block; margin-bottom: 0.5rem;">
+                🟢 BAŞLANGIÇ FOTOĞRAFLARI (${initialP.date || 'İlk Yükleme'})
+              </span>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                <div><span style="font-size: 0.68rem; color: var(--text-muted);">Ön Açı</span><img src="${initialP.front || initialP.dataUrl}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;"></div>
+                <div><span style="font-size: 0.68rem; color: var(--text-muted);">Arka Sırt</span><img src="${initialP.back || initialP.dataUrl}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;"></div>
+                <div><span style="font-size: 0.68rem; color: var(--text-muted);">Sağ Yan</span><img src="${initialP.right || initialP.dataUrl}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;"></div>
+                <div><span style="font-size: 0.68rem; color: var(--text-muted);">Sol Yan</span><img src="${initialP.left || initialP.dataUrl}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;"></div>
+              </div>
+            </div>
+
+            <!-- Right: Latest -->
+            <div style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: var(--radius-md); border: 2px solid #10B981; text-align: center;">
+              <span style="font-size: 0.8rem; font-weight: bold; color: #FFF; background: #10B981; padding: 0.2rem 0.6rem; border-radius: 12px; display: inline-block; margin-bottom: 0.5rem;">
+                ✨ EN GÜNCEL FOTOĞRAFLAR (${latestP.date || 'Son Yükleme'})
+              </span>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                <div><span style="font-size: 0.68rem; color: var(--text-muted);">Ön Açı</span><img src="${latestP.front || latestP.dataUrl}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;"></div>
+                <div><span style="font-size: 0.68rem; color: var(--text-muted);">Arka Sırt</span><img src="${latestP.back || latestP.dataUrl}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;"></div>
+                <div><span style="font-size: 0.68rem; color: var(--text-muted);">Sağ Yan</span><img src="${latestP.right || latestP.dataUrl}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;"></div>
+                <div><span style="font-size: 0.68rem; color: var(--text-muted);">Sol Yan</span><img src="${latestP.left || latestP.dataUrl}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;"></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Check for form approval status
+      const lastCheck = (client.formChecks && client.formChecks.length > 0) ? client.formChecks.find(f => f.status === 'done') : null;
+      const isApproved = lastCheck && lastCheck.trainerApproved;
+
+      modal.innerHTML = `
+        <div style="position: relative; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto; background: rgba(18,18,22,0.98); border: 2px solid #10B981; border-radius: 12px; padding: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.8rem; margin-bottom: 1.2rem;">
+            <h3 style="color: #FFF; margin: 0; font-size: 1.2rem;">📸 ${client.name} — Form Görselleri & Gelişim Karşılaştırması</h3>
+            <button onclick="document.getElementById('trainer-progress-comparison-modal').style.display='none';" style="background: none; border: none; color: #FFF; font-size: 1.6rem; cursor: pointer;">&times;</button>
+          </div>
+
+          ${photosHtml}
+
+          <!-- Approval Action Bar -->
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.5); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-light); margin-top: 1rem;">
+            <div>
+              <span style="font-size: 0.85rem; color: #E5E7EB; font-weight: bold; display: block;">Form Gönderimi Onay Durumu:</span>
+              <span style="font-size: 0.8rem; color: ${isApproved ? '#10B981' : '#F59E0B'}; font-weight: bold;">
+                ${isApproved ? '🟢 Umut Hoca Onayladı' : '🟡 Onay Bekliyor (Henüz onaylanmadı)'}
+              </span>
+            </div>
+            ${!isApproved ? `
+              <button type="button" class="btn btn-primary-glow" style="padding: 0.5rem 1.2rem; font-size: 0.85rem; background: #10B981; border-color: #10B981;" onclick="window.approveTrainerClientFormCheck('${client.id}')">
+                <i class="fas fa-check-circle"></i> Form Gönderimini Onayla ("Umut Hoca Onayladı" Yap)
+              </button>
+            ` : `
+              <span style="font-size: 0.82rem; color: #10B981; background: rgba(16,185,129,0.15); padding: 0.4rem 0.8rem; border-radius: 20px;">
+                ✓ Onaylandı
+              </span>
+            `}
+          </div>
+        </div>
+      `;
+      modal.style.display = 'flex';
+    }
+    window.openTrainerProgressComparisonModal = openTrainerProgressComparisonModal;
+
+    async function approveTrainerClientFormCheck(clientId) {
+      try {
+        const res = await trainerFetch(`/api/clients/${clientId}/form-checks/latest/approve`, { method: 'PUT' });
+        const data = await res.json();
+        if (data.success) {
+          alert('🎉 Danışanın form gönderimi başarıyla onaylandı! Danışan panelinde "Umut Hoca Onayladı" rozeti aktifleşti.');
+          const client = clients.find(c => c.id === clientId);
+          if (client) {
+            if (!client.formChecks) client.formChecks = [];
+            const last = client.formChecks.find(f => f.status === 'done');
+            if (last) last.trainerApproved = true;
+          }
+          openTrainerProgressComparisonModal(clientId);
+          renderClientManagementCard();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    window.approveTrainerClientFormCheck = approveTrainerClientFormCheck;
 
     function selectClientForWizard(clientId) {
       selectedClientId = clientId;

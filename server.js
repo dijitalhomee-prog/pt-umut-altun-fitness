@@ -510,6 +510,7 @@ function autoExpireClients(db) {
   let updated = false;
 
   db.clients.forEach(client => {
+    ensureFormCheckSchedule(client);
     const pkg = db.packages ? db.packages.find(p => p.id === client.packageId || p.name === client.package) : null;
     const isSessionBased = (pkg && pkg.expiryMode === 'sessions') || (client.package && client.package.includes('Birebir PT'));
 
@@ -542,6 +543,108 @@ function autoExpireClients(db) {
   if (updated) {
     writeDb(db);
   }
+}
+
+// Automatic Form Check Schedule Engine (BÖLÜM B)
+function ensureFormCheckSchedule(client) {
+  if (!client) return;
+
+  const todayStr = getTurkeyDateStr();
+  const todayDate = new Date(todayStr);
+
+  if (!Array.isArray(client.formChecks)) {
+    client.formChecks = [];
+  }
+
+  // 1. Establish Baseline Date (B1 & B3)
+  let baselineDate = client.baselineDate || null;
+  const photos = client.formPhotos || client.photos || [];
+
+  if (photos.length > 0) {
+    const sortedPhotos = [...photos].sort((a, b) => new Date(a.date || a.createdAt || '2000-01-01') - new Date(b.date || b.createdAt || '2000-01-01'));
+    const earliestPhoto = sortedPhotos[0];
+    if (earliestPhoto && earliestPhoto.date) {
+      const parsedD = new Date(earliestPhoto.date);
+      if (!isNaN(parsedD.getTime())) {
+        baselineDate = parsedD.toISOString().split('T')[0];
+      }
+    }
+  }
+
+  if (!baselineDate) {
+    baselineDate = client.startDate || (client.createdAt ? client.createdAt.split('T')[0] : todayStr);
+  }
+  client.baselineDate = baselineDate;
+
+  // 2. Ensure 0. Hafta (Başlangıç) Check exists (B1 - created immediately upon registration)
+  let check0 = client.formChecks.find(f => f.weekNumber === 0 || f.isBaseline || f.id === `fc-${client.id}-0`);
+  if (!check0) {
+    check0 = {
+      id: `fc-${client.id}-0`,
+      weekNumber: 0,
+      dueDate: baselineDate,
+      status: photos.length > 0 ? 'done' : 'pending',
+      title: 'Başlangıç Form Kontrolü (0. Hafta)',
+      isBaseline: true,
+      trainerApproved: false
+    };
+    client.formChecks.unshift(check0);
+  } else {
+    check0.isBaseline = true;
+    check0.dueDate = baselineDate;
+    if (photos.length > 0 && check0.status !== 'done') {
+      check0.status = 'done';
+      check0.completedAt = photos[photos.length - 1].date || new Date().toISOString();
+    }
+  }
+
+  // 3. Generate Subsequent Checks Based on Interval (B2)
+  const intervalDays = parseInt(client.formCheckIntervalDays || 14);
+  const baseD = new Date(baselineDate);
+
+  let maxWeeks = 52; // Default for session-based / unlimited
+  if (client.expiryDate) {
+    const expD = new Date(client.expiryDate);
+    const diffDays = Math.ceil((expD - baseD) / (1000 * 60 * 60 * 24));
+    maxWeeks = Math.max(2, Math.ceil(diffDays / 7));
+  }
+
+  const checkCount = Math.min(26, Math.max(2, Math.floor((maxWeeks * 7) / intervalDays)));
+
+  for (let i = 1; i <= checkCount; i++) {
+    const targetD = new Date(baseD);
+    targetD.setDate(targetD.getDate() + i * intervalDays);
+    const fcStr = targetD.toISOString().split('T')[0];
+    const fcWeek = Math.floor((i * intervalDays) / 7);
+
+    let existing = client.formChecks.find(f => f.weekNumber === fcWeek || f.dueDate === fcStr || f.id === `fc-${client.id}-${i}`);
+    if (!existing) {
+      existing = {
+        id: `fc-${client.id}-${i}`,
+        weekNumber: fcWeek,
+        dueDate: fcStr,
+        status: 'pending',
+        title: `${i}. Form Kontrolü (${fcWeek}. Hafta)`,
+        isBaseline: false,
+        trainerApproved: false
+      };
+      client.formChecks.push(existing);
+    } else {
+      existing.dueDate = fcStr;
+    }
+
+    // Overdue check (B6)
+    if (existing.status === 'pending' && fcStr < todayStr) {
+      const daysOverdue = Math.ceil((todayDate - new Date(fcStr)) / (1000 * 60 * 60 * 24));
+      existing.isOverdue = true;
+      existing.daysOverdue = daysOverdue;
+    } else {
+      existing.isOverdue = false;
+    }
+  }
+
+  // Sort formChecks by dueDate ascending
+  client.formChecks.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
 }
 
 // Sanitize Client Object (Strips password and internal notes for non-trainer client responses)
@@ -872,20 +975,32 @@ app.post('/api/me/photos', requireAuth, (req, res) => {
   client.formPhotos.unshift(photoObj);
   client.photos.unshift(photoObj);
 
-  // Auto Mark Form Check as Done! (MADDE 2 - Closes earliest pending check)
+  // Auto Mark Form Check as Done (B5 - Flexible matching ±3 days or oldest pending)
   const todayStr = getTurkeyDateStr();
   if (!client.formChecks) client.formChecks = [];
-  let matchingCheck = client.formChecks.find(f => f.status === 'pending' || f.dueDate === todayStr);
+  
+  const uploadDate = new Date(todayStr);
+  let matchingCheck = client.formChecks.find(f => {
+    if (f.status !== 'pending') return false;
+    const diff = Math.abs(Math.ceil((new Date(f.dueDate) - uploadDate) / (1000 * 60 * 60 * 24)));
+    return diff <= 3;
+  });
+
   if (!matchingCheck) {
-    matchingCheck = { dueDate: todayStr, status: 'done', completedAt: new Date().toISOString() };
+    matchingCheck = client.formChecks.find(f => f.status === 'pending');
+  }
+
+  if (!matchingCheck) {
+    matchingCheck = { id: `fc-${client.id}-${Date.now()}`, dueDate: todayStr, status: 'done', completedAt: new Date().toISOString(), title: 'Form Kontrolü', trainerApproved: false };
     client.formChecks.push(matchingCheck);
   } else {
     matchingCheck.status = 'done';
     matchingCheck.completedAt = new Date().toISOString();
   }
 
+  ensureFormCheckSchedule(client);
   writeDb(db);
-  res.json({ success: true, photos: client.formPhotos });
+  res.json({ success: true, photos: client.formPhotos, formChecks: client.formChecks });
 });
 
 // Helper for Package Entitlements
@@ -1337,21 +1452,61 @@ app.delete('/api/clients/:id/sessions/:sessionId', requireTrainer, (req, res) =>
 // PUT /api/clients/:id/form-checks/:dueDate — Form Kontrolü Durumu Güncelle (TRAINER ONLY)
 app.put('/api/clients/:id/form-checks/:dueDate', requireTrainer, (req, res) => {
   const { id, dueDate } = req.params;
-  const { status } = req.body;
+  const { status, trainerApproved } = req.body;
   const db = readDb();
   const client = db.clients.find(c => c.id === id || normalizePhone(c.phone) === normalizePhone(id));
   if (!client) return res.status(404).json({ success: false, message: 'Danışan bulunamadı.' });
 
   if (!client.formChecks) client.formChecks = [];
-  let check = client.formChecks.find(f => f.dueDate === dueDate);
+  let check = client.formChecks.find(f => f.dueDate === dueDate || f.id === dueDate);
   if (!check) {
-    check = { dueDate, status: status || 'done' };
+    check = { dueDate, status: status || 'done', trainerApproved: trainerApproved || false };
     client.formChecks.push(check);
   } else {
-    check.status = status;
+    if (status) check.status = status;
+    if (trainerApproved !== undefined) check.trainerApproved = trainerApproved;
   }
-  if (status === 'done') {
+  if (status === 'done' && !check.completedAt) {
     check.completedAt = new Date().toISOString();
+  }
+
+  ensureFormCheckSchedule(client);
+  writeDb(db);
+  res.json({ success: true, formChecks: client.formChecks });
+});
+
+// PUT /api/clients/:id/form-check-settings — Form Kontrol Aralığını Güncelle (TRAINER ONLY - B11)
+app.put('/api/clients/:id/form-check-settings', requireTrainer, (req, res) => {
+  const { id } = req.params;
+  const { formCheckIntervalDays } = req.body;
+  const db = readDb();
+  const client = db.clients.find(c => c.id === id || normalizePhone(c.phone) === normalizePhone(id));
+  if (!client) return res.status(404).json({ success: false, message: 'Danışan bulunamadı.' });
+
+  client.formCheckIntervalDays = parseInt(formCheckIntervalDays) || 14;
+  client.formChecks = (client.formChecks || []).filter(f => f.status === 'done' || f.isBaseline);
+  ensureFormCheckSchedule(client);
+
+  writeDb(db);
+  res.json({ success: true, formCheckIntervalDays: client.formCheckIntervalDays, formChecks: client.formChecks });
+});
+
+// PUT /api/clients/:id/form-checks/:checkId/approve — Eğitmen Form Gönderimini Onayla (TRAINER ONLY)
+app.put('/api/clients/:id/form-checks/:checkId/approve', requireTrainer, (req, res) => {
+  const { id, checkId } = req.params;
+  const db = readDb();
+  const client = db.clients.find(c => c.id === id || normalizePhone(c.phone) === normalizePhone(id));
+  if (!client) return res.status(404).json({ success: false, message: 'Danışan bulunamadı.' });
+
+  if (!client.formChecks) client.formChecks = [];
+  let check = client.formChecks.find(f => f.id === checkId || f.dueDate === checkId);
+  if (!check && client.formChecks.length > 0) {
+    check = client.formChecks.find(f => f.status === 'done');
+  }
+
+  if (check) {
+    check.trainerApproved = true;
+    check.approvedAt = new Date().toISOString();
   }
 
   writeDb(db);
