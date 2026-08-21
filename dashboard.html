@@ -382,6 +382,49 @@
     </div>
   </div>
 
+  <!-- Danışan Kişisel Vücut Ölçüleri & Profil Modal -->
+  <div id="client-profile-modal" style="position: fixed; inset: 0; background: rgba(8, 8, 10, 0.92); z-index: 99998; display: none; align-items: center; justify-content: center; backdrop-filter: blur(15px); padding: 1.5rem;">
+    <div class="glass-panel" style="max-width: 460px; width: 100%; padding: 2rem; border-radius: var(--radius-lg); border: 2px solid var(--accent-red); box-shadow: 0 0 35px rgba(239, 68, 68, 0.25); position: relative;">
+      <button type="button" onclick="closeProfileUpdateModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer;">&times;</button>
+      
+      <div style="text-align: center; margin-bottom: 1.5rem;">
+        <div style="width: 58px; height: 58px; background: rgba(239, 68, 68, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.8rem auto; border: 1px solid var(--accent-red);">
+          <i class="fas fa-weight" style="font-size: 1.5rem; color: var(--accent-red);"></i>
+        </div>
+        <h3 style="color: #FFFFFF; font-size: 1.3rem; margin-bottom: 0.3rem;">Kişisel Vücut Ölçülerinizi Girin</h3>
+        <p style="font-size: 0.82rem; color: var(--text-muted);">Antrenörünüz Umut Altun'un kitle ve gelişim takibinizi yapabilmesi için boy ve kilo bilgilerinizi doldurun.</p>
+      </div>
+
+      <form id="client-profile-form" onsubmit="saveClientProfileMetrics(event);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div class="calc-form-group">
+            <label class="calc-label">Boy (cm) *</label>
+            <input type="number" id="input-profile-height" class="input-field" placeholder="Örn: 180" required min="120" max="230">
+          </div>
+          <div class="calc-form-group">
+            <label class="calc-label">Başlangıç Kilosu (kg) *</label>
+            <input type="number" step="0.1" id="input-profile-start-weight" class="input-field" placeholder="Örn: 85.0" required min="30" max="250">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem;">
+          <div class="calc-form-group">
+            <label class="calc-label">Güncel Kilo (kg) *</label>
+            <input type="number" step="0.1" id="input-profile-current-weight" class="input-field" placeholder="Örn: 82.0" required min="30" max="250">
+          </div>
+          <div class="calc-form-group">
+            <label class="calc-label">Hedef Kilo (kg)</label>
+            <input type="number" step="0.1" id="input-profile-target-weight" class="input-field" placeholder="Örn: 76.0" min="30" max="250">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary-glow" style="width: 100%; padding: 0.8rem; font-size: 0.95rem;">
+          <i class="fas fa-check-circle"></i> Vücut Ölçülerimi Kaydet & Güncelle
+        </button>
+      </form>
+    </div>
+  </div>
+
   <!-- Navigation Bar -->
   <header class="navbar scrolled">
     <div class="container nav-container">
@@ -433,37 +476,42 @@
       <!-- Top Welcome & Status Banner -->
       <div class="user-welcome-card glass-panel">
         <div class="user-info-box">
-          <div class="user-avatar" id="client-initials">AY</div>
+          <div class="user-avatar" id="client-initials">EG</div>
           <div class="user-details">
-            <h2>Hoş Geldin, <span class="gradient-text" id="client-name">Ahmet Yılmaz</span> 👋</h2>
+            <h2>Hoş Geldin, <span class="gradient-text" id="client-name">Danışanım</span> 👋</h2>
             <div class="package-pill" id="client-package-badge">
-              <i class="fas fa-shield-alt"></i> 3 Aylık Başlangıç & Disiplin Paketi (1. Hafta / 12 Hafta)
+              <i class="fas fa-shield-alt"></i> Özel Koçluk Paketi (1. Hafta)
             </div>
           </div>
         </div>
 
-        <button class="btn btn-primary-glow" id="checkin-trigger-btn">
-          <i class="fas fa-camera"></i> Haftalık Form Görseli Yükle
-        </button>
+        <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+          <button class="btn btn-outline" onclick="openProfileUpdateModal()" style="border-color: rgba(239, 68, 68, 0.4); color: #EF4444; font-size: 0.88rem; padding: 0.65rem 1rem; background: rgba(239,68,68,0.1);">
+            <i class="fas fa-edit"></i> Ölçülerimi Güncelle
+          </button>
+          <button class="btn btn-primary-glow" id="checkin-trigger-btn">
+            <i class="fas fa-camera"></i> Haftalık Form Görseli Yükle
+          </button>
+        </div>
       </div>
 
       <!-- Quick Stats Overview -->
       <div class="client-stats-row" style="margin-bottom: 2rem;">
-        <div class="client-stat-card">
+        <div class="client-stat-card" onclick="openProfileUpdateModal()" style="cursor: pointer;" title="Ölçüleri Güncelle">
           <div class="label">Başlangıç Kilosu</div>
-          <div class="value" id="stat-initial-weight">88.0 kg</div>
+          <div class="value" id="stat-initial-weight">Girilecek kg</div>
         </div>
-        <div class="client-stat-card">
+        <div class="client-stat-card" onclick="openProfileUpdateModal()" style="cursor: pointer;" title="Ölçüleri Güncelle">
           <div class="label">Güncel Kilo</div>
-          <div class="value green" id="stat-current-weight">86.2 kg</div>
+          <div class="value green" id="stat-current-weight">Girilecek kg</div>
         </div>
-        <div class="client-stat-card">
-          <div class="label">Form Kontrol Periyodu</div>
-          <div class="value" id="stat-checkin-period" style="font-size: 1.1rem; padding-top: 0.3rem;">2 Haftada Bir</div>
+        <div class="client-stat-card" onclick="openProfileUpdateModal()" style="cursor: pointer;" title="Ölçüleri Güncelle">
+          <div class="label">Boy & Periyot</div>
+          <div class="value" id="stat-checkin-period" style="font-size: 1.1rem; padding-top: 0.3rem;">Haftalık</div>
         </div>
         <div class="client-stat-card">
           <div class="label">Disiplin Notu</div>
-          <div class="value green" id="stat-discipline-score">%98 <i class="fas fa-fire" style="font-size: 1rem; color: #F59E0B;"></i></div>
+          <div class="value green" id="stat-discipline-score">%100 <i class="fas fa-fire" style="font-size: 1rem; color: #F59E0B;"></i></div>
         </div>
       </div>
 
@@ -903,11 +951,147 @@
           if (data.success && Array.isArray(data.clients) && data.clients.length > 0) {
             liveClientsList = data.clients;
             localStorage.setItem('pt_clients_list', JSON.stringify(liveClientsList));
+            renderClientProfileMetrics();
           }
         })
         .catch(err => console.warn('Sunucu senkronizasyonu yerel hafızadan alındı:', err));
     }
     fetchLiveClients();
+
+    // ==========================================================================
+    // Dynamic Client Profile & Body Metrics Engine (Her Danışana Özel Vücut Ölçüleri)
+    // ==========================================================================
+    function getInitials(nameStr) {
+      if (!nameStr) return 'UA';
+      const parts = nameStr.trim().split(/\s+/);
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      }
+      return nameStr.substring(0, 2).toUpperCase();
+    }
+
+    function openProfileUpdateModal() {
+      const modal = document.getElementById('client-profile-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        const storedClients = (liveClientsList && liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
+        const userPhone = sessionStorage.getItem('client_user_phone') || localStorage.getItem('client_user_phone') || '05376274415';
+        const cleanPhone = userPhone.replace(/\D/g, '');
+        const currentClient = storedClients.find(c => (c.phone || '').replace(/\D/g, '') === cleanPhone) || {};
+        
+        const profileKey = `pt_client_profile_${cleanPhone}`;
+        const savedProfile = JSON.parse(localStorage.getItem(profileKey)) || {};
+
+        const hInput = document.getElementById('input-profile-height');
+        const swInput = document.getElementById('input-profile-start-weight');
+        const cwInput = document.getElementById('input-profile-current-weight');
+        const twInput = document.getElementById('input-profile-target-weight');
+
+        if (hInput) hInput.value = savedProfile.height || currentClient.height || '';
+        if (swInput) swInput.value = savedProfile.startWeight || currentClient.startWeight || '';
+        if (cwInput) cwInput.value = savedProfile.currentWeight || currentClient.currentWeight || '';
+        if (twInput) twInput.value = savedProfile.targetWeight || currentClient.targetWeight || '';
+      }
+    }
+    window.openProfileUpdateModal = openProfileUpdateModal;
+
+    function closeProfileUpdateModal() {
+      const modal = document.getElementById('client-profile-modal');
+      if (modal) modal.style.display = 'none';
+    }
+    window.closeProfileUpdateModal = closeProfileUpdateModal;
+
+    function saveClientProfileMetrics(e) {
+      if (e) e.preventDefault();
+      const userPhone = sessionStorage.getItem('client_user_phone') || localStorage.getItem('client_user_phone') || '05376274415';
+      const cleanPhone = userPhone.replace(/\D/g, '');
+
+      const height = document.getElementById('input-profile-height').value;
+      const startWeight = document.getElementById('input-profile-start-weight').value;
+      const currentWeight = document.getElementById('input-profile-current-weight').value;
+      const targetWeight = document.getElementById('input-profile-target-weight').value;
+
+      const profileData = {
+        height: height,
+        startWeight: startWeight,
+        currentWeight: currentWeight,
+        targetWeight: targetWeight,
+        updatedAt: new Date().toISOString()
+      };
+
+      const profileKey = `pt_client_profile_${cleanPhone}`;
+      localStorage.setItem(profileKey, JSON.stringify(profileData));
+
+      fetch(`/api/clients/${cleanPhone}/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profileData)
+      }).catch(err => console.log('Profile sync offline fallback:', err));
+
+      closeProfileUpdateModal();
+      renderClientProfileMetrics();
+    }
+    window.saveClientProfileMetrics = saveClientProfileMetrics;
+
+    function renderClientProfileMetrics(matchingClientObj) {
+      const storedClients = (liveClientsList && liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
+      const userPhone = sessionStorage.getItem('client_user_phone') || localStorage.getItem('client_user_phone') || '05376274415';
+      const cleanPhone = userPhone.replace(/\D/g, '');
+      const userName = sessionStorage.getItem('client_user_name') || localStorage.getItem('client_user_name') || 'Danışanım';
+
+      const client = matchingClientObj || storedClients.find(c => (c.phone || '').replace(/\D/g, '') === cleanPhone) || storedClients.find(c => c.name === userName) || {
+        name: userName,
+        phone: userPhone,
+        package: "🌱 3 Aylık Başlangıç & Disiplin Paketi",
+        stage: "1. Hafta"
+      };
+
+      // 1. Update Welcome Banner Name, Initials, Package Badge
+      const nameEl = document.getElementById('client-name');
+      if (nameEl) nameEl.textContent = client.name;
+
+      const initialsEl = document.getElementById('client-initials');
+      if (initialsEl) initialsEl.textContent = getInitials(client.name);
+
+      const pkgEl = document.getElementById('client-package-badge');
+      if (pkgEl) {
+        pkgEl.innerHTML = `<i class="fas fa-shield-alt"></i> ${client.package || 'Özel Koçluk Paketi'} (${client.stage || '1. Hafta'})`;
+      }
+
+      // 2. Read Client Specific Body Metrics Profile
+      const profileKey = `pt_client_profile_${cleanPhone}`;
+      const savedProfile = JSON.parse(localStorage.getItem(profileKey)) || {};
+
+      const startWeight = savedProfile.startWeight || client.startWeight || null;
+      const currentWeight = savedProfile.currentWeight || client.currentWeight || null;
+      const height = savedProfile.height || client.height || null;
+      const checkinPeriod = savedProfile.checkinPeriod || client.checkinPeriod || "Haftalık";
+
+      // 3. Update the 4 Metric Cards
+      const initWEl = document.getElementById('stat-initial-weight');
+      if (initWEl) {
+        initWEl.innerHTML = startWeight ? `${parseFloat(startWeight).toFixed(1)} kg` : `<span style="font-size: 0.85rem; color: var(--accent-red); cursor: pointer;" onclick="openProfileUpdateModal()">✏️ Girin</span>`;
+      }
+
+      const curWEl = document.getElementById('stat-current-weight');
+      if (curWEl) {
+        curWEl.innerHTML = currentWeight ? `${parseFloat(currentWeight).toFixed(1)} kg` : `<span style="font-size: 0.85rem; color: var(--accent-red); cursor: pointer;" onclick="openProfileUpdateModal()">✏️ Girin</span>`;
+      }
+
+      const checkinEl = document.getElementById('stat-checkin-period');
+      if (checkinEl) {
+        checkinEl.textContent = height ? `${height} cm (${checkinPeriod})` : checkinPeriod;
+      }
+
+      // Automatically trigger modal on first load if metrics missing
+      const isAuth = (sessionStorage.getItem('client_authenticated') === 'true' || localStorage.getItem('client_authenticated') === 'true');
+      if (isAuth && (!startWeight || !currentWeight) && !sessionStorage.getItem('profile_modal_shown')) {
+        sessionStorage.setItem('profile_modal_shown', 'true');
+        setTimeout(() => { openProfileUpdateModal(); }, 600);
+      }
+    }
+    window.renderClientProfileMetrics = renderClientProfileMetrics;
+    renderClientProfileMetrics();
 
     // Global doClientLogin handler for instant login response
     window.doClientLogin = function() {
@@ -939,8 +1123,7 @@
       sessionStorage.setItem('client_user_phone', finalPhone);
       sessionStorage.setItem('client_user_name', finalName);
 
-      const nameSpan = document.querySelector('.client-welcome-box h2');
-      if (nameSpan) nameSpan.textContent = `Hoş Geldin, ${finalName}! 👋`;
+      renderClientProfileMetrics(matchingClient);
 
       const overlay = document.getElementById('client-auth-overlay');
       if (overlay) {

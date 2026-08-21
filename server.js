@@ -215,6 +215,27 @@ app.put('/api/clients/:id/password', (req, res) => {
   res.json({ success: true, password: client.password, client });
 });
 
+// Update Client Body Metrics Profile Endpoint (Client Action)
+app.put('/api/clients/:id/profile', (req, res) => {
+  const { id } = req.params;
+  const { height, startWeight, currentWeight, targetWeight } = req.body;
+
+  const db = readDb();
+  const client = db.clients.find(c => c.id === id || (c.phone && c.phone.replace(/\D/g, '') === id.replace(/\D/g, '')));
+
+  if (!client) {
+    return res.status(404).json({ success: false, message: 'Danışan bulunamadı.' });
+  }
+
+  if (height) client.height = height;
+  if (startWeight) client.startWeight = startWeight;
+  if (currentWeight) client.currentWeight = currentWeight;
+  if (targetWeight) client.targetWeight = targetWeight;
+
+  writeDb(db);
+  res.json({ success: true, client });
+});
+
 // Delete Client Endpoint (Trainer Action)
 app.delete('/api/clients/:id', (req, res) => {
   const { id } = req.params;
