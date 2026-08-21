@@ -1684,7 +1684,7 @@
 
       if (photosList.length === 0) {
         return `
-          <div id="trainer-photos-drawer-box" style="display: none; margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,255,255,0.15); border-radius: var(--radius-md); text-align: center; color: var(--text-muted); font-size: 0.82rem;">
+          <div id="trainer-photos-drawer-box" style="display: block; margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,255,255,0.15); border-radius: var(--radius-md); text-align: center; color: var(--text-muted); font-size: 0.82rem;">
             <i class="fas fa-camera-retro" style="font-size: 1.5rem; color: #3B82F6; margin-bottom: 0.3rem; display: block;"></i>
             Danışan henüz 4 açılı form görseli yüklemedi.
           </div>
@@ -1738,7 +1738,7 @@
       }).join('');
 
       return `
-        <div id="trainer-photos-drawer-box" style="display: none; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.8rem;">
+        <div id="trainer-photos-drawer-box" style="display: block; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.8rem; max-height: 380px; overflow-y: auto; padding-right: 0.3rem;">
           <h4 style="color: #3B82F6; font-size: 0.92rem; margin: 0 0 0.4rem 0;">
             📸 Danışanın Yüklediği Form Görselleri (${photosList.length} Kayıt)
           </h4>
@@ -1804,11 +1804,11 @@
       }).join('');
 
       return `
-        <div id="trainer-schedule-drawer-box" style="display: none; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.8rem;">
+        <div id="trainer-schedule-drawer-box" style="display: block; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.8rem;">
           <h4 style="color: #F59E0B; font-size: 0.92rem; margin: 0 0 0.6rem 0;">
             📅 Danışanın Form Kontrol Takvimi (${formChecks.length} Kontrol Noktası)
           </h4>
-          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.6rem; max-height: 280px; overflow-y: auto; padding-right: 0.3rem;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.6rem; max-height: 240px; overflow-y: auto; padding-right: 0.3rem;">
             ${gridHtml}
           </div>
         </div>
