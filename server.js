@@ -1110,11 +1110,12 @@ function getPackageEntitlements(pkgName) {
 // --------------------------------------------------------------------------
 
 // GET /api/agenda — Eğitmen Günlük / Haftalık Yapılacaklar Listesi (TRAINER ONLY)
+// GET /api/agenda — Eğitmen Günlük Ajandası (TRAINER ONLY)
 app.get('/api/agenda', requireTrainer, (req, res) => {
   const db = readDb();
   autoExpireClients(db);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getTurkeyDateStr();
   const todayDate = new Date(todayStr);
 
   const overdue = [];
@@ -1124,6 +1125,7 @@ app.get('/api/agenda', requireTrainer, (req, res) => {
   db.clients.forEach(c => {
     if (!c.status) c.status = 'active';
     const clientPhone10 = normalizePhone(c.phone) || '';
+    ensureFormCheckSchedule(c);
 
     // 1. Üyelik Bitiş Tarihi Kontrolü
     if (c.expiryDate) {
@@ -1172,113 +1174,109 @@ app.get('/api/agenda', requireTrainer, (req, res) => {
       }
     }
 
-    // 2. 4 Haftalık Antrenman Programı Bitiş Tarihi (startDate + 28 gün)
+    // 2. Dinamik Aylık Program Revizyon Tarihleri (Her 28 günde bir)
     const startDateStr = c.startDate || (c.createdAt ? c.createdAt.split('T')[0] : null);
-    if (startDateStr && c.hasAssignedProgram && c.status === 'active') {
-      const startD = new Date(startDateStr);
-      const progExpD = new Date(startD);
-      progExpD.setDate(progExpD.getDate() + 28);
-      const progExpStr = progExpD.toISOString().split('T')[0];
-      const progDiff = Math.ceil((progExpD - todayDate) / (1000 * 60 * 60 * 24));
+    if (startDateStr && c.status === 'active') {
+      const baseD = new Date(startDateStr);
+      const maxRevisions = c.expiryDate ? Math.min(12, Math.ceil((new Date(c.expiryDate) - baseD) / (1000 * 60 * 60 * 24 * 28))) : 12;
 
-      if (progDiff < 0) {
-        overdue.push({
-          id: `prog-${c.id}`,
-          clientId: c.id,
-          clientName: c.name,
-          clientPhone: clientPhone10,
-          type: 'program_expired',
-          title: '4 Haftalık Program Bitti',
-          subtitle: `${Math.abs(progDiff)} gün gecikti (Yenilenmeli)`,
-          dueDate: progExpStr,
-          urgency: 'overdue',
-          actions: ['open_wizard', 'whatsapp']
-        });
-      } else if (progDiff === 0) {
-        today.push({
-          id: `prog-${c.id}`,
-          clientId: c.id,
-          clientName: c.name,
-          clientPhone: clientPhone10,
-          type: 'program_expired',
-          title: 'Program Bugün Bitiyor',
-          subtitle: `Bugün 4. hafta son günü!`,
-          dueDate: progExpStr,
-          urgency: 'today',
-          actions: ['open_wizard', 'whatsapp']
-        });
-      } else if (progDiff > 0 && progDiff <= 7) {
-        week.push({
-          id: `prog-${c.id}`,
-          clientId: c.id,
-          clientName: c.name,
-          clientPhone: clientPhone10,
-          type: 'program_expired',
-          title: 'Program Bitiyor',
-          subtitle: `${progDiff} gün kaldı (4. Hafta Sonu)`,
-          dueDate: progExpStr,
-          urgency: 'week',
-          actions: ['open_wizard', 'whatsapp']
-        });
+      for (let m = 1; m <= maxRevisions; m++) {
+        const progExpD = new Date(baseD);
+        progExpD.setDate(progExpD.getDate() + m * 28);
+        const progExpStr = progExpD.toISOString().split('T')[0];
+        const progDiff = Math.ceil((progExpD - todayDate) / (1000 * 60 * 60 * 24));
+
+        if (progDiff < 0 && m === 1 && c.hasAssignedProgram) {
+          overdue.push({
+            id: `prog-${c.id}-${m}`,
+            clientId: c.id,
+            clientName: c.name,
+            clientPhone: clientPhone10,
+            type: 'program_expired',
+            title: `Aylık Program Bitti (${m}. Ay)`,
+            subtitle: `${Math.abs(progDiff)} gün gecikti (Yenilenmeli)`,
+            dueDate: progExpStr,
+            urgency: 'overdue',
+            actions: ['open_wizard', 'whatsapp']
+          });
+        } else if (progDiff === 0) {
+          today.push({
+            id: `prog-${c.id}-${m}`,
+            clientId: c.id,
+            clientName: c.name,
+            clientPhone: clientPhone10,
+            type: 'program_expired',
+            title: `Aylık Program Revizyon Günü (${m}. Ay)`,
+            subtitle: `Bugün ${m}. ay program revizyon günü!`,
+            dueDate: progExpStr,
+            urgency: 'today',
+            actions: ['open_wizard', 'whatsapp']
+          });
+        } else if (progDiff > 0 && progDiff <= 7) {
+          week.push({
+            id: `prog-${c.id}-${m}`,
+            clientId: c.id,
+            clientName: c.name,
+            clientPhone: clientPhone10,
+            type: 'program_expired',
+            title: `Program Revizyonu Yaklaşıyor (${m}. Ay)`,
+            subtitle: `${progDiff} gün kaldı (${m}. Ay Revizyonu)`,
+            dueDate: progExpStr,
+            urgency: 'week',
+            actions: ['open_wizard', 'whatsapp']
+          });
+        }
       }
     }
 
-    // 3. Form Görseli Kontrol Günleri (7, 14, 21, 28. Günler)
-    if (startDateStr && c.status === 'active') {
-      const startD = new Date(startDateStr);
-      const checkDays = [7, 14, 21, 28];
-      if (!c.formChecks) c.formChecks = [];
+    // 3. Form Görseli Kontrol Günleri (c.formChecks dizisinden dinamik okuma)
+    if (c.status === 'active' && Array.isArray(c.formChecks)) {
+      c.formChecks.forEach((fc, idx) => {
+        if (!fc.dueDate || fc.status === 'done') return;
 
-      checkDays.forEach(dayOffset => {
-        const fcD = new Date(startD);
-        fcD.setDate(fcD.getDate() + dayOffset);
-        const fcStr = fcD.toISOString().split('T')[0];
+        const fcD = new Date(fc.dueDate);
         const fcDiff = Math.ceil((fcD - todayDate) / (1000 * 60 * 60 * 24));
+        const weekTag = fc.isBaseline ? 'Başlangıç' : (fc.weekNumber ? `${fc.weekNumber}. Hafta` : `${idx}. Kontrol`);
 
-        const existingFC = c.formChecks.find(f => f.dueDate === fcStr);
-        const isDone = existingFC && existingFC.status === 'done';
-
-        if (!isDone) {
-          if (fcDiff < 0) {
-            overdue.push({
-              id: `fc-${c.id}-${fcStr}`,
-              clientId: c.id,
-              clientName: c.name,
-              clientPhone: clientPhone10,
-              type: 'form_check_due',
-              title: 'Form Fotoğrafı Gecikti',
-              subtitle: `${Math.abs(fcDiff)} gün gecikti (${dayOffset}. gün kontrolü)`,
-              dueDate: fcStr,
-              urgency: 'overdue',
-              actions: ['whatsapp_form', 'mark_fc_done']
-            });
-          } else if (fcDiff === 0) {
-            today.push({
-              id: `fc-${c.id}-${fcStr}`,
-              clientId: c.id,
-              clientName: c.name,
-              clientPhone: clientPhone10,
-              type: 'form_check_due',
-              title: 'Form Fotoğrafı Günü',
-              subtitle: `Bugün ${dayOffset}. gün kontrol tarihi!`,
-              dueDate: fcStr,
-              urgency: 'today',
-              actions: ['whatsapp_form', 'mark_fc_done']
-            });
-          } else if (fcDiff > 0 && fcDiff <= 7) {
-            week.push({
-              id: `fc-${c.id}-${fcStr}`,
-              clientId: c.id,
-              clientName: c.name,
-              clientPhone: clientPhone10,
-              type: 'form_check_due',
-              title: 'Form Fotoğrafı Yaklaşıyor',
-              subtitle: `${fcDiff} gün kaldı (${dayOffset}. gün kontrolü)`,
-              dueDate: fcStr,
-              urgency: 'week',
-              actions: ['whatsapp_form', 'mark_fc_done']
-            });
-          }
+        if (fcDiff < 0) {
+          overdue.push({
+            id: `fc-${c.id}-${fc.id || fc.dueDate}`,
+            clientId: c.id,
+            clientName: c.name,
+            clientPhone: clientPhone10,
+            type: 'form_check_due',
+            title: 'Form Fotoğrafı Gecikti',
+            subtitle: `${Math.abs(fcDiff)} gün gecikti (${weekTag})`,
+            dueDate: fc.dueDate,
+            urgency: 'overdue',
+            actions: ['whatsapp_form', 'mark_fc_done']
+          });
+        } else if (fcDiff === 0) {
+          today.push({
+            id: `fc-${c.id}-${fc.id || fc.dueDate}`,
+            clientId: c.id,
+            clientName: c.name,
+            clientPhone: clientPhone10,
+            type: 'form_check_due',
+            title: 'Form Fotoğrafı Günü',
+            subtitle: `Bugün ${weekTag} kontrol tarihi!`,
+            dueDate: fc.dueDate,
+            urgency: 'today',
+            actions: ['whatsapp_form', 'mark_fc_done']
+          });
+        } else if (fcDiff > 0 && fcDiff <= 7) {
+          week.push({
+            id: `fc-${c.id}-${fc.id || fc.dueDate}`,
+            clientId: c.id,
+            clientName: c.name,
+            clientPhone: clientPhone10,
+            type: 'form_check_due',
+            title: 'Form Fotoğrafı Yaklaşıyor',
+            subtitle: `${fcDiff} gün kaldı (${weekTag})`,
+            dueDate: fc.dueDate,
+            urgency: 'week',
+            actions: ['whatsapp_form', 'mark_fc_done']
+          });
         }
       });
     }
@@ -1290,7 +1288,7 @@ app.get('/api/agenda', requireTrainer, (req, res) => {
         const sessD = new Date(sess.date);
         const sessDiff = Math.ceil((sessD - todayDate) / (1000 * 60 * 60 * 24));
 
-        const sessTypeTitle = sess.type === 'pt' ? 'Birebir PT Dersi' : 'Hibrit Stüdyo Seansı';
+        const sessTypeTitle = sess.type === 'pt' ? 'Birebir PT Dersi' : 'Stüdyo Seansı';
 
         if (sessDiff < 0 && sess.status === 'planned') {
           overdue.push({
@@ -1346,7 +1344,7 @@ app.get('/api/agenda', requireTrainer, (req, res) => {
 // GET /api/calendar — Aylık Olay Takvimi (TRAINER ONLY)
 app.get('/api/calendar', requireTrainer, (req, res) => {
   const { month, clientId } = req.query; // YYYY-MM
-  const targetMonth = month || new Date().toISOString().slice(0, 7);
+  const targetMonth = month || getTurkeyDateStr().slice(0, 7);
 
   const db = readDb();
   autoExpireClients(db);
@@ -1355,6 +1353,7 @@ app.get('/api/calendar', requireTrainer, (req, res) => {
 
   db.clients.forEach(c => {
     if (clientId && c.id !== clientId && normalizePhone(c.phone) !== normalizePhone(clientId)) return;
+    ensureFormCheckSchedule(c);
 
     // 1. Üyelik Bitiş Olayı (Kırmızı)
     if (c.expiryDate && c.expiryDate.startsWith(targetMonth)) {
@@ -1365,55 +1364,75 @@ app.get('/api/calendar', requireTrainer, (req, res) => {
         date: c.expiryDate,
         type: 'expiry',
         color: '#EF4444',
-        title: `🔴 ${c.name} — Üyelik Bitiş`,
+        title: `🔴 ${c.name} — Paket Bitişi`,
         subtitle: `Paket: ${c.package}`
       });
     }
 
-    // 2. Program Bitiş Olayı (Turuncu)
+    // 2. Dinamik Aylık Program Revizyon Tarihleri (Her 28 günde bir) (Turuncu)
     const startDateStr = c.startDate || (c.createdAt ? c.createdAt.split('T')[0] : null);
-    if (startDateStr && c.hasAssignedProgram) {
-      const startD = new Date(startDateStr);
-      const progExpD = new Date(startD);
-      progExpD.setDate(progExpD.getDate() + 28);
-      const progExpStr = progExpD.toISOString().split('T')[0];
+    if (startDateStr) {
+      const baseD = new Date(startDateStr);
+      const maxRevisions = c.expiryDate ? Math.min(12, Math.ceil((new Date(c.expiryDate) - baseD) / (1000 * 60 * 60 * 24 * 28))) : 12;
 
-      if (progExpStr.startsWith(targetMonth)) {
-        events.push({
-          id: `cal-prog-${c.id}`,
-          clientId: c.id,
-          clientName: c.name,
-          date: progExpStr,
-          type: 'program',
-          color: '#F59E0B',
-          title: `🟠 ${c.name} — Program Bitiş (4. Hafta)`,
-          subtitle: `Yeniden program yazılmalı`
-        });
-      }
+      for (let m = 1; m <= maxRevisions; m++) {
+        const revD = new Date(baseD);
+        revD.setDate(revD.getDate() + m * 28);
+        const revStr = revD.toISOString().split('T')[0];
 
-      // 3. Form Görseli Günleri (Mavi)
-      [7, 14, 21, 28].forEach(dayOffset => {
-        const fcD = new Date(startD);
-        fcD.setDate(fcD.getDate() + dayOffset);
-        const fcStr = fcD.toISOString().split('T')[0];
-
-        if (fcStr.startsWith(targetMonth)) {
-          const isDone = Array.isArray(c.formChecks) && c.formChecks.some(f => f.dueDate === fcStr && f.status === 'done');
+        if (revStr.startsWith(targetMonth)) {
           events.push({
-            id: `cal-fc-${c.id}-${fcStr}`,
+            id: `cal-prog-${c.id}-${m}`,
             clientId: c.id,
             clientName: c.name,
-            date: fcStr,
+            date: revStr,
+            type: 'program',
+            color: '#F59E0B',
+            title: `📝 ${c.name} — Aylık Program Revizyonu (${m}. Ay)`,
+            subtitle: `Yeniden program yazılmalı`
+          });
+        }
+      }
+    }
+
+    // 3. Form Görseli Kontrol Günleri (c.formChecks dizisinden dinamik okuma) (Mavi/Yeşil)
+    if (Array.isArray(c.formChecks)) {
+      c.formChecks.forEach((fc, idx) => {
+        if (fc.dueDate && fc.dueDate.startsWith(targetMonth)) {
+          const isDone = fc.status === 'done';
+          const isApproved = Boolean(fc.trainerApproved);
+
+          let icon = '🔵';
+          let color = '#3B82F6';
+          let sub = 'Form Yüklemesi Bekleniyor';
+
+          if (isDone) {
+            icon = '🟢';
+            color = '#10B981';
+            sub = isApproved ? '✓ Umut Hoca Onayladı' : 'Form Yüklendi';
+          } else if (fc.isOverdue) {
+            icon = '⚠️';
+            color = '#EF4444';
+            sub = `Gecikti (${fc.daysOverdue || 1} Gün)`;
+          }
+
+          const tag = fc.isBaseline ? 'Başlangıç' : (fc.weekNumber ? `${fc.weekNumber}. Hafta` : `${idx}. Kontrol`);
+
+          events.push({
+            id: `cal-fc-${c.id}-${fc.id || fc.dueDate}`,
+            clientId: c.id,
+            clientName: c.name,
+            date: fc.dueDate,
             type: 'form',
-            color: '#3B82F6',
-            title: `${isDone ? '✅' : '🔵'} ${c.name} — Form Kontrol (${dayOffset}. Gün)`,
-            subtitle: isDone ? 'Form yüklemesi yapıldı' : 'Görsel yüklemesi bekleniyor'
+            color: color,
+            title: `${icon} ${c.name} — Form Kontrolü (${tag})`,
+            subtitle: sub
           });
         }
       });
     }
 
-    // 4. Birebir Seanslar (Yeşil)
+    // 4. Birebir PT & Stüdyo Seansları (Yeşil)
     if (Array.isArray(c.sessions)) {
       c.sessions.forEach(sess => {
         if (sess.date && sess.date.startsWith(targetMonth)) {
@@ -1423,10 +1442,11 @@ app.get('/api/calendar', requireTrainer, (req, res) => {
             clientName: c.name,
             date: sess.date,
             time: sess.time,
+            sessionId: sess.id,
             type: 'pt',
             color: '#10B981',
-            title: `🟢 ${c.name} — ${sess.type === 'pt' ? 'PT Dersi' : 'Stüdyo Seansı'} (${sess.time})`,
-            subtitle: `@ ${sess.location || 'MACFit'} [${sess.status}]`
+            title: `🏋️ ${c.name} — ${sess.type === 'pt' ? 'Birebir PT Dersi' : 'Stüdyo Seansı'} (${sess.time || ''})`,
+            subtitle: `@ ${sess.location || 'MACFit'} [${sess.status || 'Planlandı'}]`
           });
         }
       });

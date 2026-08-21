@@ -2239,7 +2239,9 @@
     // BÖLÜM 2: EĞİTMEN AYLIK TAKVİMİ (MONTHLY CALENDAR ENGINE)
     // --------------------------------------------------------------------------
     async function renderTrainerCalendar() {
-      const monthStr = calendarCurrentDate.toISOString().slice(0, 7);
+      const yStr = calendarCurrentDate.getFullYear();
+      const mStr = String(calendarCurrentDate.getMonth() + 1).padStart(2, '0');
+      const monthStr = `${yStr}-${mStr}`;
       const titleEl = document.getElementById('cal-month-title');
       const gridEl = document.getElementById('trainer-calendar-grid');
       const filterType = document.getElementById('cal-filter-type')?.value || 'all';
