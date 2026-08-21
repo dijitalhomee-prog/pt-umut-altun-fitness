@@ -1697,7 +1697,7 @@
 
       if (photosList.length === 0) {
         return `
-          <div id="trainer-photos-box" style="margin-top: 1.2rem; padding: 1rem 1.2rem; background: rgba(0,0,0,0.4); border: 1px dashed rgba(59, 130, 246, 0.35); border-radius: var(--radius-md);">
+          <div id="trainer-photos-drawer-box" style="display: none; margin-top: 1.2rem; padding: 1rem 1.2rem; background: rgba(0,0,0,0.4); border: 1px dashed rgba(59, 130, 246, 0.35); border-radius: var(--radius-md);">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem;">
               <div style="display: flex; align-items: center; gap: 0.6rem;">
                 <i class="fas fa-camera-retro" style="font-size: 1.5rem; color: #3B82F6;"></i>
@@ -1761,7 +1761,7 @@
       }).join('');
 
       return `
-        <div id="trainer-photos-box" style="margin-top: 1.2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; max-height: 450px; overflow-y: auto; padding-right: 0.3rem;">
+        <div id="trainer-photos-drawer-box" style="display: none; margin-top: 1.2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; max-height: 450px; overflow-y: auto; padding-right: 0.3rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
             <h4 style="color: #3B82F6; font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
               📸 Danışanın Yüklediği 4 Açılı Form Görselleri (${photosList.length} Yükleme Kaydı)
@@ -1832,7 +1832,7 @@
       }).join('');
 
       return `
-        <div id="trainer-schedule-drawer-box" style="display: block; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.8rem;">
+        <div id="trainer-schedule-drawer-box" style="display: none; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.8rem;">
           <h4 style="color: #F59E0B; font-size: 0.92rem; margin: 0 0 0.6rem 0;">
             📅 Danışanın Form Kontrol Takvimi (${formChecks.length} Kontrol Noktası)
           </h4>
