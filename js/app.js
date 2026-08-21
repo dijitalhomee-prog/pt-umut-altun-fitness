@@ -46,6 +46,9 @@ async function renderPackages() {
           return `<option value="${p.name}">${p.name}${priceStr}</option>`;
         }).join('');
       }
+
+      // Render Cevahir AVM PT Cards dynamically from API catalog (ITEM 1)
+      renderPTPackages(data.packages);
     }
   } catch (err) {
     console.warn('Dynamic packages sync error:', err);
@@ -95,6 +98,42 @@ async function renderPackages() {
       openModalWithPackage(packageName);
     });
   });
+}
+
+function renderPTPackages(packages) {
+  const ptContainer = document.getElementById('pt-packages-container');
+  if (!ptContainer || !Array.isArray(packages)) return;
+
+  const ptPackages = packages.filter(p => p.expiryMode === 'sessions' || (p.name && p.name.includes('Birebir PT')));
+  if (ptPackages.length === 0) return;
+
+  ptContainer.innerHTML = ptPackages.map(p => {
+    const totalSessions = (p.entitlements && p.entitlements.ptSessionsTotal) ? p.entitlements.ptSessionsTotal : 10;
+    const perLesson = Math.round(p.price / totalSessions);
+    const isFeatured = totalSessions === 30;
+
+    return `
+      <div style="padding: 1.6rem; background: ${isFeatured ? 'linear-gradient(180deg, rgba(239, 68, 68, 0.18) 0%, rgba(0,0,0,0.6) 100%)' : 'rgba(0,0,0,0.5)'}; border: ${isFeatured ? '2px solid var(--accent-red)' : '1px solid var(--border-light)'}; border-radius: var(--radius-md); display: flex; flex-direction: column; justify-content: space-between; text-align: center; position: relative; ${isFeatured ? 'box-shadow: 0 0 25px rgba(239,68,68,0.3);' : ''}">
+        ${isFeatured ? `
+          <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent-gradient); color: #FFFFFF; font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.8rem; border-radius: var(--radius-full); white-space: nowrap;">
+            🔥 En Avantajlı Ders Başı Fiyat
+          </div>
+        ` : ''}
+        <div>
+          <span style="font-size: 0.75rem; font-weight: 600; color: var(--accent-red); background: rgba(239,68,68,0.15); padding: 0.2rem 0.6rem; border-radius: var(--radius-full); margin-top: ${isFeatured ? '0.4rem' : '0'}; display: inline-block;">
+            ${totalSessions === 10 ? 'Aylık Kullanım' : (totalSessions === 20 ? 'En Çok Tercih Edilen' : 'Full Dönüşüm VIP')}
+          </span>
+          <h4 style="font-size: 1.15rem; margin: 0.8rem 0 0.4rem 0; color: #FFFFFF; font-weight: 700;">${p.name}</h4>
+          <p style="font-size: 0.825rem; color: var(--text-muted); margin-bottom: 1.2rem;">${p.packageDescription}</p>
+          <div style="font-size: 1.7rem; font-weight: 800; color: #FFFFFF; margin-bottom: 0.2rem;">${p.price.toLocaleString('tr-TR')} ₺</div>
+          <span style="font-size: 0.8rem; color: var(--accent-red); font-weight: 600;">(Ders Başı ~${perLesson.toLocaleString('tr-TR')} ₺)</span>
+        </div>
+        <button class="btn ${isFeatured ? 'btn-primary-glow' : 'btn-outline'} open-modal-btn select-package-btn" data-package-name="${p.name}" style="margin-top: 1.5rem; width: 100%;">
+          <i class="fab fa-whatsapp" style="color: #25D366;"></i> ${totalSessions} Derslik Pakete Başvur
+        </button>
+      </div>
+    `;
+  }).join('');
 }
 
 function renderTransformations() {

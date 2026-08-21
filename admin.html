@@ -490,11 +490,7 @@
             <div class="calc-form-group">
               <label class="calc-label">Satın Alınan Paket</label>
               <select id="wiz-client-package" class="input-field">
-                <option value="6 Aylık Vücut Yenileme & Hipertrofi Paketi">6 Aylık Vücut Yenileme & Hipertrofi Paketi</option>
-                <option value="3 Aylık Başlangıç & Disiplin Paketi">3 Aylık Başlangıç & Disiplin Paketi</option>
-                <option value="12 Aylık VIP Şampiyon Dönüşüm Paketi">12 Aylık VIP Şampiyon Dönüşüm Paketi</option>
-                <option value="Cevahir MACFit Hibrit Koçluk Paketi">Cevahir MACFit Hibrit Koçluk Paketi</option>
-                <option value="Cevahir AVM Birebir PT Paketi">Cevahir AVM Birebir PT Paketi</option>
+                <option value="">-- Paket Listesi Yükleniyor... --</option>
               </select>
             </div>
 
@@ -844,11 +840,7 @@
         <div class="calc-form-group">
           <label class="calc-label" for="new-client-package">Paket Seçimi</label>
           <select id="new-client-package" class="input-field">
-            <option value="6 Aylık Vücut Yenileme & Hipertrofi Paketi">6 Aylık Vücut Yenileme & Hipertrofi Paketi</option>
-            <option value="3 Aylık Başlangıç & Disiplin Paketi">3 Aylık Başlangıç & Disiplin Paketi</option>
-            <option value="12 Aylık VIP Şampiyon Dönüşüm Paketi">12 Aylık VIP Şampiyon Dönüşüm Paketi</option>
-            <option value="Cevahir MACFit Hibrit Koçluk Paketi">Cevahir MACFit Hibrit Koçluk Paketi</option>
-            <option value="Cevahir AVM Birebir PT Paketi">Cevahir AVM Birebir PT Paketi</option>
+            <option value="">-- Paket Listesi Yükleniyor... --</option>
           </select>
         </div>
 
@@ -1275,21 +1267,35 @@
       try {
         const res = await fetch('/api/packages');
         const data = await res.json();
-        if (data.success && Array.isArray(data.packages)) {
+        if (data.success && Array.isArray(data.packages) && data.packages.length > 0) {
           serverPackages = data.packages;
           populatePackageSelectOptions();
+        } else {
+          showPackageFetchError();
         }
       } catch (err) {
         console.warn('Fetch packages error:', err);
+        showPackageFetchError();
       }
     }
     window.fetchPackagesAndPopulateDropdowns = fetchPackagesAndPopulateDropdowns;
+
+    function showPackageFetchError() {
+      const errHtml = '<option value="">⚠️ Paket listesi sunucudan yüklenemedi!</option>';
+      const newSelect = document.getElementById('new-client-package');
+      const wizSelect = document.getElementById('wiz-client-package');
+      if (newSelect) { newSelect.innerHTML = errHtml; newSelect.disabled = true; }
+      if (wizSelect) { wizSelect.innerHTML = errHtml; wizSelect.disabled = true; }
+    }
 
     function populatePackageSelectOptions() {
       const newClientSelect = document.getElementById('new-client-package');
       const wizClientSelect = document.getElementById('wiz-client-package');
 
-      if (serverPackages.length === 0) return;
+      if (serverPackages.length === 0) {
+        showPackageFetchError();
+        return;
+      }
 
       const html = serverPackages.map(p => {
         const priceStr = p.price ? ` — ${p.price.toLocaleString('tr-TR')} ₺` : '';
@@ -1297,8 +1303,8 @@
         return `<option value="${p.name}">${p.name}${entStr}${priceStr}</option>`;
       }).join('');
 
-      if (newClientSelect) newClientSelect.innerHTML = html;
-      if (wizClientSelect) wizClientSelect.innerHTML = html;
+      if (newClientSelect) { newClientSelect.innerHTML = html; newClientSelect.disabled = false; }
+      if (wizClientSelect) { wizClientSelect.innerHTML = html; wizClientSelect.disabled = false; }
     }
 
     async function fetchServerClients() {
