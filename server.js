@@ -129,6 +129,100 @@ function deduplicateClients(dbData) {
   return modified;
 }
 
+const SEED_EXERCISES = [
+  // Göğüs
+  { id: "ex-bench-press", name: "Bench Press", nameTr: "Bench Press", muscleGroup: "gogus", equipment: "barbell", type: "compound", defaults: { sets: "4 Set", reps: "10-12 Tekrar", rest: "90 sn" } },
+  { id: "ex-incline-bench-press", name: "Incline Bench Press", nameTr: "Eğik Bench Press", muscleGroup: "gogus", equipment: "barbell", type: "compound", defaults: { sets: "4 Set", reps: "10-12 Tekrar", rest: "90 sn" } },
+  { id: "ex-decline-bench-press", name: "Decline Bench Press", nameTr: "Alçalan Bench Press", muscleGroup: "gogus", equipment: "barbell", type: "compound", defaults: { sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-dumbbell-press", name: "Dumbbell Press", nameTr: "Dambıl Press", muscleGroup: "gogus", equipment: "dumbbell", type: "compound", defaults: { sets: "4 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-incline-dumbbell-press", name: "Incline Dumbbell Press", nameTr: "Eğik Dambıl Press", muscleGroup: "gogus", equipment: "dumbbell", type: "compound", defaults: { sets: "4 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-dumbbell-fly", name: "Dumbbell Fly", nameTr: "Dambıl Fly", muscleGroup: "gogus", equipment: "dumbbell", type: "isolation", defaults: { sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-cable-crossover", name: "Cable Crossover", nameTr: "Kablo Crossover", muscleGroup: "gogus", equipment: "kablo", type: "isolation", defaults: { sets: "3 Set", reps: "15 Tekrar", rest: "60 sn" } },
+  { id: "ex-pec-deck", name: "Pec Deck Fly", nameTr: "Peck Deck", muscleGroup: "gogus", equipment: "makine", type: "isolation", defaults: { sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-push-up", name: "Push Up", nameTr: "Şınav", muscleGroup: "gogus", equipment: "vucut-agirligi", type: "compound", defaults: { sets: "3 Set", reps: "15 Tekrar", rest: "45 sn" } },
+  { id: "ex-dips", name: "Chest Dips", nameTr: "Paralel Bar Dips", muscleGroup: "gogus", equipment: "vucut-agirligi", type: "compound", defaults: { sets: "3 Set", reps: "10 Tekrar", rest: "60 sn" } },
+
+  // Sırt
+  { id: "ex-deadlift", name: "Deadlift", nameTr: "Ölü Kaldırış", muscleGroup: "sirt", equipment: "barbell", type: "compound", defaults: { sets: "4 Set", reps: "8 Tekrar", rest: "120 sn" } },
+  { id: "ex-pull-up", name: "Pull Up", nameTr: "Barfiks", muscleGroup: "sirt", equipment: "vucut-agirligi", type: "compound", defaults: { sets: "4 Set", reps: "8-10 Tekrar", rest: "90 sn" } },
+  { id: "ex-chin-up", name: "Chin Up", nameTr: "Ters Tutuş Barfiks", muscleGroup: "sirt", equipment: "vucut-agirligi", type: "compound", defaults: { sets: "3 Set", reps: "10 Tekrar", rest: "60 sn" } },
+  { id: "ex-lat-pulldown", name: "Lat Pulldown", nameTr: "Lat Çekiş", muscleGroup: "sirt", equipment: "kablo", type: "compound", defaults: { sets: "4 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-seated-cable-row", name: "Seated Cable Row", nameTr: "Oturarak Kablo Çekiş", muscleGroup: "sirt", equipment: "kablo", type: "compound", defaults: { sets: "4 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-barbell-row", name: "Barbell Row", nameTr: "Barbell Kürek", muscleGroup: "sirt", equipment: "barbell", type: "compound", defaults: { sets: "4 Set", reps: "10 Tekrar", rest: "90 sn" } },
+  { id: "ex-dumbbell-row", name: "Single Arm Dumbbell Row", nameTr: "Tek Kol Dambıl Kürek", muscleGroup: "sirt", equipment: "dumbbell", type: "compound", defaults: { sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-tbar-row", name: "T-Bar Row", nameTr: "T-Bar Kürek", muscleGroup: "sirt", equipment: "barbell", type: "compound", defaults: { sets: "4 Set", reps: "10 Tekrar", rest: "90 sn" } },
+  { id: "ex-face-pull", name: "Face Pull", nameTr: "Face Pull", muscleGroup: "sirt", equipment: "kablo", type: "isolation", defaults: { sets: "3 Set", reps: "15 Tekrar", rest: "45 sn" } },
+  { id: "ex-hyperextension", name: "Hyperextension", nameTr: "Bel Ekstansiyonu", muscleGroup: "sirt", equipment: "vucut-agirligi", type: "isolation", defaults: { sets: "3 Set", reps: "15 Tekrar", rest: "45 sn" } },
+
+  // Bacak
+  { id: "ex-squat", name: "Barbell Squat", nameTr: "Squat Çömelme", muscleGroup: "bacak", equipment: "barbell", type: "compound", defaults: { sets: "4 Set", reps: "10 Tekrar", rest: "90 sn" } },
+  { id: "ex-front-squat", name: "Front Squat", nameTr: "Ön Squat", muscleGroup: "bacak", equipment: "barbell", type: "compound", defaults: { sets: "4 Set", reps: "8 Tekrar", rest: "90 sn" } },
+  { id: "ex-leg-press", name: "Leg Press", nameTr: "Bacak Presi", muscleGroup: "bacak", equipment: "makine", type: "compound", defaults: { sets: "4 Set", reps: "12 Tekrar", rest: "90 sn" } },
+  { id: "ex-hack-squat", name: "Hack Squat", nameTr: "Hack Squat", muscleGroup: "bacak", equipment: "makine", type: "compound", defaults: { sets: "4 Set", reps: "10 Tekrar", rest: "90 sn" } },
+  { id: "ex-lunge", name: "Dumbbell Lunge", nameTr: "Lunge Hamle", muscleGroup: "bacak", equipment: "dumbbell", type: "compound", defaults: { sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-bulgarian-split-squat", name: "Bulgarian Split Squat", nameTr: "Bulgar Squat", muscleGroup: "bacak", equipment: "dumbbell", type: "compound", defaults: { sets: "3 Set", reps: "10 Tekrar", rest: "60 sn" } },
+  { id: "ex-leg-extension", name: "Leg Extension", nameTr: "Bacak Ekstansiyonu", muscleGroup: "bacak", equipment: "makine", type: "isolation", defaults: { sets: "3 Set", reps: "15 Tekrar", rest: "60 sn" } },
+  { id: "ex-leg-curl", name: "Leg Curl", nameTr: "Bacak Curl", muscleGroup: "bacak", equipment: "makine", type: "isolation", defaults: { sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-romanian-deadlift", name: "Romanian Deadlift", nameTr: "Romen Ölü Kaldırış", muscleGroup: "bacak", equipment: "barbell", type: "compound", defaults: { sets: "4 Set", reps: "10 Tekrar", rest: "90 sn" } },
+  { id: "ex-hip-thrust", name: "Barbell Hip Thrust", nameTr: "Kalça İtiş", muscleGroup: "bacak", equipment: "barbell", type: "compound", defaults: { sets: "4 Set", reps: "12 Tekrar", rest: "90 sn" } },
+  { id: "ex-glute-bridge", name: "Glute Bridge", nameTr: "Köprü", muscleGroup: "bacak", equipment: "vucut-agirligi", type: "isolation", defaults: { sets: "3 Set", reps: "15 Tekrar", rest: "45 sn" } },
+  { id: "ex-calf-raise", name: "Standing Calf Raise", nameTr: "Baldır Kaldırma", muscleGroup: "bacak", equipment: "makine", type: "isolation", defaults: { sets: "4 Set", reps: "15 Tekrar", rest: "45 sn" } },
+  { id: "ex-sumo-deadlift", name: "Sumo Deadlift", nameTr: "Sumo Ölü Kaldırış", muscleGroup: "bacak", equipment: "barbell", type: "compound", defaults: { sets: "4 Set", reps: "8 Tekrar", rest: "120 sn" } },
+
+  // Omuz
+  { id: "ex-overhead-press", name: "Barbell Shoulder Press", nameTr: "Omuz Press", muscleGroup: "omuz", equipment: "barbell", type: "compound", defaults: { sets: "4 Set", reps: "10 Tekrar", rest: "90 sn" } },
+  { id: "ex-db-shoulder-press", name: "Dumbbell Shoulder Press", nameTr: "Dambıl Omuz Press", muscleGroup: "omuz", equipment: "dumbbell", type: "compound", defaults: { sets: "4 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-arnold-press", name: "Arnold Press", nameTr: "Arnold Press", muscleGroup: "omuz", equipment: "dumbbell", type: "compound", defaults: { sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-lateral-raise", name: "Dumbbell Lateral Raise", nameTr: "Yan Kaldırış", muscleGroup: "omuz", equipment: "dumbbell", type: "isolation", defaults: { sets: "4 Set", reps: "15 Tekrar", rest: "45 sn" } },
+  { id: "ex-front-raise", name: "Dumbbell Front Raise", nameTr: "Ön Kaldırış", muscleGroup: "omuz", equipment: "dumbbell", type: "isolation", defaults: { sets: "3 Set", reps: "12 Tekrar", rest: "45 sn" } },
+  { id: "ex-rear-delt-fly", name: "Rear Delt Fly", nameTr: "Arka Omuz Fly", muscleGroup: "omuz", equipment: "dumbbell", type: "isolation", defaults: { sets: "3 Set", reps: "15 Tekrar", rest: "45 sn" } },
+  { id: "ex-upright-row", name: "Upright Row", nameTr: "Dik Kürek", muscleGroup: "omuz", equipment: "barbell", type: "compound", defaults: { sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-shrug", name: "Barbell Shrug", nameTr: "Trapez Silkme", muscleGroup: "omuz", equipment: "barbell", type: "isolation", defaults: { sets: "4 Set", reps: "15 Tekrar", rest: "45 sn" } },
+
+  // Kol
+  { id: "ex-barbell-curl", name: "Barbell Curl", nameTr: "Barbell Curl", muscleGroup: "kol", equipment: "barbell", type: "isolation", defaults: { sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-dumbbell-curl", name: "Dumbbell Curl", nameTr: "Dambıl Curl", muscleGroup: "kol", equipment: "dumbbell", type: "isolation", defaults: { sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-hammer-curl", name: "Hammer Curl", nameTr: "Çekiç Curl", muscleGroup: "kol", equipment: "dumbbell", type: "isolation", defaults: { sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-preacher-curl", name: "Preacher Curl", nameTr: "Preacher Curl", muscleGroup: "kol", equipment: "barbell", type: "isolation", defaults: { sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-concentration-curl", name: "Concentration Curl", nameTr: "Konsantrasyon Curl", muscleGroup: "kol", equipment: "dumbbell", type: "isolation", defaults: { sets: "3 Set", reps: "12 Tekrar", rest: "45 sn" } },
+  { id: "ex-triceps-pushdown", name: "Triceps Pushdown", nameTr: "Triceps İtiş", muscleGroup: "kol", equipment: "kablo", type: "isolation", defaults: { sets: "3 Set", reps: "15 Tekrar", rest: "45 sn" } },
+  { id: "ex-overhead-triceps-ext", name: "Overhead Triceps Extension", nameTr: "Baş Üstü Triceps", muscleGroup: "kol", equipment: "dumbbell", type: "isolation", defaults: { sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-skull-crusher", name: "Skull Crusher", nameTr: "Skull Crusher", muscleGroup: "kol", equipment: "barbell", type: "isolation", defaults: { sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-close-grip-bench-press", name: "Close Grip Bench Press", nameTr: "Dar Tutuş Bench Press", muscleGroup: "kol", equipment: "barbell", type: "compound", defaults: { sets: "3 Set", reps: "10 Tekrar", rest: "60 sn" } },
+  { id: "ex-wrist-curl", name: "Wrist Curl", nameTr: "Bilek Curl", muscleGroup: "kol", equipment: "barbell", type: "isolation", defaults: { sets: "3 Set", reps: "20 Tekrar", rest: "45 sn" } },
+
+  // Karın / Core
+  { id: "ex-plank", name: "Plank Hold", nameTr: "Plank Duruşu", muscleGroup: "karin", equipment: "vucut-agirligi", type: "isolation", defaults: { sets: "3 Set", reps: "45 sn", rest: "45 sn" } },
+  { id: "ex-side-plank", name: "Side Plank", nameTr: "Yan Plank", muscleGroup: "karin", equipment: "vucut-agirligi", type: "isolation", defaults: { sets: "3 Set", reps: "30 sn", rest: "45 sn" } },
+  { id: "ex-crunch", name: "Abdominal Crunch", nameTr: "Mekik", muscleGroup: "karin", equipment: "vucut-agirligi", type: "isolation", defaults: { sets: "3 Set", reps: "20 Tekrar", rest: "45 sn" } },
+  { id: "ex-bicycle-crunch", name: "Bicycle Crunch", nameTr: "Bisiklet Mekik", muscleGroup: "karin", equipment: "vucut-agirligi", type: "isolation", defaults: { sets: "3 Set", reps: "20 Tekrar", rest: "45 sn" } },
+  { id: "ex-leg-raise", name: "Lying Leg Raise", nameTr: "Bacak Kaldırma", muscleGroup: "karin", equipment: "vucut-agirligi", type: "isolation", defaults: { sets: "3 Set", reps: "15 Tekrar", rest: "45 sn" } },
+  { id: "ex-hanging-leg-raise", name: "Hanging Leg Raise", nameTr: "Asılı Bacak Kaldırma", muscleGroup: "karin", equipment: "vucut-agirligi", type: "isolation", defaults: { sets: "3 Set", reps: "12 Tekrar", rest: "45 sn" } },
+  { id: "ex-russian-twist", name: "Russian Twist", nameTr: "Rus Twist", muscleGroup: "karin", equipment: "dumbbell", type: "isolation", defaults: { sets: "3 Set", reps: "20 Tekrar", rest: "45 sn" } },
+  { id: "ex-mountain-climber", name: "Mountain Climber", nameTr: "Dağcı", muscleGroup: "karin", equipment: "vucut-agirligi", type: "cardio", defaults: { sets: "3 Set", reps: "30 sn", rest: "45 sn" } },
+  { id: "ex-ab-wheel", name: "Ab Wheel Rollout", nameTr: "Karın Tekerleği", muscleGroup: "karin", equipment: "vucut-agirligi", type: "compound", defaults: { sets: "3 Set", reps: "10 Tekrar", rest: "60 sn" } },
+
+  // Kardiyo
+  { id: "ex-treadmill", name: "Treadmill Running", nameTr: "Koşu Bandı", muscleGroup: "kardiyo", equipment: "makine", type: "cardio", defaults: { sets: "1 Set", reps: "20 dk", rest: "—" } },
+  { id: "ex-incline-walk", name: "Incline Treadmill Walk", nameTr: "Eğimli Yürüyüş", muscleGroup: "kardiyo", equipment: "makine", type: "cardio", defaults: { sets: "1 Set", reps: "30 dk", rest: "—" } },
+  { id: "ex-bike", name: "Stationary Bike", nameTr: "Kondisyon Bisikleti", muscleGroup: "kardiyo", equipment: "makine", type: "cardio", defaults: { sets: "1 Set", reps: "25 dk", rest: "—" } },
+  { id: "ex-rowing-machine", name: "Rowing Machine", nameTr: "Kürek Makinesi", muscleGroup: "kardiyo", equipment: "makine", type: "cardio", defaults: { sets: "1 Set", reps: "15 dk", rest: "—" } },
+  { id: "ex-elliptical", name: "Elliptical Trainer", nameTr: "Eliptik", muscleGroup: "kardiyo", equipment: "makine", type: "cardio", defaults: { sets: "1 Set", reps: "20 dk", rest: "—" } },
+  { id: "ex-stair-master", name: "Stair Master", nameTr: "Merdiven", muscleGroup: "kardiyo", equipment: "makine", type: "cardio", defaults: { sets: "1 Set", reps: "15 dk", rest: "—" } },
+  { id: "ex-jump-rope", name: "Jump Rope", nameTr: "İp Atlama", muscleGroup: "kardiyo", equipment: "vucut-agirligi", type: "cardio", defaults: { sets: "3 Set", reps: "2 dk", rest: "60 sn" } },
+  { id: "ex-hiit", name: "HIIT Intervals", nameTr: "HIIT İnterval", muscleGroup: "kardiyo", equipment: "vucut-agirligi", type: "cardio", defaults: { sets: "1 Set", reps: "20 dk", rest: "—" } },
+
+  // Tam Vücut / Fonksiyonel
+  { id: "ex-burpee", name: "Burpee", nameTr: "Burpee", muscleGroup: "tam-vucut", equipment: "vucut-agirligi", type: "compound", defaults: { sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" } },
+  { id: "ex-kettlebell-swing", name: "Kettlebell Swing", nameTr: "Kettlebell Swing", muscleGroup: "tam-vucut", equipment: "kettlebell", type: "compound", defaults: { sets: "3 Set", reps: "15 Tekrar", rest: "60 sn" } },
+  { id: "ex-clean-and-press", name: "Clean and Press", nameTr: "Clean & Press", muscleGroup: "tam-vucut", equipment: "barbell", type: "compound", defaults: { sets: "4 Set", reps: "8 Tekrar", rest: "90 sn" } },
+  { id: "ex-thruster", name: "Barbell Thruster", nameTr: "Thruster", muscleGroup: "tam-vucut", equipment: "barbell", type: "compound", defaults: { sets: "3 Set", reps: "10 Tekrar", rest: "90 sn" } },
+  { id: "ex-farmers-walk", name: "Farmer's Walk", nameTr: "Çiftçi Yürüyüşü", muscleGroup: "tam-vucut", equipment: "dumbbell", type: "compound", defaults: { sets: "3 Set", reps: "40 metre", rest: "60 sn" } },
+  { id: "ex-battle-rope", name: "Battle Rope Waves", nameTr: "Halat", muscleGroup: "tam-vucut", equipment: "vucut-agirligi", type: "cardio", defaults: { sets: "3 Set", reps: "30 sn", rest: "45 sn" } },
+  { id: "ex-box-jump", name: "Plyometric Box Jump", nameTr: "Kutu Sıçrama", muscleGroup: "tam-vucut", equipment: "vucut-agirligi", type: "compound", defaults: { sets: "3 Set", reps: "10 Tekrar", rest: "60 sn" } },
+  { id: "ex-sled-push", name: "Sled Push", nameTr: "Kızak İtme", muscleGroup: "tam-vucut", equipment: "makine", type: "compound", defaults: { sets: "3 Set", reps: "20 metre", rest: "60 sn" } }
+];
+
 // Read Database
 function readDb() {
   try {
@@ -139,6 +233,9 @@ function readDb() {
     if (!Array.isArray(dbData.clients)) dbData.clients = [];
     if (!Array.isArray(dbData.deletedPhones)) dbData.deletedPhones = [];
     if (!Array.isArray(dbData.sessions)) dbData.sessions = [];
+    if (!Array.isArray(dbData.exercises) || dbData.exercises.length === 0) {
+      dbData.exercises = SEED_EXERCISES;
+    }
     if (!dbData.programs) dbData.programs = {};
 
     // Deduplicate duplicate client records if any exist
@@ -949,6 +1046,87 @@ app.put('/api/clients/:id/extend', requireTrainer, (req, res) => {
   client.note = `Aktif Üyelik (Son Tarih: ${client.expiryDate})`;
   writeDb(db);
   res.json({ success: true, client });
+});
+
+// --------------------------------------------------------------------------
+// EGZERSİZ KÜTÜPHANESİ REST API ENDPOINTS
+// --------------------------------------------------------------------------
+
+// GET /api/exercises — Egzersiz Kütüphanesi (TRAINER ONLY)
+app.get('/api/exercises', requireTrainer, (req, res) => {
+  const db = readDb();
+  res.json({ success: true, exercises: db.exercises || SEED_EXERCISES });
+});
+
+// POST /api/exercises — Yeni Egzersiz Ekle (TRAINER ONLY)
+app.post('/api/exercises', requireTrainer, (req, res) => {
+  const { name, nameTr, muscleGroup, equipment, type, defaults } = req.body;
+  if (!name || !name.trim()) {
+    return res.status(400).json({ success: false, message: 'Egzersiz adı zorunludur.' });
+  }
+
+  const db = readDb();
+  if (!Array.isArray(db.exercises)) db.exercises = SEED_EXERCISES;
+
+  const existing = db.exercises.find(e => e.name.toLowerCase() === name.trim().toLowerCase());
+  if (existing) {
+    return res.json({ success: true, exercise: existing, isExisting: true });
+  }
+
+  const newEx = {
+    id: `ex-custom-${Date.now()}`,
+    name: name.trim(),
+    nameTr: nameTr || name.trim(),
+    muscleGroup: muscleGroup || 'gogus',
+    equipment: equipment || 'makine',
+    type: type || 'compound',
+    defaults: defaults || { sets: '3 Set', reps: '12 Tekrar', rest: '60 sn' },
+    custom: true,
+    createdAt: new Date().toISOString()
+  };
+
+  db.exercises.push(newEx);
+  writeDb(db);
+  res.json({ success: true, exercise: newEx });
+});
+
+// PUT /api/exercises/:id — Egzersiz Düzenle (TRAINER ONLY)
+app.put('/api/exercises/:id', requireTrainer, (req, res) => {
+  const { id } = req.params;
+  const { name, nameTr, muscleGroup, equipment, type, defaults } = req.body;
+  const db = readDb();
+  if (!Array.isArray(db.exercises)) db.exercises = SEED_EXERCISES;
+
+  const ex = db.exercises.find(e => e.id === id);
+  if (!ex) return res.status(404).json({ success: false, message: 'Egzersiz bulunamadı.' });
+
+  if (name) ex.name = name;
+  if (nameTr) ex.nameTr = nameTr;
+  if (muscleGroup) ex.muscleGroup = muscleGroup;
+  if (equipment) ex.equipment = equipment;
+  if (type) ex.type = type;
+  if (defaults) ex.defaults = defaults;
+
+  writeDb(db);
+  res.json({ success: true, exercise: ex });
+});
+
+// DELETE /api/exercises/:id — Egzersiz Sil (Yalnızca custom olanlar)
+app.delete('/api/exercises/:id', requireTrainer, (req, res) => {
+  const { id } = req.params;
+  const db = readDb();
+  if (!Array.isArray(db.exercises)) db.exercises = SEED_EXERCISES;
+
+  const exIndex = db.exercises.findIndex(e => e.id === id);
+  if (exIndex === -1) return res.status(404).json({ success: false, message: 'Egzersiz bulunamadı.' });
+
+  if (!db.exercises[exIndex].custom) {
+    return res.status(400).json({ success: false, message: 'Varsayılan kütüphane egzersizleri silinemez.' });
+  }
+
+  db.exercises.splice(exIndex, 1);
+  writeDb(db);
+  res.json({ success: true, message: 'Egzersiz başarıyla silindi.' });
 });
 
 // GET /api/clients — PROTECTED (TRAINER ONLY)

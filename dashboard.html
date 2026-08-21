@@ -2056,7 +2056,10 @@
             <div style="display: flex; align-items: center; gap: 1rem;">
               <span style="font-weight: 800; color: var(--accent-primary); font-size: 1.2rem;">${numStr}</span>
               <div class="exercise-info">
-                <h4>${item.name}</h4>
+                <h4 style="display: flex; align-items: center; gap: 0.4rem;">
+                  ${item.name}
+                  <i class="fas fa-info-circle" style="color: var(--accent-primary); font-size: 0.8rem; opacity: 0.7; cursor: pointer;" title="${item.name} — Dinlenme: ${item.rest || '60 sn'}"></i>
+                </h4>
                 <p>${item.rest || '60 sn Dinlenme'}</p>
               </div>
             </div>

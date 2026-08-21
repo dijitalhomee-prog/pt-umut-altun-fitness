@@ -139,9 +139,10 @@
       padding: 0.8rem;
       margin-bottom: 0.8rem;
       display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1.2fr 40px;
+      grid-template-columns: 2.2fr 1fr 1fr 1.2fr 40px;
       gap: 0.6rem;
       align-items: center;
+      position: relative;
     }
 
     .wiz-week-tab-btn {
@@ -220,6 +221,39 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      color: #FFF;
+    }
+
+    /* Muscle Filter Chip Button */
+    .muscle-filter-chip {
+      font-size: 0.76rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 100px;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    .muscle-filter-chip.active {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: var(--accent-red);
+      color: #FFF;
+      font-weight: bold;
+    }
+
+    /* Autocomplete Suggestion Item */
+    .ex-suggestion-item {
+      padding: 0.5rem 0.8rem;
+      font-size: 0.82rem;
+      color: #E5E7EB;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.15s ease;
+    }
+    .ex-suggestion-item:hover, .ex-suggestion-item.highlighted {
+      background: rgba(239, 68, 68, 0.25);
       color: #FFF;
     }
 
@@ -456,15 +490,15 @@
           </div>
         </div>
 
-        <!-- STEP 2: 🏋️‍♂️ ANTRENMAN PROGRAMI MATRİSİ (HAFTALAR TAMAMEN BAĞIMSIZ) -->
+        <!-- STEP 2: 🏋️‍♂️ ANTRENMAN PROGRAMI MATRİSİ (HAFTALAR TAMAMEN BAĞIMSIZ & EGZERSİZ KÜTÜPHANESİ) -->
         <div class="wizard-step-pane" id="wizard-pane-2">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 1rem;">
             <div>
               <h3 style="color: #FFF; font-size: 1.15rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                <i class="fas fa-dumbbell" style="color: var(--accent-red);"></i> Adım 2: Antrenman Programı Matrisi (Haftalık & Günlük Bağımsız)
+                <i class="fas fa-dumbbell" style="color: var(--accent-red);"></i> Adım 2: Antrenman Programı Matrisi & Egzersiz Kütüphanesi
               </h3>
               <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
-                Her hafta ve gün kendi bağımsız içeriğine sahiptir. Bir haftada yapılan değişiklik diğer haftaları etkilemez.
+                Akıllı arama / autocomplete ile egzersiz adını yazın veya seçin. Varsayılan set/tekrar otomatik dolacaktır.
               </p>
             </div>
 
@@ -479,6 +513,19 @@
                 <i class="fas fa-user-friends"></i> Başka Danışandan Kopyala
               </button>
             </div>
+          </div>
+
+          <!-- KAS GRUBU FİLTRELEME ÇİPLERİ -->
+          <div style="display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 0.5rem; margin-bottom: 1rem;" id="muscle-group-filter-bar">
+            <button type="button" class="btn btn-outline muscle-filter-chip active" data-group="all" onclick="window.setMuscleGroupFilter('all')">🎨 Tüm Kas Grupları</button>
+            <button type="button" class="btn btn-outline muscle-filter-chip" data-group="gogus" onclick="window.setMuscleGroupFilter('gogus')">💪 Göğüs</button>
+            <button type="button" class="btn btn-outline muscle-filter-chip" data-group="sirt" onclick="window.setMuscleGroupFilter('sirt')">🪵 Sırt</button>
+            <button type="button" class="btn btn-outline muscle-filter-chip" data-group="bacak" onclick="window.setMuscleGroupFilter('bacak')">🦵 Bacak</button>
+            <button type="button" class="btn btn-outline muscle-filter-chip" data-group="omuz" onclick="window.setMuscleGroupFilter('omuz')">🎯 Omuz</button>
+            <button type="button" class="btn btn-outline muscle-filter-chip" data-group="kol" onclick="window.setMuscleGroupFilter('kol')">🦾 Kol</button>
+            <button type="button" class="btn btn-outline muscle-filter-chip" data-group="karin" onclick="window.setMuscleGroupFilter('karin')">🔥 Karın / Core</button>
+            <button type="button" class="btn btn-outline muscle-filter-chip" data-group="kardiyo" onclick="window.setMuscleGroupFilter('kardiyo')">🏃 Kardiyo</button>
+            <button type="button" class="btn btn-outline muscle-filter-chip" data-group="tam-vucut" onclick="window.setMuscleGroupFilter('tam-vucut')">⚡ Tam Vücut</button>
           </div>
 
           <div style="display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap;" id="wiz-week-tabs-container">
@@ -846,7 +893,7 @@
   <!-- App Scripts -->
   <script>
     // --------------------------------------------------------------------------
-    // STATE & MIGRATION UTILITIES
+    // STATE, EXERCISE LIBRARY & MIGRATION UTILITIES
     // --------------------------------------------------------------------------
     let clients = [];
     let selectedClientId = null;
@@ -857,8 +904,60 @@
       isUnsaved: false
     };
 
+    let exerciseLibrary = [];
+    let recentExercises = JSON.parse(localStorage.getItem('pt_recent_exercises') || '[]') || [];
+    let activeMuscleFilter = 'all';
+
     let calendarCurrentDate = new Date();
     let calendarEvents = [];
+
+    function normalizeTrString(str) {
+      if (!str) return '';
+      return String(str)
+        .toLowerCase()
+        .replace(/ğ/g, 'g')
+        .replace(/ü/g, 'u')
+        .replace(/ş/g, 's')
+        .replace(/ı/g, 'i')
+        .replace(/ö/g, 'o')
+        .replace(/ç/g, 'c')
+        .replace(/i̇/g, 'i')
+        .trim();
+    }
+
+    async function fetchExerciseLibrary() {
+      try {
+        const res = await trainerFetch('/api/exercises');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.exercises)) {
+            exerciseLibrary = data.exercises;
+          }
+        }
+      } catch(err) {
+        console.warn('Exercise library fetch error:', err);
+      }
+    }
+
+    function addRecentExercise(exName) {
+      if (!exName) return;
+      recentExercises = recentExercises.filter(n => n.toLowerCase() !== exName.toLowerCase());
+      recentExercises.unshift(exName);
+      if (recentExercises.length > 8) recentExercises = recentExercises.slice(0, 8);
+      try {
+        localStorage.setItem('pt_recent_exercises', JSON.stringify(recentExercises));
+      } catch(e) {}
+    }
+
+    function setMuscleGroupFilter(groupKey) {
+      activeMuscleFilter = groupKey;
+      document.querySelectorAll('#muscle-group-filter-bar .muscle-filter-chip').forEach(chip => {
+        chip.classList.remove('active');
+        if (chip.getAttribute('data-group') === groupKey) chip.classList.add('active');
+      });
+      closeAllExAutocompletes();
+    }
+    window.setMuscleGroupFilter = setMuscleGroupFilter;
 
     function normalizeProgramMatrix(pm, legacyDayList) {
       const defaultDayTitles = [
@@ -958,6 +1057,7 @@
           localStorage.setItem('trainer_session_token', data.token);
           document.getElementById('trainer-auth-overlay').style.display = 'none';
           fetchServerClients();
+          fetchExerciseLibrary();
           fetchTrainerAgenda();
           renderTrainerCalendar();
         } else {
@@ -1191,19 +1291,16 @@
 
       let html = '';
 
-      // 🔴 GECİKMİŞ İŞLER
       if (overdue.length > 0) {
         html += `<h4 style="color: #EF4444; font-size: 0.88rem; margin: 0.8rem 0 0.4rem 0;"><i class="fas fa-exclamation-circle"></i> 🔴 Gecikmiş Görevler (${overdue.length})</h4>`;
         overdue.forEach(item => { html += renderAgendaTaskRow(item, 'overdue'); });
       }
 
-      // 🟡 BUGÜNÜN İŞLERİ
       if (today.length > 0) {
         html += `<h4 style="color: #F59E0B; font-size: 0.88rem; margin: 0.8rem 0 0.4rem 0;"><i class="fas fa-clock"></i> 🟡 Bugüne Düşen Görevler (${today.length})</h4>`;
         today.forEach(item => { html += renderAgendaTaskRow(item, 'today'); });
       }
 
-      // 🟢 BU HAFTANIN İŞLERİ
       if (week.length > 0) {
         html += `<h4 style="color: #10B981; font-size: 0.88rem; margin: 0.8rem 0 0.4rem 0;"><i class="fas fa-calendar-week"></i> 🟢 Bu Hafta Yaklaşan Görevler (${week.length})</h4>`;
         week.forEach(item => { html += renderAgendaTaskRow(item, 'week'); });
@@ -1568,7 +1665,7 @@
     window.wizardSkipStep = wizardSkipStep;
 
     // --------------------------------------------------------------------------
-    // STEP 2: INDEPENDENT WEEK & DAY EXERCISE MATRIX EDITOR
+    // STEP 2: INDEPENDENT WEEK & DAY EXERCISE MATRIX & AUTOCOMPLETE COMBOBOX
     // --------------------------------------------------------------------------
     function renderWizardWeekTabs() {
       const container = document.getElementById('wiz-week-tabs-container');
@@ -1648,10 +1745,34 @@
           const row = document.createElement('div');
           row.className = 'exercise-row-item';
           row.innerHTML = `
-            <input type="text" class="input-field" placeholder="Egzersiz Adı" value="${ex.name || ''}" oninput="window.updateWizardExerciseField(${dayIdx}, ${exIdx}, 'name', this.value)">
-            <input type="text" class="input-field" placeholder="Set" value="${ex.sets || ''}" oninput="window.updateWizardExerciseField(${dayIdx}, ${exIdx}, 'sets', this.value)">
-            <input type="text" class="input-field" placeholder="Tekrar" value="${ex.reps || ''}" oninput="window.updateWizardExerciseField(${dayIdx}, ${exIdx}, 'reps', this.value)">
-            <input type="text" class="input-field" placeholder="Dinlenme" value="${ex.rest || ''}" oninput="window.updateWizardExerciseField(${dayIdx}, ${exIdx}, 'rest', this.value)">
+            <div style="position: relative;">
+              <input type="text" 
+                     id="wiz-ex-input-${dayIdx}-${exIdx}" 
+                     class="input-field wiz-ex-name-input" 
+                     placeholder="🏋️‍♂️ Egzersiz Adı (Ara / Yaz)..." 
+                     value="${ex.name || ''}" 
+                     onfocus="window.openExAutocomplete(${dayIdx}, ${exIdx}, this)" 
+                     oninput="window.handleExInput(${dayIdx}, ${exIdx}, this)" 
+                     onkeydown="window.handleExKeydown(event, ${dayIdx}, ${exIdx}, this)"
+                     autocomplete="off"
+                     style="padding-right: 110px;">
+
+              <button type="button" 
+                      id="wiz-ex-add-custom-btn-${dayIdx}-${exIdx}" 
+                      class="btn btn-outline" 
+                      style="display: none; position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 0.65rem; padding: 0.15rem 0.4rem; border-color: #10B981; color: #10B981;" 
+                      onclick="window.saveCustomExerciseToLibrary(${dayIdx}, ${exIdx})" 
+                      title="Bu hareketi kalıcı kütüphaneye ekle">
+                + Kütüphaneye Ekle
+              </button>
+
+              <div id="wiz-ex-dropdown-${dayIdx}-${exIdx}" class="ex-autocomplete-dropdown" style="display: none; position: absolute; left: 0; right: 0; top: 100%; z-index: 999; background: #121216; border: 1px solid var(--accent-red); border-radius: var(--radius-sm); max-height: 280px; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.8); margin-top: 4px;">
+              </div>
+            </div>
+
+            <input type="text" id="wiz-ex-sets-${dayIdx}-${exIdx}" class="input-field" placeholder="Set" value="${ex.sets || ''}" oninput="window.updateWizardExerciseField(${dayIdx}, ${exIdx}, 'sets', this.value)">
+            <input type="text" id="wiz-ex-reps-${dayIdx}-${exIdx}" class="input-field" placeholder="Tekrar" value="${ex.reps || ''}" oninput="window.updateWizardExerciseField(${dayIdx}, ${exIdx}, 'reps', this.value)">
+            <input type="text" id="wiz-ex-rest-${dayIdx}-${exIdx}" class="input-field" placeholder="Dinlenme" value="${ex.rest || ''}" oninput="window.updateWizardExerciseField(${dayIdx}, ${exIdx}, 'rest', this.value)">
             <button type="button" style="background: none; border: none; color: #EF4444; cursor: pointer; font-size: 1.1rem;" onclick="window.removeWizardExercise(${dayIdx}, ${exIdx})">
               <i class="fas fa-trash-alt"></i>
             </button>
@@ -1662,6 +1783,229 @@
         container.appendChild(dayBox);
       });
     }
+
+    // AUTOCOMPLETE & COMBOBOX ENGINE
+    let currentHighlightIdx = -1;
+
+    function openExAutocomplete(dayIdx, exIdx, inputEl) {
+      closeAllExAutocompletes();
+      renderExAutocompleteDropdown(dayIdx, exIdx, inputEl.value);
+    }
+    window.openExAutocomplete = openExAutocomplete;
+
+    function handleExInput(dayIdx, exIdx, inputEl) {
+      const val = inputEl.value;
+      updateWizardExerciseField(dayIdx, exIdx, 'name', val);
+      renderExAutocompleteDropdown(dayIdx, exIdx, val);
+
+      // Toggle custom add button visibility if not in library
+      const addCustomBtn = document.getElementById(`wiz-ex-add-custom-btn-${dayIdx}-${exIdx}`);
+      if (addCustomBtn) {
+        const isKnown = exerciseLibrary.some(e => normalizeTrString(e.name) === normalizeTrString(val) || normalizeTrString(e.nameTr) === normalizeTrString(val));
+        addCustomBtn.style.display = (val.trim().length >= 3 && !isKnown) ? 'inline-block' : 'none';
+      }
+    }
+    window.handleExInput = handleExInput;
+
+    function closeAllExAutocompletes() {
+      document.querySelectorAll('.ex-autocomplete-dropdown').forEach(dd => dd.style.display = 'none');
+      currentHighlightIdx = -1;
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.exercise-row-item')) {
+        closeAllExAutocompletes();
+      }
+    });
+
+    function renderExAutocompleteDropdown(dayIdx, exIdx, searchVal) {
+      const dropdown = document.getElementById(`wiz-ex-dropdown-${dayIdx}-${exIdx}`);
+      if (!dropdown) return;
+
+      const normSearch = normalizeTrString(searchVal);
+      currentHighlightIdx = -1;
+
+      // Filter Exercise Library
+      let matches = exerciseLibrary.filter(ex => {
+        if (activeMuscleFilter !== 'all' && ex.muscleGroup !== activeMuscleFilter) return false;
+        if (!normSearch) return true;
+
+        const normName = normalizeTrString(ex.name);
+        const normNameTr = normalizeTrString(ex.nameTr);
+        const normGroup = normalizeTrString(ex.muscleGroup);
+
+        return normName.includes(normSearch) || normNameTr.includes(normSearch) || normGroup.includes(normSearch);
+      });
+
+      let html = '';
+
+      // Recent Exercises Section
+      if (!normSearch && recentExercises.length > 0) {
+        html += `<div style="font-size: 0.7rem; font-weight: 800; color: #F59E0B; background: rgba(245,158,11,0.1); padding: 0.3rem 0.6rem; text-transform: uppercase;">🕒 Son Kullanılan Hızlı Egzersizler</div>`;
+        recentExercises.forEach(rName => {
+          const matchedObj = exerciseLibrary.find(e => e.name.toLowerCase() === rName.toLowerCase());
+          html += `
+            <div class="ex-suggestion-item" onclick="window.selectExSuggestion(${dayIdx}, ${exIdx}, '${rName.replace(/'/g, "\\'")}')">
+              <span><strong>${rName}</strong></span>
+              <span style="font-size: 0.7rem; color: var(--accent-primary);">⚡ Hızlı Seç</span>
+            </div>
+          `;
+        });
+      }
+
+      // Group Matches by Muscle Group
+      const groupLabels = {
+        gogus: "💪 GÖĞÜS",
+        sirt: "🪵 SIRT",
+        bacak: "🦵 BACAK",
+        omuz: "🎯 OMUZ",
+        kol: "🦾 KOL",
+        karin: "🔥 KARIN / CORE",
+        kardiyo: "🏃 KARDİYO",
+        "tam-vucut": "⚡ TAM VÜCUT"
+      };
+
+      const grouped = {};
+      matches.forEach(ex => {
+        const grp = ex.muscleGroup || 'gogus';
+        if (!grouped[grp]) grouped[grp] = [];
+        grouped[grp].push(ex);
+      });
+
+      Object.keys(grouped).forEach(grpKey => {
+        html += `<div style="font-size: 0.7rem; font-weight: 800; color: var(--accent-red); background: rgba(239, 68, 68, 0.1); padding: 0.3rem 0.6rem; text-transform: uppercase;">${groupLabels[grpKey] || grpKey}</div>`;
+        grouped[grpKey].forEach(ex => {
+          html += `
+            <div class="ex-suggestion-item" data-ex-id="${ex.id}" onclick="window.selectExSuggestion(${dayIdx}, ${exIdx}, '${ex.name.replace(/'/g, "\\'")}')">
+              <div>
+                <strong>${ex.name}</strong>
+                ${ex.nameTr && ex.nameTr !== ex.name ? `<span style="font-size: 0.75rem; color: var(--text-muted);"> (${ex.nameTr})</span>` : ''}
+              </div>
+              <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: bold;">${ex.defaults ? ex.defaults.sets : ''}</span>
+            </div>
+          `;
+        });
+      });
+
+      if (matches.length === 0) {
+        html = `
+          <div style="padding: 0.8rem; font-size: 0.82rem; color: var(--text-muted); text-align: center;">
+            Kütüphanede eşleşen hareket bulunamadı.<br>
+            <span style="color: #10B981; font-weight: bold;">Enter'a basarak serbest metin kullanabilirsiniz.</span>
+          </div>
+        `;
+      }
+
+      dropdown.innerHTML = html;
+      dropdown.style.display = 'block';
+    }
+
+    function selectExSuggestion(dayIdx, exIdx, chosenName) {
+      const exObj = exerciseLibrary.find(e => e.name.toLowerCase() === chosenName.toLowerCase() || e.nameTr?.toLowerCase() === chosenName.toLowerCase());
+      selectExerciseForInput(dayIdx, exIdx, exObj || { name: chosenName });
+    }
+    window.selectExSuggestion = selectExSuggestion;
+
+    function selectExerciseForInput(dayIdx, exIdx, exObj) {
+      const nameInput = document.getElementById(`wiz-ex-input-${dayIdx}-${exIdx}`);
+      const setsInput = document.getElementById(`wiz-ex-sets-${dayIdx}-${exIdx}`);
+      const repsInput = document.getElementById(`wiz-ex-reps-${dayIdx}-${exIdx}`);
+      const restInput = document.getElementById(`wiz-ex-rest-${dayIdx}-${exIdx}`);
+
+      const chosenName = exObj ? exObj.name : (nameInput ? nameInput.value : '');
+      if (nameInput) nameInput.value = chosenName;
+
+      addRecentExercise(chosenName);
+      updateWizardExerciseField(dayIdx, exIdx, 'name', chosenName);
+
+      // Auto-fill defaults if present
+      if (exObj && exObj.defaults) {
+        if (setsInput) {
+          setsInput.value = exObj.defaults.sets || '3 Set';
+          updateWizardExerciseField(dayIdx, exIdx, 'sets', exObj.defaults.sets);
+        }
+        if (repsInput) {
+          repsInput.value = exObj.defaults.reps || '12 Tekrar';
+          updateWizardExerciseField(dayIdx, exIdx, 'reps', exObj.defaults.reps);
+        }
+        if (restInput) {
+          restInput.value = exObj.defaults.rest || '60 sn';
+          updateWizardExerciseField(dayIdx, exIdx, 'rest', exObj.defaults.rest);
+        }
+      }
+
+      closeAllExAutocompletes();
+
+      // Smooth Keyboard Workflow Focus Transfer to Sets Field
+      if (setsInput) {
+        setsInput.focus();
+        setsInput.select();
+      }
+    }
+
+    function handleExKeydown(e, dayIdx, exIdx, inputEl) {
+      const dropdown = document.getElementById(`wiz-ex-dropdown-${dayIdx}-${exIdx}`);
+      if (!dropdown || dropdown.style.display === 'none') return;
+
+      const items = dropdown.querySelectorAll('.ex-suggestion-item');
+      if (items.length === 0) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        currentHighlightIdx = (currentHighlightIdx + 1) % items.length;
+        items.forEach((item, idx) => item.classList.toggle('highlighted', idx === currentHighlightIdx));
+        if (items[currentHighlightIdx]) items[currentHighlightIdx].scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        currentHighlightIdx = (currentHighlightIdx - 1 + items.length) % items.length;
+        items.forEach((item, idx) => item.classList.toggle('highlighted', idx === currentHighlightIdx));
+        if (items[currentHighlightIdx]) items[currentHighlightIdx].scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'Enter' || e.key === 'Tab') {
+        if (currentHighlightIdx >= 0 && items[currentHighlightIdx]) {
+          e.preventDefault();
+          items[currentHighlightIdx].click();
+        } else {
+          // Free text accepted on Enter/Tab
+          closeAllExAutocompletes();
+          const setsInput = document.getElementById(`wiz-ex-sets-${dayIdx}-${exIdx}`);
+          if (setsInput && e.key === 'Enter') {
+            e.preventDefault();
+            setsInput.focus();
+            setsInput.select();
+          }
+        }
+      }
+    }
+    window.handleExKeydown = handleExKeydown;
+
+    async function saveCustomExerciseToLibrary(dayIdx, exIdx) {
+      const nameInput = document.getElementById(`wiz-ex-input-${dayIdx}-${exIdx}`);
+      const customName = nameInput ? nameInput.value.trim() : '';
+      if (!customName) return;
+
+      try {
+        const res = await trainerFetch('/api/exercises', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: customName,
+            nameTr: customName,
+            muscleGroup: activeMuscleFilter !== 'all' ? activeMuscleFilter : 'gogus',
+            defaults: { sets: '3 Set', reps: '12 Tekrar', rest: '60 sn' }
+          })
+        });
+        const data = await res.json();
+        if (data.success && data.exercise) {
+          exerciseLibrary.push(data.exercise);
+          showTrainerSuccessBannerMsg(`✨ "${customName}" hareketi kalıcı kütüphaneye eklendi!`);
+          const btn = document.getElementById(`wiz-ex-add-custom-btn-${dayIdx}-${exIdx}`);
+          if (btn) btn.style.display = 'none';
+        }
+      } catch(err) {
+        showTrainerErrorBanner('⚠️ Kütüphaneye ekleme hatası');
+      }
+    }
+    window.saveCustomExerciseToLibrary = saveCustomExerciseToLibrary;
 
     function updateWizardDayTitle(dayIdx, val) {
       if (wizardState.programMatrix[wizardCurrentWeek] && wizardState.programMatrix[wizardCurrentWeek].days[dayIdx]) {
@@ -1683,6 +2027,13 @@
         document.getElementById('wizard-unsaved-badge').style.display = 'inline-block';
         renderWizardWeekTabs();
         renderWizardExerciseMatrix();
+
+        // Auto focus newly added exercise input
+        const newExIdx = wizardState.programMatrix[wizardCurrentWeek].days[dayIdx].exercises.length - 1;
+        setTimeout(() => {
+          const newInp = document.getElementById(`wiz-ex-input-${dayIdx}-${newExIdx}`);
+          if (newInp) newInp.focus();
+        }, 100);
       }
     }
     window.addWizardExercise = addWizardExercise;
@@ -1799,9 +2150,9 @@
         {
           id: 1, title: '1. Gün: Göğüs & Biceps',
           exercises: [
-            { name: "Dumbbell Bench Press", sets: "4 Set", reps: "10-12 Tekrar", rest: "60 sn" },
+            { name: "Bench Press", sets: "4 Set", reps: "10-12 Tekrar", rest: "90 sn" },
             { name: "Incline Dumbbell Fly", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" },
-            { name: "Barbell Biceps Curl", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" }
+            { name: "Barbell Curl", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" }
           ]
         },
         {
@@ -1809,14 +2160,14 @@
           exercises: [
             { name: "Lat Pulldown", sets: "4 Set", reps: "10-12 Tekrar", rest: "60 sn" },
             { name: "Seated Cable Row", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" },
-            { name: "Triceps Rope Pushdown", sets: "3 Set", reps: "15 Tekrar", rest: "60 sn" }
+            { name: "Triceps Pushdown", sets: "3 Set", reps: "15 Tekrar", rest: "45 sn" }
           ]
         },
         {
           id: 3, title: '3. Gün: Bacak & Omuz',
           exercises: [
-            { name: "Goblet Squat", sets: "4 Set", reps: "10 Tekrar", rest: "90 sn" },
-            { name: "Leg Press", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" },
+            { name: "Barbell Squat", sets: "4 Set", reps: "10 Tekrar", rest: "90 sn" },
+            { name: "Leg Press", sets: "3 Set", reps: "12 Tekrar", rest: "90 sn" },
             { name: "Dumbbell Shoulder Press", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" }
           ]
         },
@@ -1824,7 +2175,7 @@
           id: 4, title: '4. Gün: Kardiyo & Karın',
           exercises: [
             { name: "Plank Hold", sets: "3 Set", reps: "45 sn", rest: "45 sn" },
-            { name: "Hanging Leg Raise", sets: "3 Set", reps: "15 Tekrar", rest: "45 sn" }
+            { name: "Hanging Leg Raise", sets: "3 Set", reps: "12 Tekrar", rest: "45 sn" }
           ]
         }
       ];
@@ -2188,6 +2539,7 @@
 
     // Initial load
     fetchServerClients();
+    fetchExerciseLibrary();
     fetchTrainerAgenda();
     renderTrainerCalendar();
   </script>
