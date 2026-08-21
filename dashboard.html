@@ -1235,26 +1235,56 @@
     window.saveFormPhotoUpload = saveFormPhotoUpload;
 
     function saveClientProfileMetrics(e) {
-      if (e) e.preventDefault();
-      const userPhone = sessionStorage.getItem('client_user_phone') || localStorage.getItem('client_user_phone') || '05376274415';
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      const hEl = document.getElementById('input-profile-height');
+      const swEl = document.getElementById('input-profile-start-weight');
+      const cwEl = document.getElementById('input-profile-current-weight');
+      const twEl = document.getElementById('input-profile-target-weight');
+
+      const height = hEl ? hEl.value.trim() : '180';
+      const startWeight = swEl ? swEl.value.trim() : '';
+      const currentWeight = cwEl ? cwEl.value.trim() : '';
+      const targetWeight = twEl ? twEl.value.trim() : '';
+
+      if (!startWeight || !currentWeight) {
+        alert('⚠️ Lütfen başlangıç ve güncel kilonuzu girin!');
+        return false;
+      }
+
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
       const cleanPhone = userPhone.replace(/\D/g, '');
 
-      const height = document.getElementById('input-profile-height').value;
-      const startWeight = document.getElementById('input-profile-start-weight').value;
-      const currentWeight = document.getElementById('input-profile-current-weight').value;
-      const targetWeight = document.getElementById('input-profile-target-weight').value;
-
       const profileData = {
-        height: height,
+        height: height || '180',
         startWeight: startWeight,
         currentWeight: currentWeight,
-        targetWeight: targetWeight,
+        targetWeight: targetWeight || '',
         updatedAt: new Date().toISOString()
       };
 
       const profileKey = `pt_client_profile_${cleanPhone}`;
       localStorage.setItem(profileKey, JSON.stringify(profileData));
       localStorage.setItem('pt_client_profile_global', JSON.stringify(profileData));
+      sessionStorage.setItem('pt_client_profile_global', JSON.stringify(profileData));
+
+      // Instant DOM Update for instant feedback!
+      const initWEl = document.getElementById('stat-initial-weight');
+      if (initWEl) initWEl.innerHTML = `${parseFloat(startWeight).toFixed(1)} kg`;
+
+      const curWEl = document.getElementById('stat-current-weight');
+      if (curWEl) curWEl.innerHTML = `${parseFloat(currentWeight).toFixed(1)} kg`;
+
+      const checkinEl = document.getElementById('stat-checkin-period');
+      if (checkinEl) {
+        const hVal = height || '180';
+        checkinEl.textContent = `${hVal} cm (Haftalık)`;
+      }
+
+      closeProfileUpdateModal();
 
       fetch(`/api/clients/${cleanPhone}/profile`, {
         method: 'PUT',
@@ -1262,8 +1292,10 @@
         body: JSON.stringify(profileData)
       }).catch(err => console.log('Profile sync offline fallback:', err));
 
-      closeProfileUpdateModal();
+      alert(`✅ Vücut ölçüleriniz başarıyla kaydedildi!\n\n⚖️ Başlangıç Kilosu: ${parseFloat(startWeight).toFixed(1)} kg\n⚖️ Güncel Kilo: ${parseFloat(currentWeight).toFixed(1)} kg\n📏 Boy: ${height || '180'} cm`);
+
       renderClientProfileMetrics();
+      return false;
     }
     window.saveClientProfileMetrics = saveClientProfileMetrics;
 
