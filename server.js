@@ -25,6 +25,11 @@ app.use((req, res, next) => {
 const DB_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || process.env.DATA_PATH || path.join(__dirname, 'data');
 const DB_FILE = path.join(DB_DIR, 'db.json');
 const BACKUP_DIR = path.join(DB_DIR, 'backups');
+const UPLOADS_DIR = path.join(DB_DIR, 'uploads');
+const PHOTOS_DIR = path.join(UPLOADS_DIR, 'photos');
+
+// Static Serving for Uploaded Photos (Served directly from Persistent Volume)
+app.use('/uploads', express.static(UPLOADS_DIR));
 
 // Startup Warning Log for Persistent Volume
 if (!process.env.RAILWAY_VOLUME_MOUNT_PATH) {
@@ -41,7 +46,7 @@ function normalizePhone(phone) {
   return clean.slice(-10);
 }
 
-// Ensure Database File Exists
+// Ensure Database File & Directories Exist
 function initDatabase() {
   if (!fs.existsSync(DB_DIR)) {
     fs.mkdirSync(DB_DIR, { recursive: true });
@@ -49,12 +54,16 @@ function initDatabase() {
   if (!fs.existsSync(BACKUP_DIR)) {
     fs.mkdirSync(BACKUP_DIR, { recursive: true });
   }
+  if (!fs.existsSync(PHOTOS_DIR)) {
+    fs.mkdirSync(PHOTOS_DIR, { recursive: true });
+  }
 
   const defaultDbData = {
     clients: [],
     deletedPhones: [],
     programs: {},
     sessions: [],
+    exercises: SEED_EXERCISES,
     trainerPin: TRAINER_PIN,
     lastUpdated: new Date().toISOString()
   };
@@ -223,10 +232,20 @@ const SEED_EXERCISES = [
   { id: "ex-sled-push", name: "Sled Push", nameTr: "Kızak İtme", muscleGroup: "tam-vucut", equipment: "makine", type: "compound", defaults: { sets: "3 Set", reps: "20 metre", rest: "60 sn" } }
 ];
 
-// Read Database
-function readDb() {
+// In-Memory Database Cache & Timestamp Tracking
+let cachedDbData = null;
+let lastDbMtime = 0;
+
+// Read Database (with In-Memory Caching, Session Pruning & Base64 Photo Migration)
+function readDb(forceDiskRead = false) {
   try {
     initDatabase();
+    const stat = fs.statSync(DB_FILE);
+
+    if (!forceDiskRead && cachedDbData && stat.mtimeMs === lastDbMtime) {
+      return cachedDbData;
+    }
+
     const raw = fs.readFileSync(DB_FILE, 'utf8');
     const dbData = JSON.parse(raw);
 
@@ -238,41 +257,89 @@ function readDb() {
     }
     if (!dbData.programs) dbData.programs = {};
 
-    // Deduplicate duplicate client records if any exist
-    const deduped = deduplicateClients(dbData);
+    let needDiskSave = false;
 
-    // Clean deletedPhones: Remove active client phones from blocklist
+    // 1. Auto-prune expired sessions (MADDE 3)
+    const nowIso = new Date().toISOString();
+    const prevSessionCount = dbData.sessions.length;
+    dbData.sessions = dbData.sessions.filter(s => s.expiresAt && s.expiresAt > nowIso);
+    if (dbData.sessions.length < prevSessionCount) {
+      needDiskSave = true;
+    }
+
+    // 2. Base64 Photo Migration to Filesystem (MADDE 2 - Photo File System Storage)
+    dbData.clients.forEach(c => {
+      ['photos', 'formPhotos'].forEach(key => {
+        if (Array.isArray(c[key])) {
+          c[key].forEach(p => {
+            if (p && typeof p === 'object') {
+              const photoData = p.url || p.data || '';
+              if (photoData && photoData.startsWith('data:image/')) {
+                try {
+                  const matches = photoData.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
+                  if (matches) {
+                    const ext = matches[1] === 'png' ? 'png' : 'jpg';
+                    const base64Str = matches[2];
+                    const fileName = `photo-${Date.now()}-${crypto.randomBytes(4).toString('hex')}.${ext}`;
+                    const filePath = path.join(PHOTOS_DIR, fileName);
+                    fs.writeFileSync(filePath, Buffer.from(base64Str, 'base64'));
+                    p.url = `/uploads/photos/${fileName}`;
+                    delete p.data;
+                    needDiskSave = true;
+                  }
+                } catch (e) {
+                  console.warn('Photo base64 migration error:', e);
+                }
+              }
+            }
+          });
+        }
+      });
+    });
+
+    // 3. Deduplicate client records
+    const deduped = deduplicateClients(dbData);
+    if (deduped) needDiskSave = true;
+
+    // 4. Clean deletedPhones
     if (dbData.deletedPhones.length > 0 && dbData.clients.length > 0) {
       const activePhones = dbData.clients.map(c => normalizePhone(c.phone)).filter(Boolean);
       const activeIds = dbData.clients.map(c => c.id).filter(Boolean);
-
       const initialLen = dbData.deletedPhones.length;
+
       dbData.deletedPhones = dbData.deletedPhones.filter(dp => {
         const normDp = normalizePhone(dp) || dp;
         return !activePhones.includes(normDp) && !activeIds.includes(dp);
       });
 
-      if (dbData.deletedPhones.length < initialLen || deduped) {
-        writeDb(dbData);
-      }
-    } else if (deduped) {
-      writeDb(dbData);
+      if (dbData.deletedPhones.length < initialLen) needDiskSave = true;
     }
 
+    if (needDiskSave) {
+      fs.writeFileSync(DB_FILE, JSON.stringify(dbData, null, 2), 'utf8');
+      lastDbMtime = fs.statSync(DB_FILE).mtimeMs;
+    } else {
+      lastDbMtime = stat.mtimeMs;
+    }
+
+    cachedDbData = dbData;
     return dbData;
   } catch (err) {
     console.error('Error reading database:', err);
-    return { clients: [], deletedPhones: [], programs: {}, sessions: [], trainerPin: TRAINER_PIN };
+    return cachedDbData || { clients: [], deletedPhones: [], programs: {}, sessions: [], trainerPin: TRAINER_PIN };
   }
 }
 
-// Atomic Write Database (writes to db.json.tmp first then renames)
+// Atomic Write Database (writes to db.json.tmp first then renames, updates cache)
 function writeDb(data) {
   try {
     data.lastUpdated = new Date().toISOString();
     const tmpFile = DB_FILE + '.tmp';
     fs.writeFileSync(tmpFile, JSON.stringify(data, null, 2), 'utf8');
     fs.renameSync(tmpFile, DB_FILE);
+
+    lastDbMtime = fs.statSync(DB_FILE).mtimeMs;
+    cachedDbData = data;
 
     performDailyBackup(data);
     return true;
@@ -357,7 +424,7 @@ function authMiddleware(req, res, next) {
   next();
 }
 
-app.use(authMiddleware);
+app.use('/api', authMiddleware);
 
 function requireTrainer(req, res, next) {
   if (!req.isTrainer) {
@@ -530,6 +597,33 @@ app.get('/api/me', requireAuth, (req, res) => {
     success: true,
     client: sanitizeClient(freshClient, false)
   });
+});
+
+// POST /api/auth/logout — Log Out Session (requireAuth)
+app.post('/api/auth/logout', requireAuth, (req, res) => {
+  const db = readDb();
+  const token = req.token || (req.session && req.session.token);
+  if (token) {
+    db.sessions = db.sessions.filter(s => s.token !== token);
+    writeDb(db);
+  }
+  res.setHeader('Set-Cookie', 'session_token=; Path=/; HttpOnly; Max-Age=0');
+  res.json({ success: true, message: 'Oturum başarıyla kapatıldı.' });
+});
+
+// POST /api/me/dismiss-notification — Dismiss New Program Assigned Notification (requireAuth)
+app.post('/api/me/dismiss-notification', requireAuth, (req, res) => {
+  if (req.isTrainer || !req.client) {
+    return res.json({ success: true });
+  }
+
+  const db = readDb();
+  const freshClient = db.clients.find(c => c.id === req.client.id);
+  if (freshClient) {
+    freshClient.hasNewProgramNotification = false;
+    writeDb(db);
+  }
+  res.json({ success: true, message: 'Bildirim okundu işaretlendi.' });
 });
 
 // PUT /api/me/profile — Update ONLY current logged-in client's body metrics & profile
@@ -1211,37 +1305,7 @@ app.post('/api/clients', requireTrainer, (req, res) => {
   res.json({ success: true, created: true, client: newClient });
 });
 
-// POST /api/clients/sync — Bulk Sync (UPSERT) Clients (TRAINER ONLY)
-app.post('/api/clients/sync', requireTrainer, (req, res) => {
-  const { clients: incoming } = req.body;
-  if (!Array.isArray(incoming)) {
-    return res.status(400).json({ success: false, message: 'Danışan dizisi geçersiz.' });
-  }
 
-  const db = readDb();
-  if (!db.deletedPhones) db.deletedPhones = [];
-
-  incoming.forEach(inc => {
-    if (!inc || (!inc.id && !inc.phone)) return;
-    const clean10 = normalizePhone(inc.phone);
-
-    // Unblock if active
-    if (clean10) {
-      db.deletedPhones = db.deletedPhones.filter(dp => (normalizePhone(dp) || dp) !== clean10 && dp !== inc.id);
-    }
-
-    const idx = db.clients.findIndex(c => (inc.id && c.id === inc.id) || (clean10 && normalizePhone(c.phone) === clean10));
-
-    if (idx >= 0) {
-      db.clients[idx] = { ...db.clients[idx], ...inc, phone: clean10 || db.clients[idx].phone };
-    } else if (inc.name && clean10) {
-      db.clients.unshift({ ...inc, phone: clean10 });
-    }
-  });
-
-  writeDb(db);
-  res.json({ success: true, clients: db.clients });
-});
 
 // PUT /api/clients/:id/password — Update Client Password Across ALL Duplicate Phone Records (TRAINER ONLY)
 app.put('/api/clients/:id/password', requireTrainer, (req, res) => {

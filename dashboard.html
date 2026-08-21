@@ -629,17 +629,17 @@
               📍 STÜDYO HİBRİT KOÇLUK HAKLARI
             </span>
             <h3 style="font-size: 1.2rem; font-weight: 800; color: #FFFFFF; margin-top: 0.5rem;" id="pkg-privilege-title">
-              Cevahir AVM MACFit Yüz Yüze Birebir Özel Ders & Hibrit Koçluk
+              Yükleniyor...
             </h3>
             <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.2rem;" id="pkg-privilege-desc">
-              Her ay 1 adet Cevahir AVM MACFit stüdyosunda Umut Altun ile yüz yüze birebir antrenman & postür analizi özel ders hakkınız aktiftir.
+              Üyelik ve paket detaylarınız yükleniyor...
             </p>
           </div>
 
           <!-- Package Action / Status Badge -->
           <div id="pkg-privilege-action" style="background: rgba(0, 0, 0, 0.5); padding: 0.8rem 1.2rem; border-radius: var(--radius-md); border: 1px solid var(--border-light); text-align: center;">
             <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem;">Salondaki Randevu Durumu</span>
-            <strong style="font-size: 0.9rem; color: #10B981;" id="pkg-action-status"><i class="fas fa-calendar-check"></i> 24 Ağustos Cumartesi 14:00 (Cevahir MACFit)</strong>
+            <strong style="font-size: 0.9rem; color: #10B981;" id="pkg-action-status">—</strong>
           </div>
         </div>
       </div>
@@ -1049,28 +1049,14 @@
 
     function showClientAuthOverlay() {
       sessionStorage.clear();
-      localStorage.removeItem('client_authenticated');
-      localStorage.removeItem('client_user_phone');
-      localStorage.removeItem('client_user_name');
-      
+      localStorage.clear();
       const overlay = document.getElementById('client-auth-overlay');
       if (overlay) {
         overlay.style.setProperty('display', 'flex', 'important');
         overlay.style.setProperty('z-index', '99999', 'important');
       }
-      window.location.reload();
     }
     window.showClientAuthOverlay = showClientAuthOverlay;
-
-    if (sessionStorage.getItem('client_authenticated') === 'true' || localStorage.getItem('client_authenticated') === 'true') {
-      if (clientAuthOverlay) {
-        clientAuthOverlay.style.setProperty('display', 'none', 'important');
-      }
-    } else {
-      if (clientAuthOverlay) {
-        clientAuthOverlay.style.setProperty('display', 'flex', 'important');
-      }
-    }
 
     function renderAccessDeniedOverlay(title, msg) {
       let overlay = document.getElementById('client-access-denied-overlay');
@@ -2303,22 +2289,7 @@
       });
     });
 
-    // Live Sync Trainer Note from Admin Panel (localStorage)
-    function syncTrainerNote() {
-      const savedNote = localStorage.getItem('pt_trainer_note');
-      const firstName = getActiveClientFirstName();
-      const nameSpan = document.getElementById('trainer-note-client-name');
-      if (nameSpan) nameSpan.textContent = firstName;
 
-      if (savedNote) {
-        const dynamicNote = savedNote.replace(/Ahmet/g, firstName);
-        document.getElementById('trainer-note-body').textContent = '"' + dynamicNote + '"';
-      }
-    }
-
-    // Run on load and listen for live storage updates
-    syncTrainerNote();
-    window.addEventListener('storage', syncTrainerNote);
 
     // ==========================================================================
     // Interactive Workout Calendar & Completion Logic (Antrenman Takvimi)
