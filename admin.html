@@ -1865,7 +1865,7 @@
       });
     }
 
-    // Backend Fetch Sync on init
+    // Backend Fetch Sync on init with auto-restore
     async function fetchServerClients() {
       try {
         const res = await fetch('/api/clients');
@@ -1874,6 +1874,9 @@
           if (data.success && Array.isArray(data.clients) && data.clients.length > 0) {
             mergeClientLists(data.clients);
             renderClientsList();
+          } else if (clients && clients.length > 0) {
+            // Auto-restore clients from trainer panel to server DB
+            saveClients();
           }
         }
       } catch (err) {
