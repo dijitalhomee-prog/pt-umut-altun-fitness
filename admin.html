@@ -319,6 +319,9 @@
         </div>
       </div>
 
+      <!-- SAYFA İÇİ BAŞARI & UYARI KARTLARI KONUMU -->
+      <div id="trainer-success-banner-container"></div>
+
       <!-- TRAINER TODAY'S AGENDA CARD (BÖLÜM 1) -->
       <div id="trainer-agenda-card" class="glass-panel" style="margin-bottom: 1.5rem; padding: 1.2rem 1.5rem; border-radius: var(--radius-lg); border: 1px solid rgba(245,158,11,0.3); background: linear-gradient(135deg, rgba(245,158,11,0.05) 0%, rgba(18,18,22,0.95) 100%);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.8rem;">
@@ -611,7 +614,7 @@
               </p>
             </div>
 
-            <button type="button" class="btn btn-primary-glow" onclick="window.executeWizardSingleSave();" style="padding: 0.8rem 1.6rem; font-size: 1.05rem; background: #10B981; border-color: #10B981; font-weight: 900;">
+            <button type="button" id="wiz-top-save-btn" class="btn btn-primary-glow" onclick="window.executeWizardSingleSave();" style="padding: 0.8rem 1.6rem; font-size: 1.05rem; background: #10B981; border-color: #10B981; font-weight: 900;">
               <i class="fas fa-paper-plane"></i> Programı Kaydet & Danışana Gönder 🚀
             </button>
           </div>
@@ -1097,6 +1100,7 @@
       renderWizardLivePreview();
       updateWizardLockState();
     }
+    window.selectClientForWizard = selectClientForWizard;
 
     function updateWizardLockState() {
       const lockOverlay = document.getElementById('wizard-lock-overlay');
@@ -1111,6 +1115,40 @@
         document.getElementById('wizard-unsaved-badge').style.display = 'inline-block';
       });
     });
+
+    // Reset Wizard State & Form Completely
+    function resetWizardStateAndForm() {
+      selectedClientId = null;
+      wizardState.programMatrix = {};
+      wizardState.isUnsaved = false;
+
+      const select = document.getElementById('wizard-client-select');
+      if (select) select.value = '';
+
+      const badge = document.getElementById('wizard-client-badge');
+      if (badge) badge.innerHTML = `<i class="fas fa-user-clock"></i> Henüz Danışan Seçilmedi`;
+
+      const unsavedBadge = document.getElementById('wizard-unsaved-badge');
+      if (unsavedBadge) unsavedBadge.style.display = 'none';
+
+      ['wiz-client-name', 'wiz-client-phone', 'wiz-client-password', 'wiz-client-stage',
+       'wiz-client-expiry', 'wiz-client-startweight', 'wiz-client-currweight',
+       'wiz-client-targetweight', 'wiz-client-height', 'wiz-coach-note',
+       'wiz-nutri-calories', 'wiz-nutri-protein', 'wiz-nutri-carbs', 'wiz-nutri-fat',
+       'wiz-nutri-water', 'wiz-nutri-meals', 'wiz-supp-whey', 'wiz-supp-creatine',
+       'wiz-supp-preworkout', 'wiz-supp-multivitamin', 'wiz-supp-omega3', 'wiz-supp-zma', 'wiz-supp-notes'
+      ].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+
+      wizardCurrentWeek = 1;
+      renderWizardWeekTabs();
+      renderWizardExerciseMatrix();
+      goToWizardStep(1);
+      updateWizardLockState();
+    }
+    window.resetWizardStateAndForm = resetWizardStateAndForm;
 
     // --------------------------------------------------------------------------
     // BÖLÜM 1: EĞİTMEN GÜNLÜK AJANDASI (AGENDA ENGINE)
@@ -1224,12 +1262,12 @@
         });
         const data = await res.json();
         if (data.success) {
-          alert('✨ Üyelik süresi +1 ay uzatıldı!');
+          showTrainerSuccessBannerMsg('✨ Üyelik süresi +1 ay uzatıldı!');
           fetchTrainerAgenda();
           fetchServerClients();
         }
       } catch (err) {
-        alert('⚠️ İşlem hatası');
+        showTrainerErrorBanner('⚠️ İşlem hatası');
       }
     }
     window.quickExtendMembership = quickExtendMembership;
@@ -1243,12 +1281,12 @@
         });
         const data = await res.json();
         if (data.success) {
-          alert('✨ Danışan üyelik durumu pasife alındı!');
+          showTrainerSuccessBannerMsg('✨ Danışan üyelik durumu pasife alındı!');
           fetchTrainerAgenda();
           fetchServerClients();
         }
       } catch (err) {
-        alert('⚠️ İşlem hatası');
+        showTrainerErrorBanner('⚠️ İşlem hatası');
       }
     }
     window.quickPassivateMembership = quickPassivateMembership;
@@ -1262,11 +1300,11 @@
         });
         const data = await res.json();
         if (data.success) {
-          alert('✨ Form kontrolü tamamlandı işaretlendi!');
+          showTrainerSuccessBannerMsg('✨ Form kontrolü tamamlandı işaretlendi!');
           fetchTrainerAgenda();
         }
       } catch (err) {
-        alert('⚠️ İşlem hatası');
+        showTrainerErrorBanner('⚠️ İşlem hatası');
       }
     }
     window.quickMarkFormCheckDone = quickMarkFormCheckDone;
@@ -1280,11 +1318,11 @@
         });
         const data = await res.json();
         if (data.success) {
-          alert('✨ Seans başarıyla tamamlandı işaretlendi ve hak düşüldü!');
+          showTrainerSuccessBannerMsg('✨ Seans başarıyla tamamlandı işaretlendi ve hak düşüldü!');
           fetchTrainerAgenda();
         }
       } catch (err) {
-        alert('⚠️ İşlem hatası');
+        showTrainerErrorBanner('⚠️ İşlem hatası');
       }
     }
     window.quickMarkSessionDone = quickMarkSessionDone;
@@ -1300,6 +1338,22 @@
       window.open(`https://wa.me/90${phone}?text=${waText}`, '_blank');
     }
     window.sendWAForFormCheck = sendWAForFormCheck;
+
+    function sendWAForProgram(phone, name) {
+      const waText = encodeURIComponent(`Merhaba ${name}, PT Umut Altun 4 haftalık kişiselleştirilmiş antrenman, beslenme ve takviye programınız başarıyla hazırlandı ve profilinize yüklendi! Giriş yapıp inceleyebilirsiniz.`);
+      window.open(`https://wa.me/90${phone}?text=${waText}`, '_blank');
+    }
+    window.sendWAForProgram = sendWAForProgram;
+
+    function startNewProgramFromSuccessBanner() {
+      document.getElementById('trainer-success-banner')?.remove();
+      const select = document.getElementById('wizard-client-select');
+      if (select) {
+        select.focus();
+        select.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+    window.startNewProgramFromSuccessBanner = startNewProgramFromSuccessBanner;
 
     // --------------------------------------------------------------------------
     // BÖLÜM 2: EĞİTMEN AYLIK TAKVİMİ (MONTHLY CALENDAR ENGINE)
@@ -1326,19 +1380,16 @@
         calendarEvents = [];
       }
 
-      // Filter events by type
       const filteredEvents = calendarEvents.filter(ev => {
         if (filterType === 'all') return true;
         return ev.type === filterType;
       });
 
-      // Build Calendar Days Matrix
       const year = calendarCurrentDate.getFullYear();
       const monthIdx = calendarCurrentDate.getMonth();
       const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
-      const firstDayWeekIdx = (new Date(year, monthIdx, 1).getDay() + 6) % 7; // Monday = 0
+      const firstDayWeekIdx = (new Date(year, monthIdx, 1).getDay() + 6) % 7;
 
-      // Render Day Headers (Pzt - Paz)
       const dayHeaderNames = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
       dayHeaderNames.forEach(dName => {
         const hCell = document.createElement('div');
@@ -1351,7 +1402,6 @@
         gridEl.appendChild(hCell);
       });
 
-      // Empty padding cells
       for (let i = 0; i < firstDayWeekIdx; i++) {
         const emptyCell = document.createElement('div');
         gridEl.appendChild(emptyCell);
@@ -1359,7 +1409,6 @@
 
       const todayStr = new Date().toISOString().split('T')[0];
 
-      // Day Cells
       for (let day = 1; day <= daysInMonth; day++) {
         const dateKey = `${year}-${String(monthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const isToday = (dateKey === todayStr);
@@ -1399,7 +1448,7 @@
 
     function openCalendarDayEventsModal(dateKey, dayEvents) {
       if (dayEvents.length === 0) {
-        alert(`📌 ${dateKey} tarihinde henüz planlanmış bir olay bulunmuyor.`);
+        showTrainerSuccessBannerMsg(`📌 ${dateKey} tarihinde henüz planlanmış bir olay bulunmuyor.`);
         return;
       }
       const eventsStr = dayEvents.map(e => `• ${e.title} (${e.subtitle || ''})`).join('\n');
@@ -1435,7 +1484,7 @@
       const note = document.getElementById('plan-session-note').value;
 
       if (!clientId) {
-        alert('⚠️ Lütfen danışan seçiniz!');
+        showTrainerErrorBanner('⚠️ Lütfen danışan seçiniz!');
         return;
       }
 
@@ -1448,12 +1497,12 @@
         const data = await res.json();
         if (data.success) {
           document.getElementById('plan-session-modal').classList.remove('active');
-          alert('✨ Birebir PT / Stüdyo dersi başarıyla planlandı!');
+          showTrainerSuccessBannerMsg('✨ Birebir PT / Stüdyo dersi başarıyla planlandı!');
           fetchTrainerAgenda();
           renderTrainerCalendar();
         }
       } catch (err) {
-        alert('⚠️ Seans planlama hatası!');
+        showTrainerErrorBanner('⚠️ Seans planlama hatası!');
       }
     }
     window.executePlanSession = executePlanSession;
@@ -1463,7 +1512,7 @@
     // --------------------------------------------------------------------------
     function goToWizardStep(stepNum) {
       if (!selectedClientId && stepNum !== 1) {
-        alert('⚠️ Lütfen önce bir danışan seçiniz!');
+        showTrainerErrorBanner('⚠️ Lütfen önce bir danışan seçiniz!');
         return;
       }
 
@@ -1707,7 +1756,7 @@
       wizardState.isUnsaved = true;
       document.getElementById('wizard-unsaved-badge').style.display = 'inline-block';
       renderWizardWeekTabs();
-      alert(`✨ ${wizardCurrentWeek}. Hafta antrenman programı 1, 2, 3 ve 4. haftalara bağımsız kopyalandı!`);
+      showTrainerSuccessBannerMsg(`✨ ${wizardCurrentWeek}. Hafta antrenman programı 1, 2, 3 ve 4. haftalara bağımsız kopyalandı!`);
     }
     window.copyCurrentWeekToOtherWeeks = copyCurrentWeekToOtherWeeks;
 
@@ -1735,7 +1784,7 @@
         document.getElementById('clone-client-modal').classList.remove('active');
         renderWizardWeekTabs();
         renderWizardExerciseMatrix();
-        alert(`✨ "${srcClient.name}" danışanının antrenman matrisi kopyalandı!`);
+        showTrainerSuccessBannerMsg(`✨ "${srcClient.name}" danışanının antrenman matrisi kopyalandı!`);
       }
     }
     window.executeCloneFromClient = executeCloneFromClient;
@@ -1791,12 +1840,12 @@
       document.getElementById('preset-modal').classList.remove('active');
       renderWizardWeekTabs();
       renderWizardExerciseMatrix();
-      alert('✨ Hazır antrenman şablonu yüklendi!');
+      showTrainerSuccessBannerMsg('✨ Hazır antrenman şablonu yüklendi!');
     }
     window.applyPreset = applyPreset;
 
     // --------------------------------------------------------------------------
-    // STEP 6: LIVE PREVIEW & SINGLE ATOMIC SAVE
+    // STEP 6: LIVE PREVIEW & ATOMIC SAVE WITH IN-PAGE SUCCESS CARD & WIZARD RESET
     // --------------------------------------------------------------------------
     function renderWizardLivePreview() {
       const container = document.getElementById('wiz-live-preview-content');
@@ -1850,8 +1899,20 @@
 
     async function executeWizardSingleSave() {
       if (!selectedClientId) {
-        alert('⚠️ Lütfen önce bir danışan seçiniz!');
+        showTrainerErrorBanner('⚠️ Lütfen önce bir danışan seçiniz!');
         return;
+      }
+
+      const saveBtn = document.getElementById('wiz-btn-final-save');
+      const topSaveBtn = document.getElementById('wiz-top-save-btn');
+      
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Program Kaydediliyor...`;
+      }
+      if (topSaveBtn) {
+        topSaveBtn.disabled = true;
+        topSaveBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Program Kaydediliyor...`;
       }
 
       const clientData = {
@@ -1897,20 +1958,113 @@
 
         const data = await res.json();
         if (res.ok && data.success) {
-          wizardState.isUnsaved = false;
-          document.getElementById('wizard-unsaved-badge').style.display = 'none';
-          alert(`✨ PROGRAM BAŞARIYLA KAYDEDİLDİ VE DANIŞANA AKTARILDI!\n\n📌 Danışan: ${clientData.name}\n🚀 Danışan kendi paneline girdiğinde 4 haftanın bağımsız antrenman, beslenme ve eğitmen notunu anında görecektir.`);
-          fetchServerClients();
+          let totalExCount = 0;
+          for (let w = 1; w <= 4; w++) {
+            const days = (wizardState.programMatrix[w] && wizardState.programMatrix[w].days) || [];
+            days.forEach(d => { totalExCount += (d.exercises ? d.exercises.length : 0); });
+          }
+
+          const clientName = clientData.name;
+          const clientPhone = clientData.phone;
+          const calories = clientData.nutrition.calories || '2100';
+
+          resetWizardStateAndForm();
+
+          await fetchServerClients();
           fetchTrainerAgenda();
           renderTrainerCalendar();
+
+          showTrainerSuccessCard(clientName, clientPhone, totalExCount, calories);
+
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+
         } else {
-          alert('⚠️ Program kaydedilemedi: ' + (data.message || 'Sunucu hatası'));
+          showTrainerErrorBanner('⚠️ Kayıt sunucuya ulaşmadı — tekrar deneyin. (' + (data.message || 'Sunucu hatası') + ')');
         }
       } catch (err) {
-        alert('⚠️ Sunucu bağlantı hatası! Program kaydedilemedi.');
+        showTrainerErrorBanner('⚠️ Kayıt sunucuya ulaşmadı — internet bağlantınızı kontrol edip tekrar deneyin.');
+      } finally {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = `<i class="fas fa-paper-plane"></i> Programı Kaydet & Danışana Gönder 🚀`;
+        }
+        if (topSaveBtn) {
+          topSaveBtn.disabled = false;
+          topSaveBtn.innerHTML = `<i class="fas fa-paper-plane"></i> Programı Kaydet & Danışana Gönder 🚀`;
+        }
       }
     }
     window.executeWizardSingleSave = executeWizardSingleSave;
+
+    function showTrainerSuccessCard(clientName, clientPhone, totalExCount, calories) {
+      const container = document.getElementById('trainer-success-banner-container');
+      if (!container) return;
+
+      const phone10 = clientPhone ? clientPhone.replace(/\D/g, '') : '';
+
+      container.innerHTML = `
+        <div id="trainer-success-banner" class="glass-panel" style="margin-bottom: 1.5rem; padding: 1.4rem 1.6rem; border-radius: var(--radius-lg); border: 2px solid #10B981; background: linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(18,18,22,0.98) 100%); box-shadow: 0 0 35px rgba(16,185,129,0.25);">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.3rem;">
+                <span style="font-size: 1.3rem;">✅</span>
+                <h3 style="color: #FFFFFF; font-size: 1.25rem; margin: 0;">Program Başarıyla Kaydedildi — <span style="color: #10B981;">${clientName}</span></h3>
+              </div>
+              <p style="font-size: 0.88rem; color: #E5E7EB; margin: 0; line-height: 1.5;">
+                4 hafta, ${totalExCount} hareket · Beslenme: ${calories} kcal · Eğitmen notu eklendi
+              </p>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+              <button type="button" class="btn btn-outline" style="border-color: #25D366; color: #25D366; font-size: 0.85rem; padding: 0.5rem 0.9rem;" onclick="window.sendWAForProgram('${phone10}', '${clientName}')">
+                <i class="fab fa-whatsapp"></i> WhatsApp'tan Haber Ver
+              </button>
+              <a href="dashboard.html" target="_blank" class="btn btn-outline" style="border-color: #3B82F6; color: #3B82F6; font-size: 0.85rem; padding: 0.5rem 0.9rem;">
+                <i class="fas fa-external-link-alt"></i> Danışan Gözüyle Aç
+              </a>
+              <button type="button" class="btn btn-primary-glow" style="font-size: 0.85rem; padding: 0.5rem 0.9rem;" onclick="window.startNewProgramFromSuccessBanner()">
+                <i class="fas fa-user-plus"></i> Yeni Program Yaz
+              </button>
+              <button type="button" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.3rem; margin-left: 0.4rem;" onclick="document.getElementById('trainer-success-banner').remove()">&times;</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function showTrainerErrorBanner(msg) {
+      const container = document.getElementById('trainer-success-banner-container');
+      if (!container) return;
+
+      container.innerHTML = `
+        <div id="trainer-error-banner" class="glass-panel" style="margin-bottom: 1.5rem; padding: 1.2rem 1.5rem; border-radius: var(--radius-lg); border: 2px solid #EF4444; background: linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(18,18,22,0.98) 100%);">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <i class="fas fa-exclamation-triangle" style="color: #EF4444; font-size: 1.3rem;"></i>
+              <span style="color: #FFF; font-size: 0.92rem; font-weight: bold;">${msg}</span>
+            </div>
+            <button type="button" style="background: none; border: none; color: #FFF; cursor: pointer; font-size: 1.2rem;" onclick="document.getElementById('trainer-error-banner').remove()">&times;</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function showTrainerSuccessBannerMsg(msg) {
+      const container = document.getElementById('trainer-success-banner-container');
+      if (!container) return;
+
+      container.innerHTML = `
+        <div id="trainer-info-banner" class="glass-panel" style="margin-bottom: 1.5rem; padding: 1.2rem 1.5rem; border-radius: var(--radius-lg); border: 2px solid #10B981; background: linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(18,18,22,0.98) 100%);">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <i class="fas fa-check-circle" style="color: #10B981; font-size: 1.3rem;"></i>
+              <span style="color: #FFF; font-size: 0.92rem; font-weight: bold;">${msg}</span>
+            </div>
+            <button type="button" style="background: none; border: none; color: #FFF; cursor: pointer; font-size: 1.2rem;" onclick="document.getElementById('trainer-info-banner').remove()">&times;</button>
+          </div>
+        </div>
+      `;
+    }
 
     // --------------------------------------------------------------------------
     // BULK ADMIN ACTIONS
@@ -1921,13 +2075,13 @@
         const res = await trainerFetch('/api/admin/passivate-all-clients', { method: 'POST' });
         const data = await res.json();
         if (data.success) {
-          alert(data.message);
+          showTrainerSuccessBannerMsg(data.message);
           fetchServerClients();
           fetchTrainerAgenda();
           renderTrainerCalendar();
         }
       } catch (err) {
-        alert('⚠️ Sunucu bağlantı hatası!');
+        showTrainerErrorBanner('⚠️ Sunucu bağlantı hatası!');
       }
     }
     window.triggerPassivateAllClients = triggerPassivateAllClients;
@@ -1937,9 +2091,9 @@
       try {
         const res = await trainerFetch('/api/admin/revoke-all-sessions', { method: 'POST' });
         const data = await res.json();
-        if (data.success) alert(data.message);
+        if (data.success) showTrainerSuccessBannerMsg(data.message);
       } catch (err) {
-        alert('⚠️ Sunucu bağlantı hatası!');
+        showTrainerErrorBanner('⚠️ Sunucu bağlantı hatası!');
       }
     }
     window.triggerRevokeAllSessions = triggerRevokeAllSessions;
@@ -1950,13 +2104,13 @@
         const res = await trainerFetch('/api/admin/purge-all-clients', { method: 'POST' });
         const data = await res.json();
         if (data.success) {
-          alert(data.message);
+          showTrainerSuccessBannerMsg(data.message);
           fetchServerClients();
           fetchTrainerAgenda();
           renderTrainerCalendar();
         }
       } catch (err) {
-        alert('⚠️ Sunucu bağlantı hatası!');
+        showTrainerErrorBanner('⚠️ Sunucu bağlantı hatası!');
       }
     }
     window.triggerPurgeAllClients = triggerPurgeAllClients;
@@ -1973,13 +2127,13 @@
         });
         const data = await res.json();
         if (data.success) {
-          alert(data.message);
+          showTrainerSuccessBannerMsg(data.message);
           fetchServerClients();
           fetchTrainerAgenda();
           renderTrainerCalendar();
         }
       } catch (err) {
-        alert('⚠️ Geçersiz JSON verisi veya sunucu hatası!');
+        showTrainerErrorBanner('⚠️ Geçersiz JSON verisi veya sunucu hatası!');
       }
     }
     window.openImportClientsModal = openImportClientsModal;
@@ -2011,16 +2165,16 @@
         if (res.ok && data.success) {
           document.getElementById('add-client-modal').classList.remove('active');
           document.getElementById('add-client-form').reset();
-          alert(`✨ Danışan Sisteme Kaydedildi!\n\n📌 Danışan: ${data.client.name}\n📱 Telefon: ${data.client.phone}\n🔑 Şifre: ${data.client.password}`);
+          showTrainerSuccessBannerMsg(`✨ Danışan Sisteme Kaydedildi: ${data.client.name} (Giriş Şifresi: ${data.client.password})`);
           await fetchServerClients();
           fetchTrainerAgenda();
           renderTrainerCalendar();
           selectClientForWizard(data.client.id);
         } else {
-          alert('⚠️ Kayıt hatası: ' + (data.message || 'Bilinmeyen hata'));
+          showTrainerErrorBanner('⚠️ Kayıt hatası: ' + (data.message || 'Bilinmeyen hata'));
         }
       } catch (err) {
-        alert('⚠️ Sunucu bağlantı hatası!');
+        showTrainerErrorBanner('⚠️ Sunucu bağlantı hatası!');
       }
     });
 
