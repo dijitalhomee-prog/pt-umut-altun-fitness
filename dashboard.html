@@ -617,11 +617,25 @@
 
       <!-- TAB 1: ANTRENMAN PROGRAMI -->
       <div id="tab-workout" class="tab-content-pane active">
+        <!-- 4-Haftalık Sezon Filtresi -->
+        <div id="client-week-container" style="margin-bottom: 1.2rem; background: rgba(0,0,0,0.3); padding: 0.8rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+          <label style="font-size: 0.75rem; color: var(--accent-red); font-weight: 800; text-transform: uppercase; margin-bottom: 0.5rem; display: block; letter-spacing: 0.05em;">
+            🗓️ 4 HAFTALIK UZAKTAN EĞİTİM PROGRAMINIZ (HAFTA SEÇİNİZ)
+          </label>
+          <div class="client-week-selector" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn btn-outline client-week-btn active" data-week="1" style="flex: 1; border-color: var(--accent-red); color: #FFF; background: rgba(239, 68, 68, 0.15); font-size: 0.85rem; padding: 0.5rem 0.8rem;">📅 1. Hafta (Adaptasyon)</button>
+            <button class="btn btn-outline client-week-btn" data-week="2" style="flex: 1; font-size: 0.85rem; padding: 0.5rem 0.8rem;">📅 2. Hafta (Hacim Artışı)</button>
+            <button class="btn btn-outline client-week-btn" data-week="3" style="flex: 1; font-size: 0.85rem; padding: 0.5rem 0.8rem;">📅 3. Hafta (Hipertrofi)</button>
+            <button class="btn btn-outline client-week-btn" data-week="4" style="flex: 1; font-size: 0.85rem; padding: 0.5rem 0.8rem;">📅 4. Hafta (De-load & Zirve)</button>
+          </div>
+        </div>
+
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
           <div class="workout-day-selector" id="workout-day-container" style="margin-bottom: 0;">
-            <button class="day-pill active">Gün 1: Tüm Vücut (Full Body) Adaptasyon A</button>
-            <button class="day-pill">Gün 2: Kardiyo & Karın (Core)</button>
-            <button class="day-pill">Gün 3: Tüm Vücut (Full Body) Adaptasyon B</button>
+            <button class="day-pill active" data-day="1">Gün 1: Göğüs & Ön Kol</button>
+            <button class="day-pill" data-day="2">Gün 2: Sırt & Arka Kol</button>
+            <button class="day-pill" data-day="3">Gün 3: Bacak & Omuz</button>
+            <button class="day-pill" data-day="4">Gün 4: Kardiyo & Karın</button>
           </div>
           <button id="download-workout-pdf-btn" class="btn btn-outline" style="padding: 0.45rem 1rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.5rem;">
             <i class="fas fa-file-pdf" style="color: var(--accent-red);"></i> Programı PDF İndir
@@ -1402,9 +1416,11 @@
 
       const exerciseListBox = document.getElementById('exercise-list-box');
       const workoutDayContainer = document.getElementById('workout-day-container');
+      const clientWeekContainer = document.getElementById('client-week-container');
       const downloadWorkoutBtn = document.getElementById('download-workout-pdf-btn');
 
       if (!isAssigned) {
+        if (clientWeekContainer) clientWeekContainer.style.display = 'none';
         if (workoutDayContainer) workoutDayContainer.style.display = 'none';
         if (downloadWorkoutBtn) downloadWorkoutBtn.style.display = 'none';
 
@@ -1449,6 +1465,7 @@
           }
         }
       } else {
+        if (clientWeekContainer) clientWeekContainer.style.display = 'block';
         if (workoutDayContainer) workoutDayContainer.style.display = 'flex';
         if (downloadWorkoutBtn) downloadWorkoutBtn.style.display = 'inline-flex';
         const dlNutriBtn = document.getElementById('download-nutrition-pdf-btn');

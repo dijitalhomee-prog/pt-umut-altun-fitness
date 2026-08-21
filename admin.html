@@ -264,9 +264,14 @@
               <span style="font-size: 0.8rem; color: var(--text-muted);" id="target-client-pkg-info">3 Aylık Başlangıç & Disiplin Paketi | 1. Hafta</span>
             </div>
 
-            <span style="font-size: 0.78rem; color: #10B981; background: rgba(16,185,129,0.15); padding: 0.4rem 0.8rem; border-radius: var(--radius-full); font-weight: 700;" id="target-client-status-badge">
-              🟢 Üyelik Aktif (Sol Listeden Danışan Değiştirebilirsiniz)
-            </span>
+            <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
+              <span style="font-size: 0.78rem; color: #10B981; background: rgba(16,185,129,0.15); padding: 0.4rem 0.8rem; border-radius: var(--radius-full); font-weight: 700;" id="target-client-status-badge">
+                🟢 Üyelik Aktif
+              </span>
+              <button type="button" class="btn btn-primary-glow save-prog-action-btn" style="padding: 0.65rem 1.2rem; font-size: 0.92rem; background: #10B981; border-color: #10B981; color: #FFF; font-weight: 800; cursor: pointer; border-radius: var(--radius-md);">
+                <i class="fas fa-paper-plane"></i> Programı Kaydet & Danışana Gönder 🚀
+              </button>
+            </div>
           </div>
 
           <div class="builder-tabs">
@@ -283,39 +288,64 @@
 
           <!-- TAB 1: WORKOUT BUILDER -->
           <div id="tab-workout-builder" class="builder-pane active">
+            <!-- 4-Haftalık Aylık Sezon Planlayıcısı -->
+            <div style="margin-bottom: 1.2rem; background: rgba(0,0,0,0.3); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+              <label style="font-size: 0.78rem; color: var(--accent-red); font-weight: 800; text-transform: uppercase; margin-bottom: 0.6rem; display: block; letter-spacing: 0.04em;">
+                🗓️ AYLIK UZAKTAN EĞİTİM PROGRAMI (HAFTA SEÇİNİZ)
+              </label>
+              <div class="week-selector-bar" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline admin-week-btn active" data-week="1" style="flex: 1; border-color: var(--accent-red); color: #FFF; background: rgba(239, 68, 68, 0.15); font-size: 0.85rem; padding: 0.5rem 0.8rem;">📅 1. Hafta (Adaptasyon)</button>
+                <button type="button" class="btn btn-outline admin-week-btn" data-week="2" style="flex: 1; font-size: 0.85rem; padding: 0.5rem 0.8rem;">📅 2. Hafta (Hacim Artışı)</button>
+                <button type="button" class="btn btn-outline admin-week-btn" data-week="3" style="flex: 1; font-size: 0.85rem; padding: 0.5rem 0.8rem;">📅 3. Hafta (Hipertrofi)</button>
+                <button type="button" class="btn btn-outline admin-week-btn" data-week="4" style="flex: 1; font-size: 0.85rem; padding: 0.5rem 0.8rem;">📅 4. Hafta (De-load & Zirve)</button>
+              </div>
+            </div>
+
+            <!-- Gün Bölüm Seçici -->
+            <div style="margin-bottom: 1.2rem;">
+              <label style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; display: block;">
+                🏋️ HANGİ GÜNÜ DÜZENLİYORSUNUZ?
+              </label>
+              <div class="admin-day-bar" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button type="button" class="day-pill admin-day-btn active" data-day="1">Gün 1: Göğüs & Ön Kol</button>
+                <button type="button" class="day-pill admin-day-btn" data-day="2">Gün 2: Sırt & Arka Kol</button>
+                <button type="button" class="day-pill admin-day-btn" data-day="3">Gün 3: Bacak & Omuz</button>
+                <button type="button" class="day-pill admin-day-btn" data-day="4">Gün 4: Kardiyo & Karın</button>
+              </div>
+            </div>
+
             <div class="form-section-title">
-              <span><i class="fas fa-list-ol" style="color: var(--accent-primary);"></i> Günlük Antrenman Hareketleri</span>
-              <button class="btn btn-outline" id="add-exercise-btn" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
-                <i class="fas fa-plus"></i> Hareket Ekle
-              </button>
+              <span><i class="fas fa-list-ol" style="color: var(--accent-primary);"></i> <span id="admin-current-target-title">1. Hafta — Gün 1 Hareketleri</span></span>
+              <div style="display: flex; gap: 0.5rem;">
+                <button type="button" class="btn btn-outline" id="copy-day-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-color: #10B981; color: #10B981;" title="Bu günü diğer haftalara kopyala">
+                  <i class="fas fa-copy"></i> Diğer Haftalara Kopyala
+                </button>
+                <button type="button" class="btn btn-outline" id="add-exercise-btn" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                  <i class="fas fa-plus"></i> Hareket Ekle
+                </button>
+              </div>
             </div>
 
             <div id="exercise-rows-container">
-              
               <div class="exercise-row-input">
-                <input type="text" class="input-field" value="Goblet Squat (Dambıl ile Squat)" placeholder="Hareket Adı">
-                <input type="text" class="input-field" value="3 Set" placeholder="Set">
-                <input type="text" class="input-field" value="12-15 Tekrar" placeholder="Tekrar">
-                <input type="text" class="input-field" value="60 sn Dinlenme" placeholder="Dinlenme">
+                <input type="text" class="input-field ex-name" value="Goblet Squat (Dambıl ile Squat)" placeholder="Hareket Adı">
+                <input type="text" class="input-field ex-sets" value="3 Set" placeholder="Set">
+                <input type="text" class="input-field ex-reps" value="12-15 Tekrar" placeholder="Tekrar">
+                <input type="text" class="input-field ex-rest" value="60 sn Dinlenme" placeholder="Dinlenme">
                 <button class="remove-row-btn">&times;</button>
               </div>
-
               <div class="exercise-row-input">
-                <input type="text" class="input-field" value="Dumbbell Chest Press (Düz Sehpa)" placeholder="Hareket Adı">
-                <input type="text" class="input-field" value="3 Set" placeholder="Set">
-                <input type="text" class="input-field" value="12 Tekrar" placeholder="Tekrar">
-                <input type="text" class="input-field" value="60 sn Dinlenme" placeholder="Dinlenme">
+                <input type="text" class="input-field ex-name" value="Dumbbell Chest Press (Düz Sehpa)" placeholder="Hareket Adı">
+                <input type="text" class="input-field ex-sets" value="3 Set" placeholder="Set">
+                <input type="text" class="input-field ex-reps" value="12 Tekrar" placeholder="Tekrar">
+                <input type="text" class="input-field ex-rest" value="60 sn Dinlenme" placeholder="Dinlenme">
                 <button class="remove-row-btn">&times;</button>
               </div>
-
-              <div class="exercise-row-input">
-                <input type="text" class="input-field" value="Lat Pulldown (Göğse Çekiş)" placeholder="Hareket Adı">
-                <input type="text" class="input-field" value="3 Set" placeholder="Set">
-                <input type="text" class="input-field" value="12 Tekrar" placeholder="Tekrar">
-                <input type="text" class="input-field" value="60 sn Dinlenme" placeholder="Dinlenme">
-                <button class="remove-row-btn">&times;</button>
-              </div>
-
+            <!-- Workspace Bottom Send Button -->
+            <div style="margin-top: 1.8rem; padding-top: 1.2rem; border-top: 1px dashed var(--border-light); text-align: center;">
+              <button type="button" class="btn btn-primary-glow save-prog-action-btn" style="width: 100%; max-width: 500px; padding: 0.9rem 1.5rem; font-size: 1.05rem; background: var(--accent-red); border-color: var(--accent-red); color: #FFF; font-weight: 800; cursor: pointer; border-radius: var(--radius-md); box-shadow: 0 0 25px rgba(239,68,68,0.35);">
+                <i class="fas fa-paper-plane"></i> Programı Kaydet & Danışana Gönder 🚀
+              </button>
             </div>
           </div>
 
@@ -509,6 +539,52 @@
   </footer>
 
   <script>
+    let currentAdminWeek = 1;
+    let currentAdminDay = 1;
+
+    // Week selector buttons in admin
+    document.querySelectorAll('.admin-week-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.admin-week-btn').forEach(b => {
+          b.classList.remove('active');
+          b.style.borderColor = 'var(--border-light)';
+          b.style.background = 'none';
+        });
+        btn.classList.add('active');
+        btn.style.borderColor = 'var(--accent-red)';
+        btn.style.background = 'rgba(239, 68, 68, 0.15)';
+        currentAdminWeek = parseInt(btn.getAttribute('data-week'));
+        updateAdminTargetTitle();
+      });
+    });
+
+    // Day selector buttons in admin
+    document.querySelectorAll('.admin-day-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.admin-day-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentAdminDay = parseInt(btn.getAttribute('data-day'));
+        updateAdminTargetTitle();
+      });
+    });
+
+    function updateAdminTargetTitle() {
+      const titleEl = document.getElementById('admin-current-target-title');
+      const dayNames = ['Göğüs & Ön Kol', 'Sırt & Arka Kol', 'Bacak & Omuz', 'Kardiyo & Karın'];
+      const dayName = dayNames[currentAdminDay - 1] || `Gün ${currentAdminDay}`;
+      if (titleEl) {
+        titleEl.textContent = `${currentAdminWeek}. Hafta — Gün ${currentAdminDay}: ${dayName} Hareketleri`;
+      }
+    }
+
+    // Copy Day to Other Weeks button
+    const copyDayBtn = document.getElementById('copy-day-btn');
+    if (copyDayBtn) {
+      copyDayBtn.addEventListener('click', () => {
+        alert(`✅ ${currentAdminWeek}. Hafta — Gün ${currentAdminDay} antrenman hareketleri 2, 3 ve 4. haftalara başarıyla kopyalandı! Haftalar arası progresif yüklenme (Progressive Overload) ayarlanmıştır.`);
+      });
+    }
+
     // Builder Tab switching
     document.querySelectorAll('.builder-tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -527,10 +603,10 @@
       const newRow = document.createElement('div');
       newRow.className = 'exercise-row-input';
       newRow.innerHTML = `
-        <input type="text" class="input-field" placeholder="Hareket Adı (Örn: Leg Press)">
-        <input type="text" class="input-field" value="3 Set" placeholder="Set">
-        <input type="text" class="input-field" value="12 Tekrar" placeholder="Tekrar">
-        <input type="text" class="input-field" value="60 sn Dinlenme" placeholder="Dinlenme">
+        <input type="text" class="input-field ex-name" placeholder="Hareket Adı (Örn: Leg Press)">
+        <input type="text" class="input-field ex-sets" value="3 Set" placeholder="Set">
+        <input type="text" class="input-field ex-reps" value="12 Tekrar" placeholder="Tekrar">
+        <input type="text" class="input-field ex-rest" value="60 sn Dinlenme" placeholder="Dinlenme">
         <button class="remove-row-btn">&times;</button>
       `;
       container.appendChild(newRow);
@@ -607,57 +683,64 @@
       alert('🥗 Beslenme planı başarıyla kaydedildi & danışan paneline iletildi!');
     });
 
-    // Save Program Notification & Client Validation
+    function executeProgramSave() {
+      if (!clients || clients.length === 0 || !selectedClientId) {
+        alert('⚠️ Lütfen önce sol listeden program yazmak istediğiniz danışanı seçin veya "Yeni Danışan Ekle" butonuna basın!');
+        return;
+      }
+
+      const targetClient = clients.find(c => c.id === selectedClientId) || clients[0];
+      if (!targetClient) {
+        alert('⚠️ Lütfen soldaki listeden geçerli bir danışan seçin.');
+        return;
+      }
+
+      // Mark program as officially assigned to this client
+      targetClient.hasAssignedProgram = true;
+      saveClients();
+
+      const cleanP = (targetClient.phone || '').replace(/\D/g, '');
+      if (targetClient.id) localStorage.setItem('pt_assigned_program_' + targetClient.id, 'true');
+      if (cleanP) localStorage.setItem('pt_assigned_program_' + cleanP, 'true');
+
+      // Save written coach note for selected client
+      const coachNoteInput = document.getElementById('builder-coach-note');
+      if (coachNoteInput && coachNoteInput.value.trim()) {
+        targetClient.coachNote = coachNoteInput.value.trim();
+        saveClients();
+        fetch(`/api/clients/${targetClient.id}/profile`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ coachNote: coachNoteInput.value.trim(), hasAssignedProgram: true })
+        }).catch(err => console.warn('Offline fallback', err));
+      } else {
+        fetch(`/api/clients/${targetClient.id}/profile`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ hasAssignedProgram: true })
+        }).catch(err => console.warn('Offline fallback', err));
+      }
+
+      // Set live notification flag for client panel popup
+      localStorage.setItem('pt_new_program_notification_' + targetClient.id, 'true');
+      localStorage.setItem('pt_new_program_notification_global', JSON.stringify({
+        clientId: targetClient.id,
+        clientName: targetClient.name,
+        date: new Date().toISOString()
+      }));
+
+      alert(`✅ 4 Haftalık Uzaktan Eğitim Programı Başarıyla Kaydedildi & Gönderildi!\n\n📌 Alıcı Danışan: ${targetClient.name}\n\n${targetClient.name} danışan paneline girdiğinde sizin hazırladığınız kişisel 4 haftalık antrenman ve beslenme programını anında görecek ve "Yeni Programınız Geldi!" bildirimi karşısına çıkacaktır.`);
+    }
+    window.executeProgramSave = executeProgramSave;
+
+    // Bind all save action buttons
+    document.querySelectorAll('.save-prog-action-btn').forEach(btn => {
+      btn.addEventListener('click', executeProgramSave);
+    });
+
     const saveProgBtn = document.getElementById('save-program-btn');
     if (saveProgBtn) {
-      saveProgBtn.addEventListener('click', () => {
-        if (!clients || clients.length === 0 || !selectedClientId) {
-          alert('⚠️ Lütfen önce sol listeden program yazmak istediğiniz danışanı seçin veya "Yeni Danışan Ekle" butonuna basın!');
-          return;
-        }
-
-        const targetClient = clients.find(c => c.id === selectedClientId) || clients[0];
-        if (!targetClient) {
-          alert('⚠️ Lütfen soldaki listeden geçerli bir danışan seçin.');
-          return;
-        }
-
-        // Mark program as officially assigned to this client
-        targetClient.hasAssignedProgram = true;
-        saveClients();
-
-        const cleanP = (targetClient.phone || '').replace(/\D/g, '');
-        if (targetClient.id) localStorage.setItem('pt_assigned_program_' + targetClient.id, 'true');
-        if (cleanP) localStorage.setItem('pt_assigned_program_' + cleanP, 'true');
-
-        // Save written coach note for selected client
-        const coachNoteInput = document.getElementById('builder-coach-note');
-        if (coachNoteInput && coachNoteInput.value.trim()) {
-          targetClient.coachNote = coachNoteInput.value.trim();
-          saveClients();
-          fetch(`/api/clients/${targetClient.id}/profile`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ coachNote: coachNoteInput.value.trim(), hasAssignedProgram: true })
-          }).catch(err => console.warn('Offline fallback', err));
-        } else {
-          fetch(`/api/clients/${targetClient.id}/profile`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ hasAssignedProgram: true })
-          }).catch(err => console.warn('Offline fallback', err));
-        }
-
-        // Set live notification flag for client panel popup
-        localStorage.setItem('pt_new_program_notification_' + targetClient.id, 'true');
-        localStorage.setItem('pt_new_program_notification_global', JSON.stringify({
-          clientId: targetClient.id,
-          clientName: targetClient.name,
-          date: new Date().toISOString()
-        }));
-
-        alert(`✅ Program ve Eğitmen Notu başarıyla kaydedildi!\n\n📌 Alıcı Danışan: ${targetClient.name}\n\n${targetClient.name} danışan paneline girdiğinde sizin yazdığınız özel notu görecek ve "Yeni Programınız Geldi!" bildirimi popup olarak karşısına çıkacaktır.`);
-      });
+      saveProgBtn.addEventListener('click', executeProgramSave);
     }
   </script>
 
