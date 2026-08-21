@@ -1659,10 +1659,23 @@
     }
     window.toggleTrainerDrawer = toggleTrainerDrawer;
 
+    function sendWAForFormCheck(phone, name) {
+      const clean = (phone || '').replace(/\D/g, '');
+      const p = clean.startsWith('90') ? clean : '90' + (clean.startsWith('0') ? clean.slice(1) : clean);
+      const msg = encodeURIComponent(`Merhaba ${name}, PT Umut Altun antrenörlüğünde 4 açılı güncel form fotoğraflarını (Ön, Sırt, Sağ Yan, Sol Yan) sisteme yüklemen bekleniyor. Giriş yaparak fotoğraflarını yükleyebilirsin: https://ptumutaltun.com/dashboard.html`);
+      window.open(`https://wa.me/${p}?text=${msg}`, '_blank');
+    }
+    window.sendWAForFormCheck = sendWAForFormCheck;
+
     function renderTrainerClientFormPhotosSection(client) {
-      const serverPhotos = (client.formPhotos || client.photos || []);
-      const cleanPhone = (client.phone || '').replace(/\D/g, '');
-      const localPhotos = cleanPhone ? (JSON.parse(localStorage.getItem(`pt_client_photos_${cleanPhone}`)) || []) : [];
+      const serverPhotos = (client.formPhotos || client.photos || client.formCheckPhotos || []);
+      const rawPhone = (client.phone || '').replace(/\D/g, '');
+      const phone10 = rawPhone.length === 11 && rawPhone.startsWith('0') ? rawPhone.slice(1) : rawPhone;
+      const phone11 = phone10.length === 10 ? '0' + phone10 : rawPhone;
+
+      const localPhotos1 = JSON.parse(localStorage.getItem(`pt_client_photos_${phone10}`)) || [];
+      const localPhotos2 = JSON.parse(localStorage.getItem(`pt_client_photos_${phone11}`)) || [];
+      const localPhotos = [...localPhotos1, ...localPhotos2];
 
       const combinedPhotos = [...serverPhotos];
       localPhotos.forEach(lp => {
@@ -1684,9 +1697,19 @@
 
       if (photosList.length === 0) {
         return `
-          <div id="trainer-photos-drawer-box" style="display: block; margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,255,255,0.15); border-radius: var(--radius-md); text-align: center; color: var(--text-muted); font-size: 0.82rem;">
-            <i class="fas fa-camera-retro" style="font-size: 1.5rem; color: #3B82F6; margin-bottom: 0.3rem; display: block;"></i>
-            Danışan henüz 4 açılı form görseli yüklemedi.
+          <div id="trainer-photos-box" style="margin-top: 1.2rem; padding: 1rem 1.2rem; background: rgba(0,0,0,0.4); border: 1px dashed rgba(59, 130, 246, 0.35); border-radius: var(--radius-md);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem;">
+              <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <i class="fas fa-camera-retro" style="font-size: 1.5rem; color: #3B82F6;"></i>
+                <div>
+                  <strong style="color: #FFF; font-size: 0.9rem; display: block;">📸 4 Açılı Form Görselleri Galerisi (0 Yükleme)</strong>
+                  <span style="font-size: 0.78rem; color: var(--text-muted);">Danışan henüz sisteme form görseli yüklemedi.</span>
+                </div>
+              </div>
+              <button type="button" class="btn btn-outline" style="font-size: 0.75rem; border-color: #25D366; color: #25D366; padding: 0.35rem 0.75rem;" onclick="window.sendWAForFormCheck('${client.phone || ''}', '${client.name || ''}')">
+                <i class="fab fa-whatsapp"></i> WhatsApp'tan Görsel İste
+              </button>
+            </div>
           </div>
         `;
       }
@@ -1695,15 +1718,15 @@
         if (src && String(src).trim()) {
           return `
             <div style="text-align: center;">
-              <span style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem; font-weight: bold;">${label}</span>
-              <img src="${src}" onclick="window.openImageZoomModal('${src}')" style="width: 100%; height: 95px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15); cursor: pointer;" title="Büyütmek için tıklayın">
+              <span style="font-size: 0.68rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem; font-weight: bold;">${label}</span>
+              <img src="${src}" onclick="window.openImageZoomModal('${src}')" style="width: 100%; height: 110px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.2); cursor: pointer;" title="Büyütmek için tıklayın">
             </div>
           `;
         }
         return `
           <div style="text-align: center;">
-            <span style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem; font-weight: bold;">${label}</span>
-            <div style="width: 100%; height: 95px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.1); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: var(--text-muted);">Yok</div>
+            <span style="font-size: 0.68rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem; font-weight: bold;">${label}</span>
+            <div style="width: 100%; height: 110px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.15); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--text-muted);">Fotoğraf Yok</div>
           </div>
         `;
       };
@@ -1715,19 +1738,19 @@
         const leftSrc = p.left || p.dataUrl;
 
         return `
-          <div style="background: rgba(18, 18, 22, 0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); padding: 0.8rem; margin-top: 0.6rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem;">
+          <div style="background: rgba(18, 18, 22, 0.95); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: var(--radius-md); padding: 0.9rem; margin-top: 0.8rem; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.5rem;">
               <div>
-                <span style="font-size: 0.82rem; color: #10B981; font-weight: 800; display: block;">
+                <span style="font-size: 0.9rem; color: #3B82F6; font-weight: 800; display: block;">
                   <i class="fas fa-calendar-alt"></i> Yükleme Tarihi: ${p.date || 'Tarih Belirtilmedi'}
                 </span>
-                <span style="font-size: 0.75rem; color: var(--text-muted);">${p.note ? `Not: "${p.note}"` : 'Ek not yok'}</span>
+                <span style="font-size: 0.78rem; color: #E5E7EB;">${p.note ? `💬 Danışan Notu: "${p.note}"` : 'Ek not eklenmedi'}</span>
               </div>
-              <span style="font-size: 0.7rem; background: rgba(16,185,129,0.15); color: #10B981; padding: 0.2rem 0.5rem; border-radius: 12px; border: 1px solid #10B981; font-weight: 700;">
+              <span style="font-size: 0.75rem; background: rgba(16,185,129,0.15); color: #10B981; padding: 0.25rem 0.6rem; border-radius: 12px; border: 1px solid #10B981; font-weight: 700;">
                 <i class="fas fa-check-circle"></i> 4 Açı Yüklendi
               </span>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem;">
               ${renderAngle(frontSrc, 'Ön Açı')}
               ${renderAngle(backSrc, 'Arka (Sırt)')}
               ${renderAngle(rightSrc, 'Sağ Yan')}
@@ -1738,10 +1761,15 @@
       }).join('');
 
       return `
-        <div id="trainer-photos-drawer-box" style="display: block; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.8rem; max-height: 380px; overflow-y: auto; padding-right: 0.3rem;">
-          <h4 style="color: #3B82F6; font-size: 0.92rem; margin: 0 0 0.4rem 0;">
-            📸 Danışanın Yüklediği Form Görselleri (${photosList.length} Kayıt)
-          </h4>
+        <div id="trainer-photos-box" style="margin-top: 1.2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; max-height: 450px; overflow-y: auto; padding-right: 0.3rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+            <h4 style="color: #3B82F6; font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+              📸 Danışanın Yüklediği 4 Açılı Form Görselleri (${photosList.length} Yükleme Kaydı)
+            </h4>
+            <button type="button" class="btn btn-outline" style="font-size: 0.75rem; border-color: #8B5CF6; color: #8B5CF6; padding: 0.25rem 0.6rem;" onclick="window.openTrainerProgressComparisonModal('${client.id}')">
+              ⚡ Gelişimi Karşılaştır
+            </button>
+          </div>
           ${cardsHtml}
         </div>
       `;
