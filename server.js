@@ -669,7 +669,7 @@ app.post('/api/auth/trainer', (req, res) => {
 });
 
 // Client Authentication & Verify-Auth Endpoint
-app.post('/api/clients/verify-auth', (req, res) => {
+function handleClientAuth(req, res) {
   const { phone, password } = req.body;
   const clean10 = normalizePhone(phone);
 
@@ -763,7 +763,9 @@ app.post('/api/clients/verify-auth', (req, res) => {
     token,
     client: sanitizeClient(client, false)
   });
-});
+}
+app.post('/api/clients/verify-auth', handleClientAuth);
+app.post('/api/auth/login', handleClientAuth);
 
 // GET /api/me — Returns ONLY current logged-in client's data (Isolated)
 app.get('/api/me', requireAuth, (req, res) => {
