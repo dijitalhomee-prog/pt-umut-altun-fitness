@@ -1081,36 +1081,48 @@ app.get('/api/calendar', requireTrainer, (req, res) => {
 // POST /api/clients/:id/sessions — Yeni Birebir Ders / Seans Planla (TRAINER ONLY)
 app.post('/api/clients/:id/sessions', requireTrainer, (req, res) => {
   const { id } = req.params;
-  const { date, time, type, location, note } = req.body;
+  const { date, time, type, location, note, repeatWeeks } = req.body;
   const db = readDb();
   const client = db.clients.find(c => c.id === id || normalizePhone(c.phone) === normalizePhone(id));
   if (!client) return res.status(404).json({ success: false, message: 'Danışan bulunamadı.' });
 
   if (!client.sessions) client.sessions = [];
-  const newSession = {
-    id: 'sess-' + Date.now(),
-    date: date || new Date().toISOString().split('T')[0],
-    time: time || '14:00',
-    type: type || 'pt',
-    location: location || 'Cevahir AVM MACFit',
-    note: note || '',
-    status: 'planned',
-    createdAt: new Date().toISOString()
-  };
-  client.sessions.push(newSession);
+  const createdSessions = [];
+
+  const baseDate = new Date(date || getTurkeyDateStr());
+  const weeksToRepeat = Math.max(1, Math.min(52, parseInt(repeatWeeks || 1)));
+
+  for (let w = 0; w < weeksToRepeat; w++) {
+    const curDate = new Date(baseDate);
+    curDate.setDate(baseDate.getDate() + w * 7);
+    const dateStr = getTurkeyDateStr(curDate);
+
+    const newSession = {
+      id: 'sess-' + Date.now() + '-' + w,
+      date: dateStr,
+      time: time || '14:00',
+      type: type || 'pt',
+      location: location || 'Cevahir AVM MACFit Stüdyo',
+      note: note || '',
+      status: 'planned',
+      createdAt: new Date().toISOString()
+    };
+    client.sessions.push(newSession);
+    createdSessions.push(newSession);
+  }
 
   if (!client.entitlements) {
     client.entitlements = getPackageEntitlements(client.package);
   }
 
   writeDb(db);
-  res.json({ success: true, session: newSession, client });
+  res.json({ success: true, sessions: createdSessions, client });
 });
 
 // PUT /api/clients/:id/sessions/:sessionId — Seans Durumu Güncelle (TRAINER ONLY)
 app.put('/api/clients/:id/sessions/:sessionId', requireTrainer, (req, res) => {
   const { id, sessionId } = req.params;
-  const { status, date, time, note } = req.body;
+  const { status, date, time, note, location, type } = req.body;
   const db = readDb();
   const client = db.clients.find(c => c.id === id || normalizePhone(c.phone) === normalizePhone(id));
   if (!client) return res.status(404).json({ success: false, message: 'Danışan bulunamadı.' });
@@ -1123,18 +1135,47 @@ app.put('/api/clients/:id/sessions/:sessionId', requireTrainer, (req, res) => {
   if (status) sess.status = status;
   if (date) sess.date = date;
   if (time) sess.time = time;
-  if (note) sess.note = note;
+  if (note !== undefined) sess.note = note;
+  if (location) sess.location = location;
+  if (type) sess.type = type;
 
   if (!client.entitlements) {
     client.entitlements = getPackageEntitlements(client.package);
   }
 
-  if (sess.type === 'pt' && prevStatus !== 'done' && status === 'done') {
-    client.entitlements.ptSessionsUsed = (client.entitlements.ptSessionsUsed || 0) + 1;
+  // Increments when done, decrements when reverted (KABUL KRİTERİ 7 & 8)
+  if (sess.type === 'pt') {
+    if (prevStatus !== 'done' && status === 'done') {
+      client.entitlements.ptSessionsUsed = (client.entitlements.ptSessionsUsed || 0) + 1;
+    } else if (prevStatus === 'done' && status !== 'done') {
+      client.entitlements.ptSessionsUsed = Math.max(0, (client.entitlements.ptSessionsUsed || 1) - 1);
+    }
   }
 
   writeDb(db);
   res.json({ success: true, session: sess, entitlements: client.entitlements });
+});
+
+// DELETE /api/clients/:id/sessions/:sessionId — Seans Sil (TRAINER ONLY)
+app.delete('/api/clients/:id/sessions/:sessionId', requireTrainer, (req, res) => {
+  const { id, sessionId } = req.params;
+  const db = readDb();
+  const client = db.clients.find(c => c.id === id || normalizePhone(c.phone) === normalizePhone(id));
+  if (!client) return res.status(404).json({ success: false, message: 'Danışan bulunamadı.' });
+
+  if (!client.sessions) client.sessions = [];
+  const sessIdx = client.sessions.findIndex(s => s.id === sessionId);
+  if (sessIdx === -1) return res.status(404).json({ success: false, message: 'Seans bulunamadı.' });
+
+  const deletedSess = client.sessions[sessIdx];
+  if (deletedSess.type === 'pt' && deletedSess.status === 'done') {
+    if (!client.entitlements) client.entitlements = getPackageEntitlements(client.package);
+    client.entitlements.ptSessionsUsed = Math.max(0, (client.entitlements.ptSessionsUsed || 1) - 1);
+  }
+
+  client.sessions.splice(sessIdx, 1);
+  writeDb(db);
+  res.json({ success: true, message: 'Seans başarıyla silindi.', entitlements: client.entitlements });
 });
 
 // PUT /api/clients/:id/form-checks/:dueDate — Form Kontrolü Durumu Güncelle (TRAINER ONLY)

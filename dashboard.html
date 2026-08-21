@@ -1776,26 +1776,37 @@
 
       const actionStatus = document.getElementById('pkg-action-status');
       if (actionStatus) {
+        const ent = client.entitlements || {};
+        let entInfo = '';
+        if (ent.ptSessionsTotal > 0) {
+          const remPt = Math.max(0, ent.ptSessionsTotal - (ent.ptSessionsUsed || 0));
+          entInfo = `<div style="font-size: 0.78rem; color: #10B981; margin-top: 0.3rem;">🎯 Birebir PT Ders Hakkı: <strong>${remPt} / ${ent.ptSessionsTotal} Ders Kaldı</strong> (Kullanılan: ${ent.ptSessionsUsed || 0})</div>`;
+        }
+
         const plannedSession = (Array.isArray(client.sessions)) ? client.sessions.find(s => s.status === 'planned') : null;
         if (plannedSession) {
           const sessionD = new Date(plannedSession.date);
           const dateStr = sessionD.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' });
-          actionStatus.innerHTML = `<i class="fas fa-calendar-check"></i> 📅 ${dateStr} ${plannedSession.time || '14:00'} (${plannedSession.location || 'Cevahir MACFit'})`;
+          actionStatus.innerHTML = `
+            <div><i class="fas fa-calendar-check" style="color: #10B981;"></i> <strong>Sıradaki Ders:</strong> ${dateStr} ${plannedSession.time || '14:00'}</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">📍 ${plannedSession.location || 'Cevahir MACFit Stüdyo'} (${plannedSession.type === 'pt' ? 'Birebir PT' : 'Stüdyo Seansı'})</div>
+            ${entInfo}
+          `;
         } else if (client.expiryDate) {
           const expD = new Date(client.expiryDate);
           const todayD = new Date();
           todayD.setHours(0, 0, 0, 0);
           const daysLeft = Math.ceil((expD - todayD) / (1000 * 60 * 60 * 24));
-          const ent = client.entitlements || {};
-          let entInfo = '';
-          if (ent.ptSessionsTotal > 0) {
-            const remPt = Math.max(0, ent.ptSessionsTotal - (ent.ptSessionsUsed || 0));
-            entInfo = ` | Kalan PT: ${remPt}/${ent.ptSessionsTotal} Ders`;
-          }
           if (daysLeft > 0) {
-            actionStatus.innerHTML = `<i class="fas fa-check-circle" style="color: #10B981;"></i> 🟢 Aktif Üyelik (${daysLeft} Gün Kaldı${entInfo})`;
+            actionStatus.innerHTML = `
+              <div><i class="fas fa-check-circle" style="color: #10B981;"></i> 🟢 Aktif Üyelik (${daysLeft} Gün Kaldı)</div>
+              ${entInfo}
+            `;
           } else {
-            actionStatus.innerHTML = `<i class="fas fa-exclamation-triangle" style="color: #EF4444;"></i> 🔴 Üyelik Süresi Doldu (${client.expiryDate})`;
+            actionStatus.innerHTML = `
+              <div><i class="fas fa-exclamation-triangle" style="color: #EF4444;"></i> 🔴 Üyelik Süresi Doldu (${client.expiryDate})</div>
+              ${entInfo}
+            `;
           }
         }
       }

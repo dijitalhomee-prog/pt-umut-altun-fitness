@@ -911,9 +911,9 @@
     </div>
   </div>
 
-  <!-- Plan Session Modal -->
+  <!-- Plan Session Modal (Advanced Calendar Integration) -->
   <div class="modal-overlay" id="plan-session-modal">
-    <div class="modal-container">
+    <div class="modal-container" style="max-width: 500px;">
       <button class="close-modal-btn" onclick="document.getElementById('plan-session-modal').classList.remove('active');">&times;</button>
       <div class="modal-header">
         <h3><i class="fas fa-calendar-plus" style="color: #10B981;"></i> Birebir PT / Stüdyo Ders Planla</h3>
@@ -923,25 +923,59 @@
       <form id="plan-session-form" onsubmit="window.executePlanSession(event)">
         <div class="calc-form-group">
           <label class="calc-label">Danışan Seçimi *</label>
-          <select id="plan-session-client-select" class="input-field" required></select>
+          <select id="plan-session-client-select" class="input-field" onchange="window.updatePlanSessionClientEntitlement();" required></select>
+          
+          <div id="plan-session-entitlement-badge" style="display: none; font-size: 0.78rem; font-weight: bold; margin-top: 0.4rem; padding: 0.3rem 0.6rem; border-radius: 4px;"></div>
+          <div id="plan-session-entitlement-warning" style="display: none; font-size: 0.78rem; color: #F59E0B; font-weight: bold; background: rgba(245,158,11,0.15); border: 1px solid #F59E0B; padding: 0.4rem 0.6rem; border-radius: 4px; margin-top: 0.4rem;"></div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
           <div class="calc-form-group">
             <label class="calc-label">Ders Tarihi *</label>
-            <input type="date" id="plan-session-date" class="input-field" required>
+            <input type="date" id="plan-session-date" class="input-field" onchange="window.checkPlanSessionTimeConflict();" required>
           </div>
           <div class="calc-form-group">
             <label class="calc-label">Ders Saati *</label>
-            <input type="time" id="plan-session-time" class="input-field" value="14:00" required>
+            <select id="plan-session-time" class="input-field" onchange="window.checkPlanSessionTimeConflict();" required>
+              <option value="08:00">08:00</option>
+              <option value="08:30">08:30</option>
+              <option value="09:00">09:00</option>
+              <option value="09:30">09:30</option>
+              <option value="10:00">10:00</option>
+              <option value="10:30">10:30</option>
+              <option value="11:00">11:00</option>
+              <option value="11:30">11:30</option>
+              <option value="12:00">12:00</option>
+              <option value="12:30">12:30</option>
+              <option value="13:00">13:00</option>
+              <option value="13:30">13:30</option>
+              <option value="14:00" selected>14:00</option>
+              <option value="14:30">14:30</option>
+              <option value="15:00">15:00</option>
+              <option value="15:30">15:30</option>
+              <option value="16:00">16:00</option>
+              <option value="16:30">16:30</option>
+              <option value="17:00">17:00</option>
+              <option value="17:30">17:30</option>
+              <option value="18:00">18:00</option>
+              <option value="18:30">18:30</option>
+              <option value="19:00">19:00</option>
+              <option value="19:30">19:30</option>
+              <option value="20:00">20:00</option>
+              <option value="20:30">20:30</option>
+              <option value="21:00">21:00</option>
+            </select>
           </div>
         </div>
+
+        <div id="plan-session-conflict-warning" style="display: none; font-size: 0.78rem; color: #EF4444; font-weight: bold; background: rgba(239,68,68,0.15); border: 1px solid #EF4444; padding: 0.4rem 0.6rem; border-radius: 4px; margin-bottom: 0.8rem;"></div>
 
         <div class="calc-form-group">
           <label class="calc-label">Ders Türü</label>
           <select id="plan-session-type" class="input-field">
             <option value="pt">🟢 Birebir PT Özel Ders</option>
             <option value="studio">📍 Cevahir AVM MACFit Hibrit Stüdyo Seansı</option>
+            <option value="consult">🎥 Görüntülü Değerlendirme & Koçluk</option>
           </select>
         </div>
 
@@ -951,14 +985,47 @@
         </div>
 
         <div class="calc-form-group">
-          <label class="calc-label">Eğitmen Notu</label>
-          <input type="text" id="plan-session-note" class="input-field" placeholder="Örn: Squat & postür analizi yapılacak">
+          <label class="calc-label">Tekrarlayan Seans (Opsiyonel)</label>
+          <select id="plan-session-repeat-weeks" class="input-field">
+            <option value="1">Tek Seferlik Ders (Bu Tarih)</option>
+            <option value="2">🔄 2 Hafta Boyunca Her Hafta Aynı Gün & Saat</option>
+            <option value="4">🔄 4 Hafta Boyunca Her Hafta Aynı Gün & Saat</option>
+            <option value="8">🔄 8 Hafta Boyunca Her Hafta Aynı Gün & Saat</option>
+            <option value="12">🔄 12 Hafta Boyunca Her Hafta Aynı Gün & Saat</option>
+            <option value="20">🔄 20 Hafta Boyunca Her Hafta (Tüm Paket)</option>
+          </select>
         </div>
 
-        <button type="submit" class="btn btn-primary-glow btn-block" style="margin-top: 1rem; background: #10B981; border-color: #10B981;">
-          <i class="fas fa-check"></i> Seansı Planla & Danışana Bildir
+        <div class="calc-form-group">
+          <label class="calc-label">Eğitmen Notu</label>
+          <input type="text" id="plan-session-note" class="input-field" placeholder="Örn: Squat & deadlift form analizi yapılacaktır">
+        </div>
+
+        <button type="submit" id="plan-session-submit-btn" class="btn btn-primary-glow btn-block" style="margin-top: 1rem; background: #10B981; border-color: #10B981;">
+          <i class="fas fa-check"></i> Seansı Planla & Takvime İşle 🚀
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- Calendar Day Detail & Quick Action Modal -->
+  <div class="modal-overlay" id="calendar-day-detail-modal">
+    <div class="modal-container" style="max-width: 520px;">
+      <button class="close-modal-btn" onclick="document.getElementById('calendar-day-detail-modal').classList.remove('active');">&times;</button>
+      <div class="modal-header" style="border-bottom: 1px solid var(--border-light); padding-bottom: 0.8rem; margin-bottom: 1rem;">
+        <h3 id="cal-day-modal-title" style="color: #FFF; font-size: 1.2rem; margin: 0;"><i class="fas fa-calendar-day" style="color: #10B981;"></i> 📅 Tarihli Seanslar</h3>
+      </div>
+
+      <div id="cal-day-modal-sessions-container" style="margin-bottom: 1.2rem;">
+        <!-- Dynamically rendered -->
+      </div>
+
+      <div style="display: flex; gap: 0.6rem; border-top: 1px solid var(--border-light); padding-top: 1rem;">
+        <button class="btn btn-outline" style="flex: 1;" onclick="document.getElementById('calendar-day-detail-modal').classList.remove('active');">Kapat</button>
+        <button class="btn btn-primary-glow" style="flex: 1.5; background: #10B981; border-color: #10B981;" onclick="window.openPlanSessionForSelectedDay();">
+          <i class="fas fa-calendar-plus"></i> + Bu Güne Ders Ekleyin
+        </button>
+      </div>
     </div>
   </div>
 
@@ -1992,7 +2059,7 @@
         gridEl.appendChild(emptyCell);
       }
 
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = getTurkeyDateStr();
 
       for (let day = 1; day <= daysInMonth; day++) {
         const dateKey = `${year}-${String(monthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -2001,13 +2068,23 @@
 
         const cell = document.createElement('div');
         cell.className = `calendar-day-cell ${isToday ? 'today' : ''}`;
-        cell.onclick = () => window.openCalendarDayEventsModal(dateKey, dayEvents);
+        cell.setAttribute('ondragover', 'event.preventDefault();');
+        cell.setAttribute('ondrop', `window.handleCalDrop(event, '${dateKey}')`);
+        cell.onclick = (e) => {
+          if (e.target.closest('.cal-event-pill')) return;
+          window.openCalendarDayEventsModal(dateKey);
+        };
 
         cell.innerHTML = `
           <div style="font-size: 0.8rem; font-weight: 800; color: ${isToday ? '#10B981' : '#FFF'}; margin-bottom: 0.2rem;">${day}</div>
           <div id="cal-cell-events-${day}" style="display: flex; flex-direction: column; gap: 0.15rem; overflow: hidden;">
             ${dayEvents.slice(0, 3).map(ev => `
-              <div class="cal-event-pill" style="background: ${ev.color};" title="${ev.title}">
+              <div class="cal-event-pill" 
+                   style="background: ${ev.color}; cursor: grab;" 
+                   title="${ev.title}"
+                   draggable="true"
+                   ondragstart="window.handleCalDragStart(event, '${ev.id}', '${ev.clientId}', '${ev.sessionId || ''}', '${ev.date}', '${(ev.clientName || '').replace(/'/g, "\\'")}')"
+                   onclick="event.stopPropagation(); window.openCalendarDayEventsModal('${dateKey}')">
                 ${ev.title}
               </div>
             `).join('')}
@@ -2018,6 +2095,48 @@
       }
     }
     window.renderTrainerCalendar = renderTrainerCalendar;
+
+    // DRAG AND DROP RESCHEDULING ENGINE (MADDE 5)
+    let draggedSessionData = null;
+
+    function handleCalDragStart(e, id, clientId, sessionId, date, clientName) {
+      draggedSessionData = { id, clientId, sessionId, date, clientName };
+      e.dataTransfer.setData('text/plain', JSON.stringify(draggedSessionData));
+    }
+    window.handleCalDragStart = handleCalDragStart;
+
+    async function handleCalDrop(e, targetDateKey) {
+      e.preventDefault();
+      if (!draggedSessionData || !draggedSessionData.clientId || !draggedSessionData.sessionId) {
+        return;
+      }
+
+      const { clientId, sessionId, date, clientName } = draggedSessionData;
+      if (date === targetDateKey) return;
+
+      if (!confirm(`📅 ${clientName} danışanının seansı ${targetDateKey} tarihine ertelensin mi?`)) {
+        return;
+      }
+
+      try {
+        const res = await trainerFetch(`/api/clients/${clientId}/sessions/${sessionId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ date: targetDateKey, status: 'planned' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showTrainerSuccessBannerMsg(`✨ ${clientName} seansı ${targetDateKey} tarihine başarıyla ertelendi!`);
+          fetchTrainerAgenda();
+          renderTrainerCalendar();
+        }
+      } catch(err) {
+        showTrainerErrorBanner('⚠️ Seans erteleme hatası');
+      } finally {
+        draggedSessionData = null;
+      }
+    }
+    window.handleCalDrop = handleCalDrop;
 
     function navCalendarMonth(delta) {
       calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + delta);
@@ -2031,33 +2150,198 @@
     }
     window.resetCalendarToday = resetCalendarToday;
 
-    function openCalendarDayEventsModal(dateKey, dayEvents) {
+    let selectedCalendarDayDateKey = null;
+
+    function openCalendarDayEventsModal(dateKey) {
+      selectedCalendarDayDateKey = dateKey;
+      const modal = document.getElementById('calendar-day-detail-modal');
+      const title = document.getElementById('cal-day-modal-title');
+      const container = document.getElementById('cal-day-modal-sessions-container');
+      if (!modal || !container) return;
+
+      const dateObj = new Date(dateKey);
+      const formattedStr = dateObj.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' });
+      title.innerHTML = `<i class="fas fa-calendar-day" style="color: #10B981;"></i> 📅 ${formattedStr}`;
+
+      const dayEvents = calendarEvents.filter(ev => ev.date === dateKey);
+
       if (dayEvents.length === 0) {
-        showTrainerSuccessBannerMsg(`📌 ${dateKey} tarihinde henüz planlanmış bir olay bulunmuyor.`);
-        return;
+        container.innerHTML = `
+          <div style="text-align: center; padding: 2rem; border: 1px dashed var(--border-light); border-radius: var(--radius-md);">
+            <i class="fas fa-calendar-check" style="font-size: 2rem; color: #10B981; margin-bottom: 0.5rem; display: block;"></i>
+            <h4 style="color: #FFF; font-size: 0.95rem;">Bu Tarihte Seans / Görev Yok</h4>
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0;">Aşağıdaki butona basarak bu güne özel birebir ders planlayabilirsiniz.</p>
+          </div>
+        `;
+      } else {
+        let html = '';
+        dayEvents.forEach(ev => {
+          let statusBadge = `<span style="font-size: 0.7rem; font-weight: bold; color: #10B981; background: rgba(16,185,129,0.15); padding: 0.15rem 0.4rem; border-radius: 3px;">Planlandı</span>`;
+          if (ev.subtitle && ev.subtitle.includes('done')) statusBadge = `<span style="font-size: 0.7rem; font-weight: bold; color: #3B82F6; background: rgba(59,130,246,0.15); padding: 0.15rem 0.4rem; border-radius: 3px;">Tamamlandı</span>`;
+          if (ev.subtitle && ev.subtitle.includes('missed')) statusBadge = `<span style="font-size: 0.7rem; font-weight: bold; color: #EF4444; background: rgba(239,68,68,0.15); padding: 0.15rem 0.4rem; border-radius: 3px;">Gelmedi</span>`;
+
+          const isPtSession = ev.id && ev.id.startsWith('cal-sess-');
+          const sessId = isPtSession ? ev.id.replace('cal-sess-', '') : null;
+
+          html += `
+            <div style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 0.8rem 1rem; margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.6rem;">
+              <div>
+                <strong style="color: #FFF; font-size: 0.9rem;">${ev.title}</strong>
+                <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.1rem;">${ev.subtitle || ''}</div>
+              </div>
+              <div style="display: flex; gap: 0.3rem; align-items: center;">
+                ${isPtSession && sessId ? `
+                  <button class="btn btn-outline" style="font-size: 0.7rem; padding: 0.2rem 0.45rem; border-color: #10B981; color: #10B981;" onclick="window.quickUpdateSessionStatus('${ev.clientId}', '${sessId}', 'done')" title="Yapıldı İşaretle">✅ Yapıldı</button>
+                  <button class="btn btn-outline" style="font-size: 0.7rem; padding: 0.2rem 0.45rem; border-color: #F59E0B; color: #F59E0B;" onclick="window.quickUpdateSessionStatus('${ev.clientId}', '${sessId}', 'planned')" title="Plana Geri Al">↩️ Planlandı</button>
+                  <button class="btn btn-outline" style="font-size: 0.7rem; padding: 0.2rem 0.45rem; border-color: #EF4444; color: #EF4444;" onclick="window.quickUpdateSessionStatus('${ev.clientId}', '${sessId}', 'missed')" title="Gelmedi İşaretle">❌ Gelmedi</button>
+                  <button class="btn btn-outline" style="font-size: 0.7rem; padding: 0.2rem 0.45rem; border-color: var(--accent-red); color: var(--accent-red);" onclick="window.quickDeleteSession('${ev.clientId}', '${sessId}')" title="Seansı Sil">🗑️</button>
+                ` : statusBadge}
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
       }
-      const eventsStr = dayEvents.map(e => `• ${e.title} (${e.subtitle || ''})`).join('\n');
-      alert(`📅 ${dateKey} Tarihli Olaylar:\n\n${eventsStr}`);
+
+      modal.classList.add('active');
     }
     window.openCalendarDayEventsModal = openCalendarDayEventsModal;
 
+    function openPlanSessionForSelectedDay() {
+      document.getElementById('calendar-day-detail-modal')?.classList.remove('active');
+      openPlanSessionModal(selectedCalendarDayDateKey);
+    }
+    window.openPlanSessionForSelectedDay = openPlanSessionForSelectedDay;
+
+    async function quickUpdateSessionStatus(clientId, sessionId, status) {
+      try {
+        const res = await trainerFetch(`/api/clients/${clientId}/sessions/${sessionId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showTrainerSuccessBannerMsg(`✨ Seans durumu güncellendi: ${status}`);
+          fetchTrainerAgenda();
+          await fetchServerClients();
+          renderTrainerCalendar();
+          if (selectedCalendarDayDateKey) openCalendarDayEventsModal(selectedCalendarDayDateKey);
+        }
+      } catch (err) {
+        showTrainerErrorBanner('⚠️ Seans güncelleme hatası!');
+      }
+    }
+    window.quickUpdateSessionStatus = quickUpdateSessionStatus;
+
+    async function quickDeleteSession(clientId, sessionId) {
+      if (!confirm("⚠️ Bu seans silinecektir. Onaylıyor musunuz?")) return;
+      try {
+        const res = await trainerFetch(`/api/clients/${clientId}/sessions/${sessionId}`, {
+          method: 'DELETE'
+        });
+        const data = await res.json();
+        if (data.success) {
+          showTrainerSuccessBannerMsg('🗑️ Seans silindi.');
+          fetchTrainerAgenda();
+          await fetchServerClients();
+          renderTrainerCalendar();
+          if (selectedCalendarDayDateKey) openCalendarDayEventsModal(selectedCalendarDayDateKey);
+        }
+      } catch (err) {
+        showTrainerErrorBanner('⚠️ Seans silme hatası!');
+      }
+    }
+    window.quickDeleteSession = quickDeleteSession;
+
     // --------------------------------------------------------------------------
-    // BÖLÜM 3: PLAN PT SESSION MODAL
+    // BÖLÜM 3: PLAN PT SESSION MODAL (INTEGRATED ENGINE)
     // --------------------------------------------------------------------------
-    function openPlanSessionModal() {
+    function openPlanSessionModal(presetDate) {
       const select = document.getElementById('plan-session-client-select');
-      select.innerHTML = '<option value="">-- Danışan Seçin --</option>';
+      select.innerHTML = '<option value="">-- Lütfen Danışan Seçiniz --</option>';
       clients.forEach(c => {
         const opt = document.createElement('option');
         opt.value = c.id;
-        opt.textContent = `${c.name} (${c.package})`;
+        opt.textContent = `${c.status === 'active' ? '🟢' : '🟡'} ${c.name} (${c.phone || ''}) - ${c.package}`;
         if (c.id === selectedClientId) opt.selected = true;
         select.appendChild(opt);
       });
-      document.getElementById('plan-session-date').value = new Date().toISOString().split('T')[0];
+
+      document.getElementById('plan-session-date').value = presetDate || getTurkeyDateStr();
+      document.getElementById('plan-session-time').value = '14:00';
+      document.getElementById('plan-session-repeat-weeks').value = '1';
+      document.getElementById('plan-session-note').value = '';
+
+      updatePlanSessionClientEntitlement();
+      checkPlanSessionTimeConflict();
+
       document.getElementById('plan-session-modal').classList.add('active');
     }
     window.openPlanSessionModal = openPlanSessionModal;
+
+    function updatePlanSessionClientEntitlement() {
+      const clientId = document.getElementById('plan-session-client-select').value;
+      const badge = document.getElementById('plan-session-entitlement-badge');
+      const warning = document.getElementById('plan-session-entitlement-warning');
+      if (!badge || !warning) return;
+
+      if (!clientId) {
+        badge.style.display = 'none';
+        warning.style.display = 'none';
+        return;
+      }
+
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+
+      const ent = client.entitlements || {};
+      const ptTotal = ent.ptSessionsTotal || 0;
+      const ptUsed = ent.ptSessionsUsed || 0;
+      const remaining = Math.max(0, ptTotal - ptUsed);
+
+      if (ptTotal > 0) {
+        badge.style.display = 'block';
+        badge.style.background = remaining > 0 ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)';
+        badge.style.color = remaining > 0 ? '#10B981' : '#EF4444';
+        badge.style.border = `1px solid ${remaining > 0 ? '#10B981' : '#EF4444'}`;
+        badge.innerHTML = `<i class="fas fa-ticket-alt"></i> 🎯 Birebir PT Hak Durumu: ${ptUsed} / ${ptTotal} Ders Kullanıldı (${remaining} Ders Kaldı)`;
+
+        if (ptUsed >= ptTotal) {
+          warning.style.display = 'block';
+          warning.innerHTML = `⚠️ Bu danışanın paket hakkı doldu (${ptUsed}/${ptTotal}). Yine de planlamak istiyor musunuz? (İsteğe bağlı telafi dersi verilebilir)`;
+        } else {
+          warning.style.display = 'none';
+        }
+      } else {
+        badge.style.display = 'block';
+        badge.style.background = 'rgba(59,130,246,0.15)';
+        badge.style.color = '#3B82F6';
+        badge.style.border = '1px solid #3B82F6';
+        badge.innerHTML = `<i class="fas fa-info-circle"></i> Paket: ${client.package || 'Standart'}`;
+        warning.style.display = 'none';
+      }
+
+      checkPlanSessionTimeConflict();
+    }
+    window.updatePlanSessionClientEntitlement = updatePlanSessionClientEntitlement;
+
+    function checkPlanSessionTimeConflict() {
+      const date = document.getElementById('plan-session-date').value;
+      const time = document.getElementById('plan-session-time').value;
+      const warning = document.getElementById('plan-session-conflict-warning');
+      if (!warning || !date || !time) return;
+
+      const conflictEvent = calendarEvents.find(ev => ev.date === date && ev.time === time);
+
+      if (conflictEvent) {
+        warning.style.display = 'block';
+        warning.innerHTML = `⚠️ <strong>Saat Çakışması Uyarısı:</strong> ${date} ${time} saatinde <strong>${conflictEvent.clientName}</strong> ile zaten randevunuz var! Yine de eklemek istiyor musunuz?`;
+      } else {
+        warning.style.display = 'none';
+      }
+    }
+    window.checkPlanSessionTimeConflict = checkPlanSessionTimeConflict;
 
     async function executePlanSession(e) {
       e.preventDefault();
@@ -2067,27 +2351,44 @@
       const type = document.getElementById('plan-session-type').value;
       const location = document.getElementById('plan-session-location').value;
       const note = document.getElementById('plan-session-note').value;
+      const repeatWeeks = document.getElementById('plan-session-repeat-weeks').value;
 
       if (!clientId) {
         showTrainerErrorBanner('⚠️ Lütfen danışan seçiniz!');
         return;
       }
 
+      const submitBtn = document.getElementById('plan-session-submit-btn');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Seans Planlanıyor...`;
+      }
+
       try {
         const res = await trainerFetch(`/api/clients/${clientId}/sessions`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ date, time, type, location, note })
+          body: JSON.stringify({ date, time, type, location, note, repeatWeeks })
         });
+
         const data = await res.json();
-        if (data.success) {
+        if (res.ok && data.success) {
           document.getElementById('plan-session-modal').classList.remove('active');
-          showTrainerSuccessBannerMsg('✨ Birebir PT / Stüdyo dersi başarıyla planlandı!');
+          const count = (data.sessions && data.sessions.length) ? data.sessions.length : 1;
+          showTrainerSuccessBannerMsg(`✨ ${count} adet ders/seans takvime başarıyla işlendi ve danışan paneline yansıtıldı! 🚀`);
+          await fetchServerClients();
           fetchTrainerAgenda();
           renderTrainerCalendar();
+        } else {
+          showTrainerErrorBanner('⚠️ Seans kaydı sunucuya ulaşmadı: ' + (data.message || 'Sunucu hatası'));
         }
       } catch (err) {
-        showTrainerErrorBanner('⚠️ Seans planlama hatası!');
+        showTrainerErrorBanner('⚠️ Seans planlama hatası — internet bağlantınızı kontrol edin.');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `<i class="fas fa-check"></i> Seansı Planla & Takvime İşle 🚀`;
+        }
       }
     }
     window.executePlanSession = executePlanSession;
