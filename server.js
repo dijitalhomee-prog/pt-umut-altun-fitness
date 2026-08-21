@@ -289,7 +289,7 @@ app.put('/api/clients/:id/profile', (req, res) => {
 // Upload Client Form Photo Endpoint
 app.post('/api/clients/:id/photos', (req, res) => {
   const { id } = req.params;
-  const photoObj = req.body;
+  const photoObj = req.body.photoGroup || req.body;
 
   const db = readDb();
   const client = db.clients.find(c => c.id === id || (c.phone && c.phone.replace(/\D/g, '') === id.replace(/\D/g, '')));
@@ -301,7 +301,11 @@ app.post('/api/clients/:id/photos', (req, res) => {
   if (!client.formPhotos) {
     client.formPhotos = [];
   }
+  if (!client.photos) {
+    client.photos = [];
+  }
   client.formPhotos.unshift(photoObj);
+  client.photos.unshift(photoObj);
 
   writeDb(db);
   res.json({ success: true, photos: client.formPhotos });

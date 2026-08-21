@@ -448,17 +448,41 @@
       <div style="width: 60px; height: 60px; background: rgba(16, 185, 129, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.8rem auto; border: 1px solid #10B981;">
         <i class="fas fa-camera" style="font-size: 1.6rem; color: #10B981;"></i>
       </div>
-      <h3 style="color: #FFFFFF; font-size: 1.3rem; margin-bottom: 0.3rem;">Haftalık Form Görseli Yükleyin</h3>
-      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.5rem;">Umut Hoca'nın gelişiminizi incelemesi için boy/cephe veya sırt form fotoğrafınızı yükleyin.</p>
+      <h3 style="color: #FFFFFF; font-size: 1.3rem; margin-bottom: 0.3rem;">Haftalık 4 Cephe Form Görseli Yükleyin</h3>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+        Umut Hoca'nın gelişiminizi eksiksiz incelemesi için <strong>Ön, Arka (Sırt), Sağ Yan ve Sol Yan</strong> olmak üzere 4 cephe form fotoğrafınızı yükleyin.
+      </p>
 
       <form id="form-photo-upload-form" onsubmit="saveFormPhotoUpload(event);">
-        <div class="calc-form-group" style="margin-bottom: 1rem; text-align: left;">
-          <label class="calc-label">Form Fotoğrafı Seç (JPG / PNG) *</label>
-          <input type="file" id="input-form-photo-file" accept="image/*" class="input-field" required style="padding: 0.5rem;" onchange="previewSelectedFormPhoto(event)">
-        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.2rem; text-align: left;">
+          <!-- 1. Ön Cephe -->
+          <div class="calc-form-group" style="margin-bottom: 0;">
+            <label class="calc-label" style="color: #10B981; font-weight: 800; font-size: 0.82rem;">📸 1. Ön Cephe Fotoğrafı *</label>
+            <input type="file" id="input-photo-front" accept="image/*" class="input-field" required style="padding: 0.4rem; font-size: 0.8rem;" onchange="previewAnglePhoto(event, 'preview-img-front')">
+            <img id="preview-img-front" src="" alt="Ön Önizleme" style="display: none; width: 100%; height: 110px; object-fit: cover; border-radius: var(--radius-sm); margin-top: 0.4rem; border: 1px solid #10B981;">
+          </div>
 
-        <div id="form-photo-preview-container" style="display: none; margin-bottom: 1rem;">
-          <img id="form-photo-preview-img" src="" alt="Form Önizleme" style="max-height: 180px; width: 100%; border-radius: var(--radius-md); border: 1px solid #10B981; object-fit: cover;">
+          <!-- 2. Arka Cephe (Sırt) -->
+          <div class="calc-form-group" style="margin-bottom: 0;">
+            <label class="calc-label" style="color: #10B981; font-weight: 800; font-size: 0.82rem;">📸 2. Arka Cephe (Sırt) *</label>
+            <input type="file" id="input-photo-back" accept="image/*" class="input-field" required style="padding: 0.4rem; font-size: 0.8rem;" onchange="previewAnglePhoto(event, 'preview-img-back')">
+            <img id="preview-img-back" src="" alt="Arka Önizleme" style="display: none; width: 100%; height: 110px; object-fit: cover; border-radius: var(--radius-sm); margin-top: 0.4rem; border: 1px solid #10B981;">
+          </div>
+
+          <!-- 3. Sağ Yan Cephe -->
+          <div class="calc-form-group" style="margin-bottom: 0;">
+            <label class="calc-label" style="color: #10B981; font-weight: 800; font-size: 0.82rem;">📸 3. Sağ Yan Cephe *</label>
+            <input type="file" id="input-photo-right" accept="image/*" class="input-field" required style="padding: 0.4rem; font-size: 0.8rem;" onchange="previewAnglePhoto(event, 'preview-img-right')">
+            <img id="preview-img-right" src="" alt="Sağ Önizleme" style="display: none; width: 100%; height: 110px; object-fit: cover; border-radius: var(--radius-sm); margin-top: 0.4rem; border: 1px solid #10B981;">
+          </div>
+
+          <!-- 4. Sol Yan Cephe -->
+          <div class="calc-form-group" style="margin-bottom: 0;">
+            <label class="calc-label" style="color: #10B981; font-weight: 800; font-size: 0.82rem;">📸 4. Sol Yan Cephe *</label>
+            <input type="file" id="input-photo-left" accept="image/*" class="input-field" required style="padding: 0.4rem; font-size: 0.8rem;" onchange="previewAnglePhoto(event, 'preview-img-left')">
+            <img id="preview-img-left" src="" alt="Sol Önizleme" style="display: none; width: 100%; height: 110px; object-fit: cover; border-radius: var(--radius-sm); margin-top: 0.4rem; border: 1px solid #10B981;">
+          </div>
         </div>
 
         <div class="calc-form-group" style="margin-bottom: 1.2rem; text-align: left;">
@@ -466,8 +490,8 @@
           <input type="text" id="input-form-photo-note" class="input-field" placeholder="Örn: Sabah aç karınla çekildi, güncel kilo 81.5 kg">
         </div>
 
-        <button type="submit" class="btn btn-primary-glow" style="width: 100%; padding: 0.8rem; font-size: 0.95rem; background: #10B981; border-color: #10B981;">
-          <i class="fas fa-upload"></i> Görseli Yükle & Danışan Paneline Kaydet
+        <button type="submit" class="btn btn-primary-glow" style="width: 100%; padding: 0.85rem; font-size: 0.95rem; background: #10B981; border-color: #10B981; font-weight: 800;">
+          <i class="fas fa-upload"></i> 4 Cephe Görselini Yükle & Kaydet
         </button>
       </form>
     </div>
@@ -1155,6 +1179,44 @@
     }
     window.previewSelectedFormPhoto = previewSelectedFormPhoto;
 
+    function previewAnglePhoto(event, imgId) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const imgEl = document.getElementById(imgId);
+          if (imgEl) {
+            imgEl.src = e.target.result;
+            imgEl.style.display = 'block';
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+    window.previewAnglePhoto = previewAnglePhoto;
+
+    function openImageZoomModal(imgSrc) {
+      let modal = document.getElementById('image-zoom-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'image-zoom-modal';
+        modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999999; display: flex; align-items: center; justify-content: center; padding: 1.5rem; backdrop-filter: blur(10px);';
+        modal.innerHTML = `
+          <div style="position: relative; max-width: 90vw; max-height: 90vh; text-align: center;">
+            <button onclick="document.getElementById('image-zoom-modal').style.display='none';" style="position: absolute; top: -2.5rem; right: 0; background: none; border: none; color: #FFF; font-size: 2rem; cursor: pointer;">&times;</button>
+            <img id="image-zoom-img" src="" style="max-width: 100%; max-height: 85vh; border-radius: 8px; border: 2px solid #10B981; box-shadow: 0 0 35px rgba(0,0,0,0.8); object-fit: contain;">
+          </div>
+        `;
+        document.body.appendChild(modal);
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) modal.style.display = 'none';
+        });
+      }
+      document.getElementById('image-zoom-img').src = imgSrc;
+      modal.style.display = 'flex';
+    }
+    window.openImageZoomModal = openImageZoomModal;
+
     function renderClientFormPhotos() {
       const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
       const cleanPhone = userPhone.replace(/\D/g, '');
@@ -1168,83 +1230,115 @@
         gridEl.innerHTML = `
           <div style="grid-column: 1 / -1; padding: 1.5rem; background: rgba(0,0,0,0.3); border: 1px dashed var(--border-light); border-radius: var(--radius-md); text-align: center; color: var(--text-muted);">
             <i class="fas fa-camera-retro" style="font-size: 1.8rem; color: #10B981; margin-bottom: 0.5rem; display: block;"></i>
-            Henüz yüklenmiş form görseliniz yok. Üstteki <strong>"Haftalık Form Görseli Yükle"</strong> butonuna basarak ilk görselinizi ekleyebilirsiniz.
+            Henüz yüklenmiş form görseliniz yok. Üstteki <strong>"Haftalık Form Görseli Yükle"</strong> butonuna basarak 4 cephe ilk görsellerinizi ekleyebilirsiniz.
           </div>
         `;
         return;
       }
 
-      gridEl.innerHTML = photosList.map(p => `
-        <div style="background: rgba(18, 18, 22, 0.95); border: 1px solid var(--border-light); border-radius: var(--radius-md); overflow: hidden; display: flex; flex-direction: column;">
-          <div style="height: 180px; width: 100%; overflow: hidden; background: #000; position: relative;">
-            <img src="${p.dataUrl}" alt="Form Görseli" style="width: 100%; height: 100%; object-fit: cover;">
-            <span style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.75); color: #10B981; font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: var(--radius-full); border: 1px solid #10B981;">
-              <i class="fas fa-check-circle"></i> Yüklendi
-            </span>
-          </div>
-          <div style="padding: 0.8rem; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-              <span style="font-size: 0.75rem; color: var(--accent-red); font-weight: 700; display: block; margin-bottom: 0.2rem;">
-                <i class="fas fa-calendar-alt"></i> ${p.date || 'Tarih Belirtilmedi'}
+      gridEl.innerHTML = photosList.map(p => {
+        const frontSrc = p.front || p.dataUrl;
+        const backSrc = p.back || p.dataUrl;
+        const rightSrc = p.right || p.dataUrl;
+        const leftSrc = p.left || p.dataUrl;
+
+        return `
+          <div style="background: rgba(18, 18, 22, 0.95); border: 1px solid var(--border-light); border-radius: var(--radius-md); overflow: hidden; padding: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.5rem;">
+              <div>
+                <span style="font-size: 0.82rem; color: #10B981; font-weight: 800; display: block;">
+                  <i class="fas fa-calendar-alt"></i> ${p.date || 'Tarih Belirtilmedi'}
+                </span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">${p.note ? `"${p.note}"` : 'Ek not yok'}</span>
+              </div>
+              <span style="font-size: 0.72rem; background: rgba(16,185,129,0.15); color: #10B981; padding: 0.2rem 0.6rem; border-radius: var(--radius-full); border: 1px solid #10B981; font-weight: 700;">
+                <i class="fas fa-check-circle"></i> 4 Cephe Yüklendi
               </span>
-              <p style="font-size: 0.82rem; color: #E5E7EB; margin: 0.3rem 0; line-height: 1.3;">
-                ${p.note ? `"${p.note}"` : '<em>Ek not eklenmedi</em>'}
-              </p>
             </div>
-            <div style="margin-top: 0.6rem; padding-top: 0.4rem; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.72rem; color: #10B981; font-weight: 600;">
-              ${p.status || '🟢 Umut Hoca İncelemesinde'}
+
+            <!-- 4 Angle Thumbnail Grid -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+              <div style="text-align: center;">
+                <span style="font-size: 0.68rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem; font-weight: bold;">Ön Cephe</span>
+                <img src="${frontSrc}" alt="Ön" onclick="window.openImageZoomModal('${frontSrc}')" style="width: 100%; height: 90px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-light); cursor: pointer;" title="Büyütmek için tıklayın">
+              </div>
+              <div style="text-align: center;">
+                <span style="font-size: 0.68rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem; font-weight: bold;">Arka / Sırt</span>
+                <img src="${backSrc}" alt="Arka" onclick="window.openImageZoomModal('${backSrc}')" style="width: 100%; height: 90px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-light); cursor: pointer;" title="Büyütmek için tıklayın">
+              </div>
+              <div style="text-align: center;">
+                <span style="font-size: 0.68rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem; font-weight: bold;">Sağ Yan</span>
+                <img src="${rightSrc}" alt="Sağ" onclick="window.openImageZoomModal('${rightSrc}')" style="width: 100%; height: 90px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-light); cursor: pointer;" title="Büyütmek için tıklayın">
+              </div>
+              <div style="text-align: center;">
+                <span style="font-size: 0.68rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem; font-weight: bold;">Sol Yan</span>
+                <img src="${leftSrc}" alt="Sol" onclick="window.openImageZoomModal('${leftSrc}')" style="width: 100%; height: 90px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-light); cursor: pointer;" title="Büyütmek için tıklayın">
+              </div>
             </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
     window.renderClientFormPhotos = renderClientFormPhotos;
 
-    function saveFormPhotoUpload(e) {
-      if (e) e.preventDefault();
-      const fileInput = document.getElementById('input-form-photo-file');
-      const noteInput = document.getElementById('input-form-photo-note');
+    function readInputAsDataUrl(elementId) {
+      return new Promise((resolve) => {
+        const el = document.getElementById(elementId);
+        if (el && el.files && el.files[0]) {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.readAsDataURL(el.files[0]);
+        } else {
+          resolve(null);
+        }
+      });
+    }
 
-      if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-        alert('Lütfen bir form fotoğrafı seçin!');
+    async function saveFormPhotoUpload(e) {
+      if (e) e.preventDefault();
+
+      const front = await readInputAsDataUrl('input-photo-front');
+      const back = await readInputAsDataUrl('input-photo-back');
+      const right = await readInputAsDataUrl('input-photo-right');
+      const left = await readInputAsDataUrl('input-photo-left');
+
+      if (!front || !back || !right || !left) {
+        alert('⚠️ Lütfen gelişimin doğru değerlendirilebilmesi için 4 açının tamamına da (Ön, Arka, Sağ Yan ve Sol Yan) fotoğraf yükleyin!');
         return;
       }
 
-      const file = fileInput.files[0];
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        const photoDataUrl = evt.target.result;
-        const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
-        const cleanPhone = userPhone.replace(/\D/g, '');
+      const noteInput = document.getElementById('input-form-photo-note');
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
+      const cleanPhone = userPhone.replace(/\D/g, '');
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-        const now = new Date();
-        const dateStr = now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-
-        const photoObj = {
-          id: 'photo-' + Date.now(),
-          dataUrl: photoDataUrl,
-          date: dateStr,
-          note: noteInput ? noteInput.value.trim() : '',
-          status: '🟢 Umut Hoca Tarafından İnceleniyor'
-        };
-
-        const photosKey = `pt_client_photos_${cleanPhone}`;
-        const photosList = JSON.parse(localStorage.getItem(photosKey)) || [];
-        photosList.unshift(photoObj);
-        localStorage.setItem(photosKey, JSON.stringify(photosList));
-
-        fetch(`/api/clients/${cleanPhone}/photos`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(photoObj)
-        }).catch(err => console.log('Photo sync offline fallback', err));
-
-        closeFormPhotoModal();
-        renderClientFormPhotos();
-
-        alert(`🎉 Form Görseliniz Başarıyla Yüklendi!\n\n📅 Yükleme Tarihi: ${dateStr}\n📌 Not: ${photoObj.note || 'Belirtilmedi'}\n\nUmut Hoca form görselinizi inceleyip dönüt sağlayacaktır.`);
+      const photoGroup = {
+        id: 'photogroup-' + Date.now(),
+        front: front,
+        back: back,
+        right: right,
+        left: left,
+        date: dateStr,
+        note: noteInput ? noteInput.value.trim() : '',
+        status: '🟢 Umut Hoca Tarafından İnceleniyor'
       };
-      reader.readAsDataURL(file);
+
+      const photosKey = `pt_client_photos_${cleanPhone}`;
+      const photosList = JSON.parse(localStorage.getItem(photosKey)) || [];
+      photosList.unshift(photoGroup);
+      localStorage.setItem(photosKey, JSON.stringify(photosList));
+
+      fetch(`/api/clients/${cleanPhone}/photos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photoGroup })
+      }).catch(err => console.log('Photo sync offline fallback', err));
+
+      closeFormPhotoModal();
+      renderClientFormPhotos();
+
+      alert(`🎉 4 Cephe Form Görselleriniz Başarıyla Yüklendi!\n\n📅 Yükleme Tarihi: ${dateStr}\n📌 Not: ${photoGroup.note || 'Belirtilmedi'}\n\nUmut Hoca form görsellerinizi eğitmen panelinden detaylıca inceleyecektir.`);
     }
     window.saveFormPhotoUpload = saveFormPhotoUpload;
 

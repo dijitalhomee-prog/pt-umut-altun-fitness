@@ -284,6 +284,9 @@
             <button class="builder-tab-btn" data-builder-tab="tab-supplement-builder">
               <i class="fas fa-pills"></i> Takviye & Supplement Rehberi Yaz
             </button>
+            <button class="builder-tab-btn" data-builder-tab="tab-photo-inspector">
+              <i class="fas fa-camera"></i> Form Fotoğrafları İncele (4 Cephe)
+            </button>
             <button class="builder-tab-btn" data-builder-tab="tab-note-builder">
               <i class="fas fa-edit"></i> Eğitmen Notu & Değerlendirme
             </button>
@@ -467,7 +470,23 @@
             </button>
           </div>
 
-          <!-- TAB 4: TRAINER NOTE BUILDER -->
+          <!-- TAB 4: FORM PHOTO INSPECTOR FOR TRAINER -->
+          <div id="tab-photo-inspector" class="builder-pane" style="display: none;">
+            <div class="glass-panel" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+              <h4 style="color: #FFFFFF; font-size: 1.1rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-camera" style="color: #10B981;"></i> <span id="photo-inspector-client-name">Seçili Danışan</span> — Form Fotoğrafları & 4 Cephe Gelişim Analizi
+              </h4>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.2rem;">
+                Danışanın yüklediği Ön, Arka (Sırt), Sağ Yan ve Sol Yan görselleri aşağıda gösterilmektedir. Fotoğrafları yüksek çözünürlükte incelemek için üzerlerine tıklayın.
+              </p>
+
+              <div id="admin-client-photos-container" style="display: grid; grid-template-columns: 1fr; gap: 1.2rem;">
+                <!-- Rendered dynamically for selected client -->
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 5: TRAINER NOTE BUILDER -->
           <div id="tab-note-builder" class="builder-pane" style="display: none;">
             <div class="calc-form-group">
               <label class="calc-label">Haftalık Eğitmen Notunuz & Motivasyon Mesajınız</label>
@@ -1227,7 +1246,97 @@
         { id: 4, title: 'Kardiyo & Karın' }
       ];
       renderAdminDayButtons();
+
+      // 5. Render Client Form Photos & 4 Angle Inspector
+      renderAdminClientPhotos(client);
     }
+
+    function renderAdminClientPhotos(client) {
+      const container = document.getElementById('admin-client-photos-container');
+      const nameEl = document.getElementById('photo-inspector-client-name');
+      if (nameEl) nameEl.textContent = client.name || 'Danışan';
+      if (!container) return;
+
+      const cleanP = (client.phone || '').replace(/\D/g, '');
+      const photosList = client.photos || client.formPhotos || JSON.parse(localStorage.getItem('pt_client_photos_' + cleanP)) || [];
+
+      if (photosList.length === 0) {
+        container.innerHTML = `
+          <div style="padding: 2rem; background: rgba(0,0,0,0.3); border: 1px dashed var(--border-light); border-radius: var(--radius-md); text-align: center; color: var(--text-muted);">
+            <i class="fas fa-camera-retro" style="font-size: 2rem; color: #10B981; margin-bottom: 0.6rem; display: block;"></i>
+            <strong>${client.name}</strong> henüz 4 cephe form fotoğrafı yüklemedi. Danışan kendi panelinden görsel yüklediğinde anında burada görüntülenecektir.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = photosList.map((p, idx) => {
+        const frontSrc = p.front || p.dataUrl;
+        const backSrc = p.back || p.dataUrl;
+        const rightSrc = p.right || p.dataUrl;
+        const leftSrc = p.left || p.dataUrl;
+
+        return `
+          <div style="background: rgba(18, 18, 22, 0.95); border: 1px solid #10B981; border-radius: var(--radius-md); padding: 1.2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.6rem;">
+              <div>
+                <h5 style="color: #FFFFFF; font-size: 1rem; margin: 0 0 0.2rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                  <i class="fas fa-calendar-check" style="color: #10B981;"></i> ${idx + 1}. Form Kontrolü (${p.date || 'Tarih Belirtilmedi'})
+                </h5>
+                <span style="font-size: 0.82rem; color: var(--text-muted);">${p.note ? `📌 Danışan Notu: "${p.note}"` : 'Ek not bırakılmadı'}</span>
+              </div>
+              <span style="font-size: 0.78rem; background: rgba(16,185,129,0.2); color: #10B981; padding: 0.3rem 0.8rem; border-radius: var(--radius-full); border: 1px solid #10B981; font-weight: 800;">
+                📸 4 Cephe Görseli Yüklendi
+              </span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.8rem;">
+              <div style="text-align: center; background: rgba(0,0,0,0.4); padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+                <span style="font-size: 0.75rem; color: #10B981; font-weight: 800; display: block; margin-bottom: 0.3rem;">1. ÖN CEPHE</span>
+                <img src="${frontSrc}" alt="Ön" onclick="window.openAdminImageZoom('${frontSrc}')" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid var(--border-light);" title="Tıklayıp Tam Ekranda İncele">
+              </div>
+
+              <div style="text-align: center; background: rgba(0,0,0,0.4); padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+                <span style="font-size: 0.75rem; color: #10B981; font-weight: 800; display: block; margin-bottom: 0.3rem;">2. ARKA (SIRT)</span>
+                <img src="${backSrc}" alt="Arka" onclick="window.openAdminImageZoom('${backSrc}')" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid var(--border-light);" title="Tıklayıp Tam Ekranda İncele">
+              </div>
+
+              <div style="text-align: center; background: rgba(0,0,0,0.4); padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+                <span style="font-size: 0.75rem; color: #10B981; font-weight: 800; display: block; margin-bottom: 0.3rem;">3. SAĞ YAN</span>
+                <img src="${rightSrc}" alt="Sağ" onclick="window.openAdminImageZoom('${rightSrc}')" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid var(--border-light);" title="Tıklayıp Tam Ekranda İncele">
+              </div>
+
+              <div style="text-align: center; background: rgba(0,0,0,0.4); padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+                <span style="font-size: 0.75rem; color: #10B981; font-weight: 800; display: block; margin-bottom: 0.3rem;">4. SOL YAN</span>
+                <img src="${leftSrc}" alt="Sol" onclick="window.openAdminImageZoom('${leftSrc}')" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid var(--border-light);" title="Tıklayıp Tam Ekranda İncele">
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openAdminImageZoom(src) {
+      let modal = document.getElementById('admin-image-zoom-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'admin-image-zoom-modal';
+        modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999999; display: flex; align-items: center; justify-content: center; padding: 1.5rem; backdrop-filter: blur(12px);';
+        modal.innerHTML = `
+          <div style="position: relative; max-width: 90vw; max-height: 90vh; text-align: center;">
+            <button onclick="document.getElementById('admin-image-zoom-modal').style.display='none';" style="position: absolute; top: -2.5rem; right: 0; background: none; border: none; color: #FFF; font-size: 2.2rem; cursor: pointer;">&times;</button>
+            <img id="admin-zoom-img" src="" style="max-width: 100%; max-height: 85vh; border-radius: 8px; border: 2px solid #10B981; box-shadow: 0 0 35px rgba(0,0,0,0.8); object-fit: contain;">
+          </div>
+        `;
+        document.body.appendChild(modal);
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) modal.style.display = 'none';
+        });
+      }
+      document.getElementById('admin-zoom-img').src = src;
+      modal.style.display = 'flex';
+    }
+    window.openAdminImageZoom = openAdminImageZoom;
 
     function renderClientsList() {
       checkAutomaticExpirations();
