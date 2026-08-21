@@ -218,7 +218,7 @@ app.put('/api/clients/:id/password', (req, res) => {
 // Update Client Body Metrics Profile Endpoint (Client Action)
 app.put('/api/clients/:id/profile', (req, res) => {
   const { id } = req.params;
-  const { height, startWeight, currentWeight, targetWeight } = req.body;
+  const { height, startWeight, currentWeight, targetWeight, coachNote } = req.body;
 
   const db = readDb();
   const client = db.clients.find(c => c.id === id || (c.phone && c.phone.replace(/\D/g, '') === id.replace(/\D/g, '')));
@@ -231,6 +231,7 @@ app.put('/api/clients/:id/profile', (req, res) => {
   if (startWeight) client.startWeight = startWeight;
   if (currentWeight) client.currentWeight = currentWeight;
   if (targetWeight) client.targetWeight = targetWeight;
+  if (coachNote) client.coachNote = coachNote;
 
   writeDb(db);
   res.json({ success: true, client });

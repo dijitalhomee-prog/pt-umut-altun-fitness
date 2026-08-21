@@ -27,7 +27,7 @@ const APP_DATA = {
       price: "3.900 ₺",
       period: "/ Toplam",
       monthlyEquivalent: "~1.300 ₺ / ay",
-      description: "Cevahir AVM çevresindekilere özel; uzaktan eğitim + her ay MACFit stüdyosunda 1-on-1 birebir özel ders.",
+      description: "Cevahir AVM çevresindekilere özel; uzaktan eğitim + her ay MACFit stüdyosunda birebir özel ders.",
       features: [
         "📍 Her Ay 1 Adet Cevahir MACFit Birebir Özel Ders",
         "Kişiye Özel Antrenman & Beslenme Planı",

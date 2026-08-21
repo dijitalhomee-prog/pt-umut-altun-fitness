@@ -622,6 +622,18 @@
           return;
         }
 
+        // Save written coach note for selected client
+        const coachNoteInput = document.getElementById('builder-coach-note');
+        if (coachNoteInput && coachNoteInput.value.trim()) {
+          targetClient.coachNote = coachNoteInput.value.trim();
+          saveClients();
+          fetch(`/api/clients/${targetClient.id}/profile`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ coachNote: coachNoteInput.value.trim() })
+          }).catch(err => console.warn('Offline fallback', err));
+        }
+
         // Set live notification flag for client panel popup
         localStorage.setItem('pt_new_program_notification_' + targetClient.id, 'true');
         localStorage.setItem('pt_new_program_notification_global', JSON.stringify({
@@ -630,7 +642,7 @@
           date: new Date().toISOString()
         }));
 
-        alert(`✅ Program başarıyla kaydedildi!\n\n📌 Alıcı Danışan: ${targetClient.name}\n\n${targetClient.name} danışan paneline girdiğinde "Yeni Programınız Geldi!" bildirimi popup olarak karşısına çıkacaktır.`);
+        alert(`✅ Program ve Eğitmen Notu başarıyla kaydedildi!\n\n📌 Alıcı Danışan: ${targetClient.name}\n\n${targetClient.name} danışan paneline girdiğinde sizin yazdığınız özel notu görecek ve "Yeni Programınız Geldi!" bildirimi popup olarak karşısına çıkacaktır.`);
       });
     }
   </script>

@@ -539,7 +539,7 @@
               Cevahir AVM MACFit Yüz Yüze Birebir Özel Ders & Hibrit Koçluk
             </h3>
             <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.2rem;" id="pkg-privilege-desc">
-              Her ay 1 adet Cevahir AVM MACFit stüdyosunda Umut Altun ile 1-on-1 yüz yüze birebir antrenman & postür analizi ders hakkınız aktiftir.
+              Her ay 1 adet Cevahir AVM MACFit stüdyosunda Umut Altun ile yüz yüze birebir antrenman & postür analizi özel ders hakkınız aktiftir.
             </p>
           </div>
 
@@ -1083,6 +1083,20 @@
         checkinEl.textContent = height ? `${height} cm (${checkinPeriod})` : checkinPeriod;
       }
 
+      // 4. Update Personal Coach Note for this Client
+      const firstName = (client.name || '').trim().split(' ')[0] || 'Danışan';
+      const noteBodyEl = document.getElementById('trainer-note-body');
+      if (noteBodyEl) {
+        if (client.coachNote && client.coachNote.trim()) {
+          noteBodyEl.textContent = `"${client.coachNote}"`;
+        } else if (savedProfile.coachNote && savedProfile.coachNote.trim()) {
+          noteBodyEl.textContent = `"${savedProfile.coachNote}"`;
+        } else {
+          const pkgName = client.package || 'Özel Koçluk';
+          noteBodyEl.textContent = `"${pkgName} ailesine hoş geldin ${firstName}! İlk 2 haftamızda temel hedefimiz ağır kitleler kaldırmak değil, hareket formlarını eksiksiz öğrenmek ve vücudunu antrenman ritmine alıştırmaktır. Beslenme listendeki makrolara sadık kal, her antrenman sonrası hareket kontrol videolarını atmayı unutma!"`;
+        }
+      }
+
       // Automatically trigger modal on first load if metrics missing
       const isAuth = (sessionStorage.getItem('client_authenticated') === 'true' || localStorage.getItem('client_authenticated') === 'true');
       if (isAuth && (!startWeight || !currentWeight) && !sessionStorage.getItem('profile_modal_shown')) {
@@ -1213,11 +1227,11 @@
         document.getElementById('client-package-badge').innerHTML = '<i class="fas fa-map-marker-alt"></i> Cevahir MACFit Hibrit Koçluk Paketi (2. Hafta / 12 Hafta)';
         document.getElementById('stat-checkin-period').textContent = 'Ayda 1 Salonda Özel Ders';
         document.getElementById('trainer-note-title').innerHTML = '<i class="fas fa-comment-dots"></i> Umut Hoca\'nın Cevahir MACFit Hibrit Notu:';
-        document.getElementById('trainer-note-body').textContent = `"${name} selam! Önümüzdeki Cumartesi 14:00'te Cevahir AVM MACFit stüdyosunda 1-on-1 birebir özel dersimiz var. Salonda squat ve deadlift formunu yüz yüze birebir inceleyeceğiz!"`;
+        document.getElementById('trainer-note-body').textContent = `"${name} selam! Önümüzdeki Cumartesi 14:00'te Cevahir AVM MACFit stüdyosunda birebir özel dersimiz var. Salonda squat ve deadlift formunu yüz yüze birebir inceleyeceğiz!"`;
         
         document.getElementById('pkg-privilege-tag').textContent = '📍 STÜDYO HİBRİT KOÇLUK HAKLARI';
         document.getElementById('pkg-privilege-title').textContent = 'Cevahir AVM MACFit Yüz Yüze Birebir Özel Ders & Hibrit Koçluk';
-        document.getElementById('pkg-privilege-desc').textContent = 'Her ay 1 adet Cevahir AVM MACFit stüdyosunda Umut Altun ile 1-on-1 yüz yüze birebir antrenman & postür analizi ders hakkınız aktiftir.';
+        document.getElementById('pkg-privilege-desc').textContent = 'Her ay 1 adet Cevahir AVM MACFit stüdyosunda Umut Altun ile yüz yüze birebir antrenman & postür analizi ders hakkınız aktiftir.';
         document.getElementById('pkg-action-status').innerHTML = '<i class="fas fa-calendar-check"></i> 24 Ağustos Cumartesi 14:00 (Cevahir MACFit)';
       });
     }
@@ -1267,7 +1281,7 @@
         
         document.getElementById('pkg-privilege-tag').textContent = '👑 FULL VIP & GÖRÜNTÜLÜ DEĞERLENDİRME';
         document.getElementById('pkg-privilege-title').textContent = 'Aylık Görüntülü WhatsApp Değerlendirme & Yıllık Periodizasyon';
-        document.getElementById('pkg-privilege-desc').textContent = '7/24 kesintisiz VIP WhatsApp erişimi, her ay 1-on-1 görüntülü WhatsApp değerlendirme görüşmesi ve 12 aylık elit sezonluk antrenman periodizasyonu haklarınız mevcuttur.';
+        document.getElementById('pkg-privilege-desc').textContent = '7/24 kesintisiz VIP WhatsApp erişimi, her ay birebir görüntülü WhatsApp değerlendirme görüşmesi ve 12 aylık elit sezonluk antrenman periodizasyonu haklarınız mevcuttur.';
         document.getElementById('pkg-action-status').innerHTML = '<i class="fas fa-video"></i> Canlı Görüntülü Görüşme: 26 Ağustos Çarşamba 20:00';
       });
     }
@@ -1283,7 +1297,7 @@
         document.getElementById('trainer-note-body').textContent = `"${name} selam! 20 derslik paketimizin 8 dersini tamamladık. Yarın 16:00'daki bacak & kalça dersimiz için Cevahir AVM MACFit stüdyosunda buluşuyoruz."`;
         
         document.getElementById('pkg-privilege-tag').textContent = '🏋️‍♂️ SALONDA BİREBİR ÖZEL DERS HAKLARI';
-        document.getElementById('pkg-privilege-title').textContent = 'Cevahir AVM MACFit 1-on-1 Birebir PT Seansları';
+        document.getElementById('pkg-privilege-title').textContent = 'Cevahir AVM MACFit Birebir Özel Ders Seansları';
         document.getElementById('pkg-privilege-desc').textContent = 'Kalan Özel Birebir Ders Hakkınız: 12 / 20 Ders. Salonda antrenör eşliğinde birebir kişisel performans ve postür seansları.';
         document.getElementById('pkg-action-status').innerHTML = '<i class="fas fa-dumbbell"></i> Sıradaki Salon Dersi: Yarın 16:00 (Cevahir MACFit)';
       });
