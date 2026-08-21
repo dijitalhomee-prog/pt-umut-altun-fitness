@@ -1113,18 +1113,21 @@
       if (!cleanPhone) return;
 
       const deletedList = deletedPhones || JSON.parse(localStorage.getItem('pt_deleted_phones')) || [];
-      const isBlocked = deletedList.includes(cleanPhone) || deletedList.some(dp => cleanPhone.endsWith(dp.slice(-10)));
+      const isBlocked = deletedList.includes(cleanPhone) || deletedList.some(dp => cleanPhone.length >= 10 && cleanPhone.endsWith(dp.slice(-10)));
 
-      let isFoundInActive = true;
-      if (Array.isArray(serverClients) && serverClients.length > 0) {
-        isFoundInActive = serverClients.some(c => (c.phone || '').replace(/\D/g, '') === cleanPhone || (c.phone || '').replace(/\D/g, '').endsWith(cleanPhone.slice(-10)));
+      let isFoundInActive = false;
+      if (Array.isArray(serverClients)) {
+        isFoundInActive = serverClients.some(c => {
+          const cp = (c.phone || '').replace(/\D/g, '');
+          return cp === cleanPhone || (cleanPhone.length >= 10 && cp.endsWith(cleanPhone.slice(-10)));
+        });
       }
 
       if (isBlocked || !isFoundInActive) {
         sessionStorage.clear();
         localStorage.removeItem('client_authenticated');
         localStorage.removeItem('client_user_phone');
-        renderAccessDeniedOverlay('🚫 DANIŞAN HESABINIZ SİLİNMİŞTİR', 'Eğitmeniniz Umut Altun tarafından bu hesabın sistem erişimi kapatılmıştır. Danışan paneline artık erişim sağlayamazsınız.');
+        renderAccessDeniedOverlay('🚫 DANIŞAN HESABINIZ BULUNMAMAKTADIR', 'Eğitmeniniz Umut Altun tarafından bu hesabın sistem erişimi kapatılmıştır veya aktif üye listesinde yer almamaktadır.');
       }
     }
     window.verifyClientAccessRevocation = verifyClientAccessRevocation;
