@@ -1470,9 +1470,117 @@
         if (downloadWorkoutBtn) downloadWorkoutBtn.style.display = 'inline-flex';
         const dlNutriBtn = document.getElementById('download-nutrition-pdf-btn');
         if (dlNutriBtn) dlNutriBtn.style.display = 'inline-flex';
+        renderMatrixExercises(clientCurrentWeek, clientCurrentDay);
       }
     }
     window.renderAssignedProgramState = renderAssignedProgramState;
+
+    let clientCurrentWeek = 1;
+    let clientCurrentDay = 1;
+
+    function getClientProgramMatrix() {
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
+      const cleanPhone = userPhone.replace(/\D/g, '');
+
+      let matrix = JSON.parse(localStorage.getItem('pt_matrix_program_' + cleanPhone)) || 
+                   JSON.parse(localStorage.getItem('pt_matrix_program_global')) || {
+        "1_1": [
+          { name: "Dumbbell Chest Press (Düz Sehpa)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
+          { name: "Incline Dumbbell Fly", sets: "3 Set", reps: "12-15 Tekrar", rest: "60 sn Dinlenme" },
+          { name: "Barbell Biceps Curl (Ön Kol)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" }
+        ],
+        "1_2": [
+          { name: "Lat Pulldown (Göğse Çekiş)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
+          { name: "Seated Cable Row (Kürek)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
+          { name: "Triceps Rope Pushdown (Arka Kol)", sets: "3 Set", reps: "15 Tekrar", rest: "60 sn Dinlenme" }
+        ],
+        "1_3": [
+          { name: "Goblet Squat (Dambıl ile Squat)", sets: "4 Set", reps: "10-12 Tekrar", rest: "90 sn Dinlenme" },
+          { name: "Leg Press", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
+          { name: "Seated Dumbbell Shoulder Press (Omuz)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" }
+        ],
+        "1_4": [
+          { name: "Plank Hold", sets: "3 Set", reps: "45 sn", rest: "45 sn Dinlenme" },
+          { name: "Hanging Leg Raise (Alt Karın)", sets: "3 Set", reps: "15 Tekrar", rest: "45 sn Dinlenme" },
+          { name: "Eğimli Yürüyüş Kardiyo", sets: "1 Seans", reps: "25 dk (Eğim 8, Hız 5.5)", rest: "Antrenman Sonu" }
+        ]
+      };
+      return matrix;
+    }
+
+    function renderMatrixExercises(week, day) {
+      clientCurrentWeek = week || clientCurrentWeek || 1;
+      clientCurrentDay = day || clientCurrentDay || 1;
+
+      const exerciseListBox = document.getElementById('exercise-list-box');
+      if (!exerciseListBox) return;
+
+      const matrix = getClientProgramMatrix();
+      const key = `${clientCurrentWeek}_${clientCurrentDay}`;
+      const exercises = matrix[key] || [];
+
+      if (exercises.length === 0) {
+        exerciseListBox.innerHTML = `
+          <div class="glass-panel" style="padding: 2.5rem; text-align: center; border-radius: var(--radius-md); border: 1px dashed var(--border-light);">
+            <i class="fas fa-info-circle" style="font-size: 2rem; color: var(--accent-red); margin-bottom: 0.8rem; display: block;"></i>
+            <h4 style="color: #FFFFFF; font-size: 1.1rem; margin-bottom: 0.4rem;">${clientCurrentWeek}. Hafta — Gün ${clientCurrentDay} Boş</h4>
+            <p style="color: var(--text-muted); font-size: 0.88rem;">
+              Antrenörünüz <strong>Umut Altun</strong> bu gün için dinlenme veya serbest aktivite planladı.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      exercises.forEach((item, idx) => {
+        const numStr = (idx + 1) < 10 ? `0${idx + 1}` : `${idx + 1}`;
+        html += `
+          <div class="exercise-item">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span style="font-weight: 800; color: var(--accent-primary); font-size: 1.2rem;">${numStr}</span>
+              <div class="exercise-info">
+                <h4>${item.name}</h4>
+                <p>${item.rest || '60 sn Dinlenme'}</p>
+              </div>
+            </div>
+            <div class="exercise-meta">
+              <div class="sets-badge">${item.sets || '3 Set'} x ${item.reps || '12 Tekrar'}</div>
+              <button class="check-exercise-btn" title="Tamamlandı İşaretle" onclick="this.classList.toggle('completed')"><i class="fas fa-check"></i></button>
+            </div>
+          </div>
+        `;
+      });
+
+      exerciseListBox.innerHTML = html;
+    }
+    window.renderMatrixExercises = renderMatrixExercises;
+
+    // Bind Client Week Buttons
+    document.querySelectorAll('.client-week-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.client-week-btn').forEach(b => {
+          b.classList.remove('active');
+          b.style.borderColor = 'var(--border-light)';
+          b.style.background = 'none';
+        });
+        btn.classList.add('active');
+        btn.style.borderColor = 'var(--accent-red)';
+        btn.style.background = 'rgba(239, 68, 68, 0.15)';
+        const w = parseInt(btn.getAttribute('data-week'));
+        renderMatrixExercises(w, clientCurrentDay);
+      });
+    });
+
+    // Bind Client Day Pills
+    document.querySelectorAll('#workout-day-container .day-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#workout-day-container .day-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const d = parseInt(btn.getAttribute('data-day'));
+        renderMatrixExercises(clientCurrentWeek, d);
+      });
+    });
     renderClientProfileMetrics();
 
     // Global doClientLogin handler for instant login response

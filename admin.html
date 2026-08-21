@@ -544,9 +544,93 @@
     let currentAdminWeek = 1;
     let currentAdminDay = 1;
 
+    // 4-Week x 4-Day Exercise Matrix Memory Store
+    window.adminProgramState = {
+      "1_1": [
+        { name: "Dumbbell Chest Press (Düz Sehpa)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
+        { name: "Incline Dumbbell Fly", sets: "3 Set", reps: "12-15 Tekrar", rest: "60 sn Dinlenme" },
+        { name: "Barbell Biceps Curl (Ön Kol)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" }
+      ],
+      "1_2": [
+        { name: "Lat Pulldown (Göğse Çekiş)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
+        { name: "Seated Cable Row (Kürek)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
+        { name: "Triceps Rope Pushdown (Arka Kol)", sets: "3 Set", reps: "15 Tekrar", rest: "60 sn Dinlenme" }
+      ],
+      "1_3": [
+        { name: "Goblet Squat (Dambıl ile Squat)", sets: "4 Set", reps: "10-12 Tekrar", rest: "90 sn Dinlenme" },
+        { name: "Leg Press", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
+        { name: "Seated Dumbbell Shoulder Press (Omuz)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" }
+      ],
+      "1_4": [
+        { name: "Plank Hold", sets: "3 Set", reps: "45 sn", rest: "45 sn Dinlenme" },
+        { name: "Hanging Leg Raise (Alt Karın)", sets: "3 Set", reps: "15 Tekrar", rest: "45 sn Dinlenme" },
+        { name: "Eğimli Yürüyüş Kardiyo", sets: "1 Seans", reps: "25 dk (Eğim 8, Hız 5.5)", rest: "Antrenman Sonu" }
+      ]
+    };
+
+    function saveCurrentInputsToState() {
+      const currentKey = `${currentAdminWeek}_${currentAdminDay}`;
+      const rows = [];
+      document.querySelectorAll('#exercise-rows-container .exercise-row-input').forEach(row => {
+        const nameInput = row.querySelector('.ex-name');
+        const setsInput = row.querySelector('.ex-sets');
+        const repsInput = row.querySelector('.ex-reps');
+        const restInput = row.querySelector('.ex-rest');
+
+        const name = nameInput ? nameInput.value.trim() : '';
+        if (name) {
+          rows.push({
+            name: name,
+            sets: setsInput ? setsInput.value.trim() : '3 Set',
+            reps: repsInput ? repsInput.value.trim() : '12 Tekrar',
+            rest: restInput ? restInput.value.trim() : '60 sn Dinlenme'
+          });
+        }
+      });
+      window.adminProgramState[currentKey] = rows;
+    }
+
+    function loadInputsFromState() {
+      const container = document.getElementById('exercise-rows-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const currentKey = `${currentAdminWeek}_${currentAdminDay}`;
+      const savedRows = window.adminProgramState[currentKey] || [];
+
+      if (savedRows.length === 0) {
+        createRowElement('', '3 Set', '12 Tekrar', '60 sn Dinlenme');
+      } else {
+        savedRows.forEach(item => {
+          createRowElement(item.name, item.sets, item.reps, item.rest);
+        });
+      }
+    }
+
+    function createRowElement(name = '', sets = '3 Set', reps = '12 Tekrar', rest = '60 sn Dinlenme') {
+      const container = document.getElementById('exercise-rows-container');
+      if (!container) return;
+      const newRow = document.createElement('div');
+      newRow.className = 'exercise-row-input';
+      newRow.innerHTML = `
+        <input type="text" class="input-field ex-name" value="${(name || '').replace(/"/g, '&quot;')}" placeholder="Hareket Adı (Örn: Leg Press)">
+        <input type="text" class="input-field ex-sets" value="${(sets || '3 Set').replace(/"/g, '&quot;')}" placeholder="Set">
+        <input type="text" class="input-field ex-reps" value="${(reps || '12 Tekrar').replace(/"/g, '&quot;')}" placeholder="Tekrar">
+        <input type="text" class="input-field ex-rest" value="${(rest || '60 sn Dinlenme').replace(/"/g, '&quot;')}" placeholder="Dinlenme">
+        <button type="button" class="remove-row-btn">&times;</button>
+      `;
+      container.appendChild(newRow);
+
+      newRow.querySelector('.remove-row-btn').addEventListener('click', () => {
+        newRow.remove();
+        saveCurrentInputsToState();
+      });
+    }
+
     // Week selector buttons in admin
     document.querySelectorAll('.admin-week-btn').forEach(btn => {
       btn.addEventListener('click', () => {
+        saveCurrentInputsToState();
         document.querySelectorAll('.admin-week-btn').forEach(b => {
           b.classList.remove('active');
           b.style.borderColor = 'var(--border-light)';
@@ -557,12 +641,14 @@
         btn.style.background = 'rgba(239, 68, 68, 0.15)';
         currentAdminWeek = parseInt(btn.getAttribute('data-week'));
         updateAdminTargetTitle();
+        loadInputsFromState();
       });
     });
 
     // Day selector buttons in admin
     document.querySelectorAll('.admin-day-btn').forEach(btn => {
       btn.addEventListener('click', () => {
+        saveCurrentInputsToState();
         document.querySelectorAll('.admin-day-btn').forEach(b => {
           b.classList.remove('active');
           b.style.borderColor = 'var(--border-light)';
@@ -575,6 +661,7 @@
         btn.style.fontWeight = 'bold';
         currentAdminDay = parseInt(btn.getAttribute('data-day'));
         updateAdminTargetTitle();
+        loadInputsFromState();
       });
     });
 
@@ -591,39 +678,21 @@
     const copyDayBtn = document.getElementById('copy-day-btn');
     if (copyDayBtn) {
       copyDayBtn.addEventListener('click', () => {
-        alert(`✅ ${currentAdminWeek}. Hafta — Gün ${currentAdminDay} antrenman hareketleri 2, 3 ve 4. haftalara başarıyla kopyalandı! Haftalar arası progresif yüklenme (Progressive Overload) ayarlanmıştır.`);
+        saveCurrentInputsToState();
+        const currentKey = `${currentAdminWeek}_${currentAdminDay}`;
+        const sourceRows = window.adminProgramState[currentKey] || [];
+        for (let w = 1; w <= 4; w++) {
+          if (w !== currentAdminWeek) {
+            window.adminProgramState[`${w}_${currentAdminDay}`] = JSON.parse(JSON.stringify(sourceRows));
+          }
+        }
+        alert(`✅ ${currentAdminWeek}. Hafta — Gün ${currentAdminDay} hareketleri tüm haftalara (1, 2, 3 ve 4. Hafta) kopyalandı! Artık dilediğiniz haftaya tıklayıp hareketleri bağımsız olarak güncelleyebilirsiniz.`);
       });
     }
 
-    // Builder Tab switching
-    document.querySelectorAll('.builder-tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.builder-tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.builder-pane').forEach(p => p.style.display = 'none');
-
-        btn.classList.add('active');
-        const targetId = btn.getAttribute('data-builder-tab');
-        document.getElementById(targetId).style.display = 'block';
-      });
-    });
-
     // Add Exercise Row
     document.getElementById('add-exercise-btn').addEventListener('click', () => {
-      const container = document.getElementById('exercise-rows-container');
-      const newRow = document.createElement('div');
-      newRow.className = 'exercise-row-input';
-      newRow.innerHTML = `
-        <input type="text" class="input-field ex-name" placeholder="Hareket Adı (Örn: Leg Press)">
-        <input type="text" class="input-field ex-sets" value="3 Set" placeholder="Set">
-        <input type="text" class="input-field ex-reps" value="12 Tekrar" placeholder="Tekrar">
-        <input type="text" class="input-field ex-rest" value="60 sn Dinlenme" placeholder="Dinlenme">
-        <button class="remove-row-btn">&times;</button>
-      `;
-      container.appendChild(newRow);
-
-      newRow.querySelector('.remove-row-btn').addEventListener('click', () => {
-        newRow.remove();
-      });
+      createRowElement('', '3 Set', '12 Tekrar', '60 sn Dinlenme');
     });
 
     // Remove row event listener for initial items
@@ -705,13 +774,24 @@
         return;
       }
 
+      // Save active inputs to matrix state
+      saveCurrentInputsToState();
+
       // Mark program as officially assigned to this client
       targetClient.hasAssignedProgram = true;
+      targetClient.programMatrix = window.adminProgramState;
       saveClients();
 
       const cleanP = (targetClient.phone || '').replace(/\D/g, '');
-      if (targetClient.id) localStorage.setItem('pt_assigned_program_' + targetClient.id, 'true');
-      if (cleanP) localStorage.setItem('pt_assigned_program_' + cleanP, 'true');
+      if (targetClient.id) {
+        localStorage.setItem('pt_assigned_program_' + targetClient.id, 'true');
+        localStorage.setItem('pt_matrix_program_' + targetClient.id, JSON.stringify(window.adminProgramState));
+      }
+      if (cleanP) {
+        localStorage.setItem('pt_assigned_program_' + cleanP, 'true');
+        localStorage.setItem('pt_matrix_program_' + cleanP, JSON.stringify(window.adminProgramState));
+      }
+      localStorage.setItem('pt_matrix_program_global', JSON.stringify(window.adminProgramState));
 
       // Save written coach note for selected client
       const coachNoteInput = document.getElementById('builder-coach-note');
