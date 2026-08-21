@@ -498,6 +498,34 @@
     </div>
   </div>
 
+  <!-- Modal: 4 Gün Kala Form Kontrol Bildirim Pop-up'ı (Danışan Paneli) -->
+  <div id="form-checkin-countdown-modal" style="position: fixed; inset: 0; background: rgba(8,8,10,0.94); z-index: 99999999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(14px); padding: 1.5rem;">
+    <div class="glass-panel" style="max-width: 500px; width: 100%; padding: 2.2rem; border-radius: var(--radius-lg); border: 2px solid var(--accent-red); box-shadow: 0 0 40px rgba(239, 68, 68, 0.4); text-align: center; position: relative;">
+      <button type="button" onclick="closeFormCheckinCountdownModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+
+      <div style="width: 70px; height: 70px; background: rgba(239, 68, 68, 0.18); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem auto; border: 2px solid var(--accent-red); box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);">
+        <i class="fas fa-bell" style="font-size: 2.2rem; color: var(--accent-red);"></i>
+      </div>
+
+      <span style="font-size: 0.8rem; font-weight: 800; color: #FFFFFF; background: var(--accent-red); padding: 0.35rem 0.95rem; border-radius: var(--radius-full); display: inline-block; margin-bottom: 0.8rem;" id="popup-countdown-badge">
+        ⏳ FORM YÜKLEMESİNE SON 4 GÜN!
+      </span>
+
+      <h3 style="color: #FFFFFF; font-size: 1.3rem; margin-bottom: 0.6rem;">Haftalık Form & Ölçüm Kontrolünüz Yaklaşıyor!</h3>
+      <p style="color: #E5E7EB; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.4rem;">
+        Umut Hoca gelişiminizi detaylıca inceleyip antrenman ve beslenme programınızı revize edebilmek için hazırlık yapmanızı istiyor.
+        <br><br>
+        📅 Sıradaki Yükleme Tarihi: <strong style="color: var(--accent-red);" id="popup-target-date-str">28 Ağustos 2026</strong>
+        <br>
+        📸 <strong>Ön, Arka (Sırt), Sağ Yan ve Sol Yan</strong> görsellerinizi aç karınla çekmeye hazırlanın.
+      </p>
+
+      <button type="button" class="btn btn-primary-glow" onclick="closeFormCheckinCountdownModal()" style="width: 100%; padding: 0.8rem; font-weight: 800; font-size: 0.95rem; background: var(--accent-red); border-color: var(--accent-red); border-radius: var(--radius-md);">
+        <i class="fas fa-check-circle"></i> Anladım, Hazırlanıyorum 👍
+      </button>
+    </div>
+  </div>
+
   <!-- Navigation Bar -->
   <header class="navbar scrolled">
     <div class="container nav-container">
@@ -1147,9 +1175,33 @@
     }
     window.closeProfileUpdateModal = closeProfileUpdateModal;
 
-    function openFormPhotoModal() {
+    function checkFormUploadDateLock(targetDateStr) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const targetDate = targetDateStr ? new Date(targetDateStr) : new Date(2026, 7, 28);
+      targetDate.setHours(0, 0, 0, 0);
+
+      if (today < targetDate) {
+        const dateFormatted = targetDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+        const daysLeft = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
+        alert(`🔒 TARİHİ GELMEDEN FOTOĞRAF YÜKLENEMEZ!\n\nSıradaki Form & Ölçüm Yükleme Tarihiniz: ${dateFormatted} (${daysLeft} gün kaldı).\n\nUmut Hoca'nın değerlendirme takvimine göre form fotoğrafı yükleme kilitleriniz ${dateFormatted} günü otomatik açılacaktır.`);
+        return false;
+      }
+
       const modal = document.getElementById('form-photo-upload-modal');
       if (modal) modal.style.display = 'flex';
+      return true;
+    }
+    window.checkFormUploadDateLock = checkFormUploadDateLock;
+
+    function openFormPhotoModal(bypassLock) {
+      if (bypassLock === true) {
+        const modal = document.getElementById('form-photo-upload-modal');
+        if (modal) modal.style.display = 'flex';
+        return;
+      }
+      checkFormUploadDateLock('2026-08-28');
     }
     window.openFormPhotoModal = openFormPhotoModal;
 
@@ -1162,6 +1214,56 @@
       if (form) form.reset();
     }
     window.closeFormPhotoModal = closeFormPhotoModal;
+
+    // 4 Gün Kala Otomatik Pop-up Bildirim Motoru
+    function checkFormCheckinCountdownNotice() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const targetDate = new Date(2026, 7, 28); // 28 August 2026
+      targetDate.setHours(0, 0, 0, 0);
+
+      const diffTime = targetDate - today;
+      const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (daysRemaining >= 0 && daysRemaining <= 4) {
+        const isShown = sessionStorage.getItem('form_checkin_popup_shown_' + daysRemaining);
+        if (!isShown) {
+          sessionStorage.setItem('form_checkin_popup_shown_' + daysRemaining, 'true');
+          
+          setTimeout(() => {
+            const popupModal = document.getElementById('form-checkin-countdown-modal');
+            const badgeEl = document.getElementById('popup-countdown-badge');
+            const dateStrEl = document.getElementById('popup-target-date-str');
+
+            const formattedDate = targetDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+            if (dateStrEl) dateStrEl.textContent = formattedDate;
+
+            if (badgeEl) {
+              if (daysRemaining === 0) {
+                badgeEl.textContent = '🚨 BUGÜN FORM & ÖLÇÜM YÜKLEME GÜNÜ!';
+                badgeEl.style.background = '#EF4444';
+              } else if (daysRemaining === 1) {
+                badgeEl.textContent = '⚠️ YARIN FORM YÜKLEME GÜNÜ!';
+                badgeEl.style.background = '#F59E0B';
+              } else {
+                badgeEl.textContent = `⏳ FORM YÜKLEMESİNE SON ${daysRemaining} GÜN!`;
+                badgeEl.style.background = 'var(--accent-red)';
+              }
+            }
+
+            if (popupModal) popupModal.style.display = 'flex';
+          }, 800);
+        }
+      }
+    }
+    window.checkFormCheckinCountdownNotice = checkFormCheckinCountdownNotice;
+
+    function closeFormCheckinCountdownModal() {
+      const modal = document.getElementById('form-checkin-countdown-modal');
+      if (modal) modal.style.display = 'none';
+    }
+    window.closeFormCheckinCountdownModal = closeFormCheckinCountdownModal;
 
     function previewSelectedFormPhoto(event) {
       const file = event.target.files[0];
@@ -1507,7 +1609,8 @@
       if (isAuth && (!startWeight || !currentWeight) && !sessionStorage.getItem('profile_modal_shown')) {
         sessionStorage.setItem('profile_modal_shown', 'true');
         setTimeout(() => { openProfileUpdateModal(); }, 600);
-      }
+      // Trigger 4-day countdown popup check if form check-in is approaching
+      checkFormCheckinCountdownNotice();
     }
     window.renderClientProfileMetrics = renderClientProfileMetrics;
 
