@@ -2751,6 +2751,7 @@
         password: document.getElementById('wiz-client-password').value.trim(),
         package: document.getElementById('wiz-client-package').value,
         stage: document.getElementById('wiz-client-stage').value.trim(),
+        startDate: new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Istanbul' }), // Auto-resets 4-week cycle to today!
         expiryDate: document.getElementById('wiz-client-expiry').value,
         status: document.getElementById('wiz-client-status').value,
         startWeight: document.getElementById('wiz-client-startweight').value,

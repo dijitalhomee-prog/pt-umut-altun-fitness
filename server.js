@@ -46,6 +46,22 @@ function normalizePhone(phone) {
   return clean.slice(-10);
 }
 
+// HELPER: Turkey Timezone Date String (Europe/Istanbul YYYY-MM-DD)
+function getTurkeyDateStr(dateObj = new Date()) {
+  return new Date(dateObj).toLocaleDateString('sv-SE', { timeZone: 'Europe/Istanbul' });
+}
+
+// HELPER: Package Duration Days Mapping (Fixes 30-day PT package bug)
+function getPackageDurationDays(pkgName) {
+  if (!pkgName) return 90;
+  if (pkgName.includes('12 Aylık')) return 365;
+  if (pkgName.includes('6 Aylık')) return 180;
+  if (pkgName.includes('3 Aylık')) return 90;
+  if (pkgName.includes('Birebir PT')) return 365; // 20 derslik PT paketi 365 gün geçerli!
+  if (pkgName.includes('Hibrit Koçluk')) return 90;
+  return 90;
+}
+
 // Ensure Database File & Directories Exist
 function initDatabase() {
   if (!fs.existsSync(DB_DIR)) {
@@ -349,13 +365,22 @@ function writeDb(data) {
   }
 }
 
-// Server Side Auto Expiration
 function autoExpireClients(db) {
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getTurkeyDateStr();
   let updated = false;
 
   db.clients.forEach(client => {
     if (client.expiryDate && client.expiryDate < todayStr && client.status === 'active') {
+      // Check if client has a PT package with remaining PT sessions
+      const entitlements = client.entitlements || getPackageEntitlements(client.package);
+      const ptTotal = entitlements ? (entitlements.ptSessionsTotal || 0) : 0;
+      const ptUsed = entitlements ? (entitlements.ptSessionsUsed || 0) : 0;
+
+      if (ptTotal > 0 && ptUsed < ptTotal) {
+        // Client still has remaining PT lessons! Do NOT auto-expire!
+        return;
+      }
+
       client.status = 'passive';
       client.note = '🔴 Otomatik Pasife Alındı (Süresi Doldu)';
       updated = true;
@@ -392,7 +417,7 @@ function authMiddleware(req, res, next) {
     token = String(customHeader).trim();
   } else if (cookieHeader) {
     const match = cookieHeader.match(/session_token=([^;]+)/);
-    if (match) token = match[1].trim();
+    if (match) token = match[1];
   }
 
   if (!token) {
@@ -403,8 +428,7 @@ function authMiddleware(req, res, next) {
   }
 
   const db = readDb();
-  const session = db.sessions.find(s => s.token === token && new Date(s.expiresAt) > new Date());
-
+  const session = db.sessions.find(s => s.token === token);
   if (!session) {
     req.session = null;
     req.isTrainer = false;
@@ -437,6 +461,19 @@ function requireAuth(req, res, next) {
   if (!req.session) {
     return res.status(401).json({ success: false, message: '🔒 Oturum Geçersiz: Lütfen sisteme tekrar giriş yapınız.' });
   }
+
+  // PASSIVE or ARCHIVED ACCOUNT CHECK FOR CLIENTS (MADDE 6)
+  if (!req.isTrainer && req.client) {
+    if (req.client.status === 'passive' || req.client.status === 'archived') {
+      return res.status(403).json({
+        success: false,
+        passive: req.client.status === 'passive',
+        archived: req.client.status === 'archived',
+        message: '🔒 Üyeliğiniz aktif değildir. Lütfen eğitmeniniz Umut Altun ile iletişime geçiniz.'
+      });
+    }
+  }
+
   next();
 }
 
@@ -640,10 +677,20 @@ app.put('/api/me/profile', requireAuth, (req, res) => {
     return res.status(404).json({ success: false, message: 'Danışan bulunamadı.' });
   }
 
-  if (height) client.height = height;
-  if (startWeight) client.startWeight = startWeight;
-  if (currentWeight) client.currentWeight = currentWeight;
-  if (targetWeight) client.targetWeight = targetWeight;
+  if (height !== undefined) client.height = height;
+  if (startWeight !== undefined) client.startWeight = startWeight;
+  if (targetWeight !== undefined) client.targetWeight = targetWeight;
+  if (currentWeight !== undefined) {
+    client.currentWeight = currentWeight;
+    if (!Array.isArray(client.weightHistory)) client.weightHistory = [];
+    const todayStr = getTurkeyDateStr();
+    const existingToday = client.weightHistory.find(w => w.date === todayStr);
+    if (existingToday) {
+      existingToday.weight = parseFloat(currentWeight);
+    } else if (currentWeight) {
+      client.weightHistory.push({ date: todayStr, weight: parseFloat(currentWeight) });
+    }
+  }
 
   writeDb(db);
   res.json({ success: true, client: sanitizeClient(client, false) });
@@ -669,11 +716,10 @@ app.post('/api/me/photos', requireAuth, (req, res) => {
   client.formPhotos.unshift(photoObj);
   client.photos.unshift(photoObj);
 
-  // Auto Mark Form Check as Done!
-  if (!client.formPhotos) client.formPhotos = [];
-  const todayStr = new Date().toISOString().split('T')[0];
+  // Auto Mark Form Check as Done! (MADDE 2 - Closes earliest pending check)
+  const todayStr = getTurkeyDateStr();
   if (!client.formChecks) client.formChecks = [];
-  let matchingCheck = client.formChecks.find(f => f.dueDate === todayStr);
+  let matchingCheck = client.formChecks.find(f => f.status === 'pending' || f.dueDate === todayStr);
   if (!matchingCheck) {
     matchingCheck = { dueDate: todayStr, status: 'done', completedAt: new Date().toISOString() };
     client.formChecks.push(matchingCheck);
@@ -1244,17 +1290,13 @@ app.post('/api/clients', requireTrainer, (req, res) => {
 
   const db = readDb();
 
-  // Expiry Date Auto-Calculation
+  // Expiry Date Auto-Calculation (Fixes 30-day PT package bug)
   let finalExpiryDate = expiryDate;
   if (!finalExpiryDate) {
-    let daysToAdd = 90;
-    if (pkg && pkg.includes('6 Aylık')) daysToAdd = 180;
-    if (pkg && pkg.includes('12 Aylık')) daysToAdd = 365;
-    if (pkg && (pkg.includes('Deneme') || pkg.includes('PT'))) daysToAdd = 30;
-
+    const daysToAdd = getPackageDurationDays(pkg);
     const expObj = new Date();
     expObj.setDate(expObj.getDate() + daysToAdd);
-    finalExpiryDate = expObj.toISOString().split('T')[0];
+    finalExpiryDate = getTurkeyDateStr(expObj);
   }
 
   const generatedPassword = (password && String(password).trim()) ? String(password).trim() : Math.floor(100000 + Math.random() * 900000).toString();
@@ -1329,6 +1371,11 @@ app.put('/api/clients/:id/password', requireTrainer, (req, res) => {
     }
   });
 
+  // Revoke active sessions for this client so old tokens are immediately invalidated (MADDE 10)
+  if (db.sessions) {
+    db.sessions = db.sessions.filter(s => s.clientId !== targetClient.id && s.phone !== targetNorm);
+  }
+
   writeDb(db);
   res.json({ success: true, password: newPass });
 });
@@ -1348,6 +1395,14 @@ app.put('/api/clients/:id/status', requireTrainer, (req, res) => {
   client.status = status || (client.status === 'active' ? 'passive' : 'active');
   if (note) client.note = note;
   else client.note = client.status === 'active' ? 'Aktif Üyelik Devam Ediyor' : 'Paketi Bitti / Pasif';
+
+  // Revoke active sessions when passivated or archived (MADDE 6)
+  if (client.status === 'passive' || client.status === 'archived') {
+    const targetNorm = normalizePhone(client.phone);
+    if (db.sessions) {
+      db.sessions = db.sessions.filter(s => s.clientId !== client.id && s.phone !== targetNorm);
+    }
+  }
 
   writeDb(db);
   res.json({ success: true, client });

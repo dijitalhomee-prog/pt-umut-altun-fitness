@@ -1389,13 +1389,9 @@
     }
     window.checkFormUploadDateLock = checkFormUploadDateLock;
 
-    function openFormPhotoModal(bypassLock) {
-      if (bypassLock === true) {
-        const modal = document.getElementById('form-photo-upload-modal');
-        if (modal) modal.style.display = 'flex';
-        return;
-      }
-      checkFormUploadDateLock('2026-08-28');
+    function openFormPhotoModal() {
+      const modal = document.getElementById('form-photo-upload-modal');
+      if (modal) modal.style.display = 'flex';
     }
     window.openFormPhotoModal = openFormPhotoModal;
 
