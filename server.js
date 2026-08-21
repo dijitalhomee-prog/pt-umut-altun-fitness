@@ -35,20 +35,8 @@ function initDatabase() {
   }
 
   const defaultDbData = {
-    clients: [
-      {
-        id: "client-egemen",
-        name: "Furkan Egemen Güneş",
-        phone: "05386376258",
-        password: "123456",
-        package: "👑 12 Aylık VIP Şampiyon Dönüşüm",
-        stage: "1. Hafta (Aktif Üye)",
-        expiryDate: "2027-12-31",
-        status: "active",
-        note: "Aktif VIP Üyelik Devam Ediyor",
-        createdAt: "2026-08-20T12:00:00.000Z"
-      }
-    ],
+    clients: [],
+    deletedPhones: [],
     programs: {},
     trainerPin: "586158",
     lastUpdated: new Date().toISOString()
@@ -314,10 +302,25 @@ app.post('/api/clients/verify-auth', (req, res) => {
     });
   }
 
+// Complete Database Reset / Purge Endpoint (Fresh Start for Trainer)
+app.post('/api/admin/purge-all-clients', (req, res) => {
+  const { pin } = req.body;
+  if (pin !== '586158') {
+    return res.status(401).json({ success: false, message: 'Geçersiz eğitmen PIN kodu.' });
+  }
+
+  const cleanDb = {
+    clients: [],
+    deletedPhones: [],
+    programs: {},
+    trainerPin: "586158",
+    lastUpdated: new Date().toISOString()
+  };
+
+  writeDb(cleanDb);
   res.json({
     success: true,
-    deleted: false,
-    client
+    message: '✨ TÜM ESKİ DANIŞAN KAYITLARI KALICI OLARAK SİLİNDİ: Veritabanı %100 sıfırlandı. Eğitmen panelinden sıfırdan danışan ekleyebilirsiniz!'
   });
 });
 
