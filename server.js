@@ -302,6 +302,13 @@ app.post('/api/clients/verify-auth', (req, res) => {
     });
   }
 
+  res.json({
+    success: true,
+    deleted: false,
+    client
+  });
+});
+
 // Complete Database Reset / Purge Endpoint (Fresh Start for Trainer)
 app.post('/api/admin/purge-all-clients', (req, res) => {
   const { pin } = req.body;
