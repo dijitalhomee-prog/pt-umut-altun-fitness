@@ -889,6 +889,9 @@ app.get('/api/me', requireAuth, (req, res) => {
     return res.status(404).json({ success: false, message: 'Danışan kaydı bulunamadı.' });
   }
 
+  ensureFormCheckSchedule(freshClient);
+  writeDb(db);
+
   res.json({
     success: true,
     client: sanitizeClient(freshClient, false)
