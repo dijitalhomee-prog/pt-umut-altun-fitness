@@ -577,9 +577,9 @@
       <!-- Top Welcome & Status Banner -->
       <div class="user-welcome-card glass-panel">
         <div class="user-info-box">
-          <div class="user-avatar" id="client-initials">EG</div>
+          <div class="user-avatar" id="client-initials">UA</div>
           <div class="user-details">
-            <h2>Hoş Geldin, <span class="gradient-text" id="client-name">Egemen Güneş</span> 👋</h2>
+            <h2>Hoş Geldin, <span class="gradient-text" id="client-name">Değerli Danışanımız</span> 👋</h2>
             <div class="package-pill" id="client-package-badge">
               <i class="fas fa-shield-alt"></i> 🌱 3 Aylık Başlangıç & Disiplin Paketi (1. Hafta)
             </div>
@@ -1257,7 +1257,7 @@
         modal.style.setProperty('visibility', 'visible', 'important');
 
         const storedClients = (liveClientsList && liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
-        const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
+        const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
         const cleanPhone = userPhone.replace(/\D/g, '');
         const currentClient = storedClients.find(c => (c.phone || '').replace(/\D/g, '') === cleanPhone) || {};
         
@@ -1280,7 +1280,7 @@
     window.openProfileUpdateModal = openProfileUpdateModal;
 
     function triggerPromptProfileUpdate() {
-      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
       const cleanPhone = userPhone.replace(/\D/g, '');
       const profileKey = `pt_client_profile_${cleanPhone}`;
       const savedProfile = JSON.parse(localStorage.getItem(profileKey)) || {};
@@ -1470,7 +1470,7 @@
     window.openImageZoomModal = openImageZoomModal;
 
     function renderClientFormPhotos() {
-      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
       const cleanPhone = userPhone.replace(/\D/g, '');
       const photosKey = `pt_client_photos_${cleanPhone}`;
       const photosList = JSON.parse(localStorage.getItem(photosKey)) || [];
@@ -1560,7 +1560,7 @@
       }
 
       const noteInput = document.getElementById('input-form-photo-note');
-      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
       const cleanPhone = userPhone.replace(/\D/g, '');
       const now = new Date();
       const dateStr = now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -1626,7 +1626,7 @@
         return false;
       }
 
-      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
       const cleanPhone = userPhone.replace(/\D/g, '');
 
       const profileData = {
@@ -1672,18 +1672,18 @@
 
     function renderClientProfileMetrics(matchingClientObj) {
       const storedClients = (liveClientsList && liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
-      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
       const cleanPhone = userPhone.replace(/\D/g, '');
       
       let rawName = localStorage.getItem('client_user_name') || sessionStorage.getItem('client_user_name');
       if (!rawName || rawName === 'Danışanım') {
-        rawName = 'Egemen Güneş';
+        rawName = 'Değerli Danışanımız';
       }
 
-      const client = matchingClientObj || storedClients.find(c => (c.phone || '').replace(/\D/g, '') === cleanPhone) || storedClients.find(c => c.name === rawName) || {
+      const client = matchingClientObj || storedClients.find(c => cleanPhone && (c.phone || '').replace(/\D/g, '') === cleanPhone) || {
         name: rawName,
         phone: userPhone,
-        package: "🌱 3 Aylık Başlangıç & Disiplin Paketi",
+        package: "Özel Koçluk Paketi",
         stage: "1. Hafta"
       };
 
@@ -1766,7 +1766,7 @@
     window.renderClientProfileMetrics = renderClientProfileMetrics;
 
     function renderAssignedProgramState(client) {
-      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
       const cleanPhone = userPhone.replace(/\D/g, '');
       const clientId = (client && client.id) ? client.id : '';
 
@@ -2199,7 +2199,7 @@
     window.updateWorkoutCompletionState = updateWorkoutCompletionState;
 
     function updateClientWeekDateBadges() {
-      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
       const cleanPhone = userPhone.replace(/\D/g, '');
       const startDateVal = localStorage.getItem('pt_start_date_' + cleanPhone) || localStorage.getItem('pt_start_date_global') || new Date().toISOString().split('T')[0];
       const start = new Date(startDateVal);
@@ -2255,49 +2255,6 @@
       });
     });
     renderClientProfileMetrics();
-
-    // Global doClientLogin handler for instant login response
-    window.doClientLogin = function() {
-      const phoneInput = document.getElementById('client-phone-input');
-      const passInput = document.getElementById('client-pass-input');
-      const rawPhone = phoneInput ? phoneInput.value.trim() : '';
-      const enteredPhone = rawPhone.replace(/\D/g, '');
-      const enteredPass = passInput ? passInput.value.trim() : '';
-      
-      const storedClients = (liveClientsList && liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
-      
-      let matchingClient = null;
-      if (storedClients.length > 0) {
-        matchingClient = storedClients.find(c => {
-          const cleanP = (c.phone || '').replace(/\D/g, '');
-          const cleanPass = (c.password || '').trim();
-          const pMatch = enteredPhone && cleanP && (cleanP === enteredPhone || cleanP.endsWith(enteredPhone) || enteredPhone.endsWith(cleanP));
-          const passMatch = enteredPass && cleanPass && cleanPass === enteredPass;
-          return (pMatch && passMatch) || pMatch || passMatch;
-        });
-      }
-
-      sessionStorage.setItem('client_authenticated', 'true');
-      localStorage.setItem('client_authenticated', 'true');
-
-      const finalPhone = (matchingClient && matchingClient.phone) ? matchingClient.phone : (enteredPhone || '05376274415');
-      const finalName = (matchingClient && matchingClient.name && matchingClient.name !== 'Danışanım') ? matchingClient.name : 'Egemen Güneş';
-
-      sessionStorage.setItem('client_user_phone', finalPhone);
-      sessionStorage.setItem('client_user_name', finalName);
-      localStorage.setItem('client_user_phone', finalPhone);
-      localStorage.setItem('client_user_name', finalName);
-
-      renderClientProfileMetrics(matchingClient);
-
-      const overlay = document.getElementById('client-auth-overlay');
-      if (overlay) {
-        overlay.style.setProperty('display', 'none', 'important');
-        try { overlay.remove(); } catch(e){}
-      }
-
-      checkNewProgramPopup();
-      return false;
     };
 
     if (clientLoginForm) {
