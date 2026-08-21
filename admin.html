@@ -275,19 +275,19 @@
           </div>
 
           <div class="builder-tabs">
-            <button class="builder-tab-btn active" data-builder-tab="tab-workout-builder">
+            <button type="button" class="builder-tab-btn active" data-builder-tab="tab-workout-builder" onclick="switchAdminBuilderTab('tab-workout-builder')">
               <i class="fas fa-dumbbell"></i> Antrenman Programı Yaz
             </button>
-            <button class="builder-tab-btn" data-builder-tab="tab-nutrition-builder">
+            <button type="button" class="builder-tab-btn" data-builder-tab="tab-nutrition-builder" onclick="switchAdminBuilderTab('tab-nutrition-builder')">
               <i class="fas fa-utensils"></i> Beslenme & Makro Listesi Yaz
             </button>
-            <button class="builder-tab-btn" data-builder-tab="tab-supplement-builder">
+            <button type="button" class="builder-tab-btn" data-builder-tab="tab-supplement-builder" onclick="switchAdminBuilderTab('tab-supplement-builder')">
               <i class="fas fa-pills"></i> Takviye & Supplement Rehberi Yaz
             </button>
-            <button class="builder-tab-btn" data-builder-tab="tab-photo-inspector">
+            <button type="button" class="builder-tab-btn" data-builder-tab="tab-photo-inspector" onclick="switchAdminBuilderTab('tab-photo-inspector')">
               <i class="fas fa-camera"></i> Form Fotoğrafları İncele (4 Cephe)
             </button>
-            <button class="builder-tab-btn" data-builder-tab="tab-note-builder">
+            <button type="button" class="builder-tab-btn" data-builder-tab="tab-note-builder" onclick="switchAdminBuilderTab('tab-note-builder')">
               <i class="fas fa-edit"></i> Eğitmen Notu & Değerlendirme
             </button>
           </div>
@@ -1652,6 +1652,43 @@
         console.log('Backend sync offline fallback:', err);
       }
     }
+
+    function switchAdminBuilderTab(targetTabId) {
+      // 1. Remove active class from all tab buttons
+      document.querySelectorAll('.builder-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        const tabAttr = btn.getAttribute('data-builder-tab');
+        const onclickAttr = btn.getAttribute('onclick') || '';
+        if (tabAttr === targetTabId || onclickAttr.includes(targetTabId)) {
+          btn.classList.add('active');
+        }
+      });
+
+      // 2. Hide all builder panes
+      document.querySelectorAll('.builder-pane').forEach(pane => {
+        pane.style.display = 'none';
+      });
+
+      // 3. Show target builder pane
+      const targetPane = document.getElementById(targetTabId);
+      if (targetPane) {
+        targetPane.style.display = 'block';
+      }
+    }
+    window.switchAdminBuilderTab = switchAdminBuilderTab;
+
+    // Attach click listeners to builder tabs
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.builder-tab-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const targetTabId = this.getAttribute('data-builder-tab');
+          if (targetTabId) {
+            switchAdminBuilderTab(targetTabId);
+          }
+        });
+      });
+    });
 
     // Initial render & sync
     renderClientsList();
