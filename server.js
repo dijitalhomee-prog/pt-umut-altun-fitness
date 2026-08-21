@@ -186,7 +186,15 @@ app.post('/api/clients/sync', (req, res) => {
   }
 
   const db = readDb();
-  incoming.forEach(inc => {
+  if (!db.deletedPhones) db.deletedPhones = [];
+
+  // Filter out any incoming clients whose phone is in deletedPhones blocklist!
+  const filteredIncoming = incoming.filter(inc => {
+    const cleanP = (inc.phone || '').replace(/\D/g, '');
+    return !db.deletedPhones.includes(cleanP) && !db.deletedPhones.includes(inc.id);
+  });
+
+  filteredIncoming.forEach(inc => {
     if (!inc || (!inc.id && !inc.phone)) return;
     const cleanPhone = (inc.phone || '').replace(/\D/g, '');
     const idx = db.clients.findIndex(c => c.id === inc.id || (cleanPhone && c.phone && c.phone.replace(/\D/g, '') === cleanPhone));
@@ -202,21 +210,96 @@ app.post('/api/clients/sync', (req, res) => {
   res.json({ success: true, clients: db.clients });
 });
 
-// Delete Client Endpoint (Trainer Action Only)
+// Delete Client Endpoint (Trainer Action Only) - Permanent Revocation Blocklist
 app.delete('/api/clients/:id', (req, res) => {
   const { id } = req.params;
   const db = readDb();
-  const cleanId = id.replace(/\D/g, '');
+  if (!db.deletedPhones) db.deletedPhones = [];
 
+  const cleanId = id.replace(/\D/g, '');
+  const targetClient = db.clients.find(c => 
+    c.id === id || 
+    (c.phone && c.phone.replace(/\D/g, '') === cleanId) ||
+    (cleanId && cleanId.length >= 10 && c.phone && c.phone.replace(/\D/g, '').endsWith(cleanId.slice(-10)))
+  );
+
+  if (targetClient) {
+    const cleanPhone = (targetClient.phone || '').replace(/\D/g, '');
+    if (cleanPhone && !db.deletedPhones.includes(cleanPhone)) {
+      db.deletedPhones.push(cleanPhone);
+    }
+    if (targetClient.id && !db.deletedPhones.includes(targetClient.id)) {
+      db.deletedPhones.push(targetClient.id);
+    }
+
+    db.clients = db.clients.filter(c => c.id !== targetClient.id && (c.phone || '').replace(/\D/g, '') !== cleanPhone);
+    if (db.programs && db.programs[targetClient.id]) {
+      delete db.programs[targetClient.id];
+    }
+    if (db.programs && db.programs[cleanPhone]) {
+      delete db.programs[cleanPhone];
+    }
+
+    writeDb(db);
+    return res.json({ success: true, message: 'Danışan hesabı kalıcı olarak silindi ve erişimi engellendi.', deletedPhone: cleanPhone });
+  }
+
+  // Fallback deletion by id/phone match
   const initialCount = db.clients.length;
   db.clients = db.clients.filter(c => c.id !== id && (cleanId ? c.phone.replace(/\D/g, '') !== cleanId : true));
 
+  if (cleanId && !db.deletedPhones.includes(cleanId)) {
+    db.deletedPhones.push(cleanId);
+  }
+
   if (db.clients.length < initialCount) {
     writeDb(db);
-    res.json({ success: true, message: 'Danışan başarıyla silindi.' });
+    res.json({ success: true, message: 'Danışan başarıyla silindi ve erişim engellendi.' });
   } else {
     res.status(404).json({ success: false, message: 'Silinecek danışan bulunamadı.' });
   }
+});
+
+// Client Authentication & Access Verification Endpoint
+app.post('/api/clients/verify-auth', (req, res) => {
+  const { phone, password } = req.body;
+  const cleanPhone = (phone || '').replace(/\D/g, '');
+  const db = readDb();
+
+  if (!db.deletedPhones) db.deletedPhones = [];
+
+  // Check if phone is deleted
+  if (cleanPhone && (db.deletedPhones.includes(cleanPhone) || db.deletedPhones.some(dp => cleanPhone.endsWith(dp.slice(-10))))) {
+    return res.status(403).json({
+      success: false,
+      deleted: true,
+      message: '🚫 DANIŞAN HESABI SİLİNMİŞTİR: Eğitmeniniz Umut Altun tarafından bu hesabın sistem erişimi kapatılmıştır.'
+    });
+  }
+
+  const client = db.clients.find(c => (c.phone || '').replace(/\D/g, '') === cleanPhone || (c.phone || '').replace(/\D/g, '').endsWith(cleanPhone.slice(-10)));
+
+  if (!client) {
+    return res.status(404).json({
+      success: false,
+      deleted: true,
+      message: '🚫 HESAP BULUNAMADI VEYA SİLİNDİ: Eğitmeniniz Umut Altun tarafından hesabınız sistemden silinmiştir.'
+    });
+  }
+
+  if (password && client.password && client.password !== password) {
+    return res.status(401).json({
+      success: false,
+      deleted: false,
+      message: '⚠️ Giriş şifreniz hatalıdır. Lütfen kontrol edip tekrar deneyin.'
+    });
+  }
+
+  res.json({
+    success: true,
+    deleted: false,
+    client
+  });
 });
 
 // 3. Toggle Client Active / Passive Status

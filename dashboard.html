@@ -1070,6 +1070,131 @@
       }
     }
 
+    function renderAccessDeniedOverlay(title, msg) {
+      let overlay = document.getElementById('client-access-denied-overlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'client-access-denied-overlay';
+        overlay.style.cssText = 'position: fixed; inset: 0; background: rgba(5, 5, 8, 0.98); z-index: 999999999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); padding: 1.5rem; text-align: center;';
+        overlay.innerHTML = `
+          <div class="glass-panel" style="max-width: 480px; width: 100%; padding: 2.5rem 2rem; border-radius: var(--radius-lg); border: 2px solid var(--accent-red); box-shadow: 0 0 50px rgba(239, 68, 68, 0.4);">
+            <div style="width: 76px; height: 76px; background: rgba(239, 68, 68, 0.18); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.4rem auto; border: 2px solid var(--accent-red); box-shadow: 0 0 25px rgba(239, 68, 68, 0.4);">
+              <i class="fas fa-user-slash" style="font-size: 2.5rem; color: var(--accent-red);"></i>
+            </div>
+            <h3 style="color: #FFFFFF; font-size: 1.35rem; margin-bottom: 0.6rem;">${title}</h3>
+            <p style="color: #E5E7EB; font-size: 0.92rem; line-height: 1.6; margin-bottom: 1.8rem;">${msg}</p>
+            <a href="https://wa.me/905386376258" target="_blank" class="btn btn-primary-glow" style="width: 100%; padding: 0.8rem; font-size: 0.92rem; background: var(--accent-red); border-color: var(--accent-red); font-weight: 800; border-radius: var(--radius-md);">
+              <i class="fab fa-whatsapp"></i> Umut Hoca İle WhatsApp'tan İletişime Geç
+            </a>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+      } else {
+        overlay.style.display = 'flex';
+      }
+    }
+    window.renderAccessDeniedOverlay = renderAccessDeniedOverlay;
+
+    function verifyClientAccessRevocation(serverClients, deletedPhones) {
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
+      const cleanPhone = userPhone.replace(/\D/g, '');
+      if (!cleanPhone) return;
+
+      const deletedList = deletedPhones || JSON.parse(localStorage.getItem('pt_deleted_phones')) || [];
+      const isBlocked = deletedList.includes(cleanPhone) || deletedList.some(dp => cleanPhone.endsWith(dp.slice(-10)));
+
+      let isFoundInActive = true;
+      if (Array.isArray(serverClients) && serverClients.length > 0) {
+        isFoundInActive = serverClients.some(c => (c.phone || '').replace(/\D/g, '') === cleanPhone || (c.phone || '').replace(/\D/g, '').endsWith(cleanPhone.slice(-10)));
+      }
+
+      if (isBlocked || !isFoundInActive) {
+        sessionStorage.clear();
+        localStorage.removeItem('client_authenticated');
+        localStorage.removeItem('client_user_phone');
+        renderAccessDeniedOverlay('🚫 DANIŞAN HESABINIZ SİLİNMİŞTİR', 'Eğitmeniniz Umut Altun tarafından bu hesabın sistem erişimi kapatılmıştır. Danışan paneline artık erişim sağlayamazsınız.');
+      }
+    }
+    window.verifyClientAccessRevocation = verifyClientAccessRevocation;
+
+    async function doClientLogin() {
+      const phoneInput = document.getElementById('client-phone-input');
+      const passInput = document.getElementById('client-pass-input');
+      const errBox = document.getElementById('client-login-error');
+
+      const phoneVal = phoneInput ? phoneInput.value.trim() : '';
+      const passVal = passInput ? passInput.value.trim() : '';
+      const cleanPhone = phoneVal.replace(/\D/g, '');
+
+      if (!cleanPhone || !passVal) {
+        if (errBox) {
+          errBox.textContent = '⚠️ Lütfen telefon numarası ve şifrenizi eksiksiz giriniz!';
+          errBox.style.display = 'block';
+        }
+        return false;
+      }
+
+      try {
+        const res = await fetch('/api/clients/verify-auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: cleanPhone, password: passVal })
+        });
+        const data = await res.json();
+
+        if (data.deleted || res.status === 403) {
+          if (errBox) {
+            errBox.textContent = '🚫 BU HESAP SİLİNMİŞTİR: Eğitmeniniz Umut Altun tarafından bu hesabın sistem erişimi engellenmiştir.';
+            errBox.style.display = 'block';
+          }
+          sessionStorage.clear();
+          localStorage.removeItem('client_authenticated');
+          renderAccessDeniedOverlay('🚫 DANIŞAN HESABINIZ SİLİNMİŞTİR', 'Eğitmeniniz Umut Altun tarafından bu hesabın sistem erişimi kapatılmıştır.');
+          return false;
+        }
+
+        if (!data.success) {
+          if (errBox) {
+            errBox.textContent = data.message || '⚠️ Giriş bilgileriniz hatalıdır!';
+            errBox.style.display = 'block';
+          }
+          return false;
+        }
+
+        // Login successful
+        localStorage.setItem('client_user_phone', cleanPhone);
+        localStorage.setItem('client_user_name', data.client.name);
+        sessionStorage.setItem('client_authenticated', 'true');
+        localStorage.setItem('client_authenticated', 'true');
+
+        const overlay = document.getElementById('client-auth-overlay');
+        if (overlay) overlay.style.display = 'none';
+
+        renderClientProfileMetrics(data.client);
+        return true;
+      } catch (err) {
+        // Offline Fallback
+        const deletedList = JSON.parse(localStorage.getItem('pt_deleted_phones')) || [];
+        if (deletedList.includes(cleanPhone)) {
+          if (errBox) {
+            errBox.textContent = '🚫 BU HESAP SİLİNMİŞTİR: Eğitmeniniz Umut Altun tarafından hesabınız silinmiştir.';
+            errBox.style.display = 'block';
+          }
+          renderAccessDeniedOverlay('🚫 DANIŞAN HESABINIZ SİLİNMİŞTİR', 'Eğitmeniniz Umut Altun tarafından bu hesabın sistem erişimi kapatılmıştır.');
+          return false;
+        }
+
+        localStorage.setItem('client_user_phone', cleanPhone);
+        sessionStorage.setItem('client_authenticated', 'true');
+        localStorage.setItem('client_authenticated', 'true');
+        const overlay = document.getElementById('client-auth-overlay');
+        if (overlay) overlay.style.display = 'none';
+        renderClientProfileMetrics();
+        return true;
+      }
+    }
+    window.doClientLogin = doClientLogin;
+
     // Live Clients Fetching Engine (Sunucu REST API Senkronizasyonu)
     let liveClientsList = JSON.parse(localStorage.getItem('pt_clients_list')) || [];
 
@@ -1077,9 +1202,15 @@
       fetch('/api/clients')
         .then(res => res.json())
         .then(data => {
-          if (data.success && Array.isArray(data.clients) && data.clients.length > 0) {
-            liveClientsList = data.clients;
-            localStorage.setItem('pt_clients_list', JSON.stringify(liveClientsList));
+          if (data.success) {
+            if (Array.isArray(data.clients)) {
+              liveClientsList = data.clients;
+              localStorage.setItem('pt_clients_list', JSON.stringify(liveClientsList));
+            }
+            if (Array.isArray(data.deletedPhones)) {
+              localStorage.setItem('pt_deleted_phones', JSON.stringify(data.deletedPhones));
+            }
+            verifyClientAccessRevocation(data.clients, data.deletedPhones);
             renderClientProfileMetrics();
           }
         })

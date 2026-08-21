@@ -1674,14 +1674,21 @@
         // Delete client event
         card.querySelector('.delete-client-btn').addEventListener('click', async (e) => {
           e.stopPropagation();
-          if (confirm(`"${c.name}" isimli danışanı sistemden kalıcı olarak silmek istediğinize emin misiniz?`)) {
-            // 1. Remove from local clients list
-            clients = clients.filter(item => item.id !== c.id);
-            saveClients();
+          const cleanP = (c.phone || '').replace(/\D/g, '');
+          if (confirm(`"${c.name}" isimli danışanı sistemden kalıcı olarak silmek istediğinize emin misiniz?\n\nBu işlem danışanın paneline olan tüm erişim yetkilerini kalıcı olarak kapatacaktır!`)) {
+            // 1. Save to local deleted phones blocklist
+            const deletedPhones = JSON.parse(localStorage.getItem('pt_deleted_phones')) || [];
+            if (cleanP && !deletedPhones.includes(cleanP)) deletedPhones.push(cleanP);
+            if (c.id && !deletedPhones.includes(c.id)) deletedPhones.push(c.id);
+            localStorage.setItem('pt_deleted_phones', JSON.stringify(deletedPhones));
 
-            // 2. Call backend REST API delete
+            // 2. Remove from local clients list
+            clients = clients.filter(item => item.id !== c.id && (cleanP ? (item.phone || '').replace(/\D/g, '') !== cleanP : true));
+            localStorage.setItem('pt_clients_list', JSON.stringify(clients));
+
+            // 3. Call backend REST API delete
             try {
-              await fetch(`/api/clients/${c.id}`, { method: 'DELETE' });
+              await fetch(`/api/clients/${c.id || cleanP}`, { method: 'DELETE' });
             } catch (err) {
               console.warn('Backend delete sync completed locally.');
             }
@@ -1690,6 +1697,7 @@
               selectedClientId = clients.length > 0 ? clients[0].id : null;
             }
             renderClientsList();
+            alert(`✅ "${c.name}" danışanı sistemden silindi. Hesabın panele olan tüm erişimi kapatılmıştır.`);
           }
         });
 
