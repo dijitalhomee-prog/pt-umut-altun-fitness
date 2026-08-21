@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function renderPackages() {
   const container = document.getElementById('packages-container');
-  if (!container) return;
+  const modalSelect = document.getElementById('form-package');
 
   try {
     const res = await fetch('/api/packages');
@@ -28,19 +28,30 @@ async function renderPackages() {
     if (data.success && Array.isArray(data.packages) && data.packages.length > 0) {
       data.packages.forEach(apiPkg => {
         if (APP_DATA && Array.isArray(APP_DATA.packages)) {
-          const localMatch = APP_DATA.packages.find(p => p.name === apiPkg.name || p.id === apiPkg.id);
+          const localMatch = APP_DATA.packages.find(p => p.name === apiPkg.name || p.id === apiPkg.id || (p.name && apiPkg.name && (p.name.includes(apiPkg.name) || apiPkg.name.includes(p.name))));
           if (localMatch) {
             localMatch.price = `${apiPkg.price.toLocaleString('tr-TR')} ₺`;
+            if (apiPkg.compareAtPrice) {
+              localMatch.originalPrice = `${apiPkg.compareAtPrice.toLocaleString('tr-TR')} ₺`;
+            }
             localMatch.description = apiPkg.packageDescription || localMatch.description;
           }
         }
       });
+
+      // Populate onboarding modal dropdown dynamically from API catalog
+      if (modalSelect) {
+        modalSelect.innerHTML = data.packages.map(p => {
+          const priceStr = p.price ? ` (${p.price.toLocaleString('tr-TR')} ₺)` : '';
+          return `<option value="${p.name}">${p.name}${priceStr}</option>`;
+        }).join('');
+      }
     }
   } catch (err) {
     console.warn('Dynamic packages sync error:', err);
   }
 
-  if (!APP_DATA || !APP_DATA.packages) return;
+  if (!container || !APP_DATA || !APP_DATA.packages) return;
 
   container.innerHTML = APP_DATA.packages.map(pkg => `
     <div class="package-card ${pkg.featured ? 'featured' : ''}" data-package-id="${pkg.id}">

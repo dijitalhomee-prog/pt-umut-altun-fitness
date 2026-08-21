@@ -67,6 +67,7 @@ const DEFAULT_PACKAGES = [
     id: 'pkg-pt-10',
     name: 'Cevahir AVM 10 Ders Birebir PT',
     price: 17900,
+    compareAtPrice: null,
     expiryMode: 'sessions',
     durationDays: null,
     entitlements: { ptSessionsTotal: 10, monthlyStudioSessions: 0 },
@@ -78,6 +79,7 @@ const DEFAULT_PACKAGES = [
     id: 'pkg-pt-20',
     name: 'Cevahir AVM 20 Ders Birebir PT',
     price: 32900,
+    compareAtPrice: null,
     expiryMode: 'sessions',
     durationDays: null,
     entitlements: { ptSessionsTotal: 20, monthlyStudioSessions: 0 },
@@ -89,6 +91,7 @@ const DEFAULT_PACKAGES = [
     id: 'pkg-pt-30',
     name: 'Cevahir AVM 30 Ders Birebir PT',
     price: 45350,
+    compareAtPrice: null,
     expiryMode: 'sessions',
     durationDays: null,
     entitlements: { ptSessionsTotal: 30, monthlyStudioSessions: 0 },
@@ -99,18 +102,20 @@ const DEFAULT_PACKAGES = [
   {
     id: 'pkg-hybrid',
     name: 'Cevahir MACFit Hibrit Koçluk Paketi',
-    price: 12500,
+    price: 3900,
+    compareAtPrice: 5500,
     expiryMode: 'days',
     durationDays: 90,
     entitlements: { ptSessionsTotal: 0, monthlyStudioSessions: 1 },
-    packageDescription: 'Uzaktan eğitim koçluğu + ayda 1 kez Cevahir MACFit stüdyosunda yüz yüze form ve teknik değerlendirme seansı.',
+    packageDescription: 'Uzaktan eğitim koçluğu + ayda 1 kez Cevahir MACFit stüdyosunda yüz yüze form ve teknik değerlendirme seansı (12 Hafta).',
     showOnWebsite: true,
     active: true
   },
   {
     id: 'pkg-3m',
     name: '3 Aylık Başlangıç & Disiplin Paketi',
-    price: 8500,
+    price: 4500,
+    compareAtPrice: 5900,
     expiryMode: 'days',
     durationDays: 90,
     entitlements: { ptSessionsTotal: 0, monthlyStudioSessions: 0 },
@@ -121,7 +126,8 @@ const DEFAULT_PACKAGES = [
   {
     id: 'pkg-6m',
     name: '6 Aylık Vücut Yenileme & Hipertrofi Paketi',
-    price: 14500,
+    price: 7900,
+    compareAtPrice: 11500,
     expiryMode: 'days',
     durationDays: 180,
     entitlements: { ptSessionsTotal: 0, monthlyStudioSessions: 0 },
@@ -132,10 +138,11 @@ const DEFAULT_PACKAGES = [
   {
     id: 'pkg-12m',
     name: '12 Aylık VIP Şampiyon Dönüşüm Paketi',
-    price: 24000,
+    price: 13500,
+    compareAtPrice: 21000,
     expiryMode: 'days',
     durationDays: 365,
-    entitlements: { ptSessionsTotal: 0, monthlyStudioSessions: 0 },
+    entitlements: { ptSessionsTotal: 0, monthlyStudioSessions: 1, monthlyVideoReview: 1 },
     packageDescription: '12 aylık kesintisiz VIP birebir koçluk, yıl boyu dönemsel periyotlamalar, takviye rehberi ve 7/24 direkt antrenör iletişimi.',
     showOnWebsite: true,
     active: true
@@ -412,10 +419,22 @@ function readDb(forceDiskRead = false) {
       if (dbData.deletedPhones.length < initialLen) needDiskSave = true;
     }
 
-    // 5. Packages catalog initialization & client schema migration (MADDELER 1, 2, 3, 5)
+    // 5. Packages catalog initialization & price sync (MADDE 1)
     if (!Array.isArray(dbData.packages) || dbData.packages.length === 0) {
       dbData.packages = DEFAULT_PACKAGES;
       needDiskSave = true;
+    } else {
+      dbData.packages.forEach(p => {
+        const def = DEFAULT_PACKAGES.find(d => d.id === p.id);
+        if (def) {
+          if (p.price !== def.price || p.compareAtPrice !== def.compareAtPrice) {
+            p.price = def.price;
+            p.compareAtPrice = def.compareAtPrice;
+            p.packageDescription = def.packageDescription;
+            needDiskSave = true;
+          }
+        }
+      });
     }
 
     dbData.clients.forEach(c => {

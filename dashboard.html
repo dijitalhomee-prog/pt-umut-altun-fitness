@@ -936,6 +936,22 @@
             </tbody>
           </table>
 
+          <!-- YENİ: Kilo İlerleme Takibi & Tarihli Çizgi Grafik (MADDE 5) -->
+          <div id="weight-history-timeline-box" style="margin-top: 2rem; padding: 1.5rem; background: rgba(0,0,0,0.4); border: 1px solid var(--border-light); border-radius: var(--radius-md);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.8rem;">
+              <h4 style="color: #FFF; font-size: 1.1rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-chart-line" style="color: #10B981;"></i> 📈 Kilo İlerleme Geçmişi & Grafik
+              </h4>
+              <button type="button" class="btn btn-outline" style="font-size: 0.78rem; padding: 0.35rem 0.75rem; border-color: #10B981; color: #10B981;" onclick="window.openProfileUpdateModal();">
+                ✏️ Güncel Kilo Gir
+              </button>
+            </div>
+
+            <div id="weight-history-chart-container" style="display: flex; gap: 0.8rem; align-items: flex-end; height: 140px; border-bottom: 2px solid var(--border-light); padding-bottom: 0.5rem; overflow-x: auto;">
+              <!-- Rendered dynamically by renderWeightHistoryTimeline -->
+            </div>
+          </div>
+
           <!-- YENİ: Yüklenen Canlı Form Görselleri & Geçmiş Fotoğraf Takibi -->
           <div id="uploaded-form-photos-section" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-light);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 0.8rem;">
@@ -1772,7 +1788,7 @@
       if (privilegeTitle) privilegeTitle.textContent = client.package || 'Özel Koçluk Paketi';
 
       const privilegeDesc = document.getElementById('pkg-privilege-desc');
-      if (privilegeDesc) privilegeDesc.textContent = client.note || 'Kişiye özel antrenman ve beslenme desteğiniz aktiftir.';
+      if (privilegeDesc) privilegeDesc.textContent = client.packageDescription || 'Kişiye özel antrenman ve beslenme desteğiniz aktiftir.';
 
       const actionStatus = document.getElementById('pkg-action-status');
       if (actionStatus) {
@@ -1814,7 +1830,10 @@
       // 5. Render Uploaded Form Photos Gallery
       renderClientFormPhotos();
 
-      // 6. Check if Trainer has Assigned a Program to this Client
+      // 6. Render Weight Progress History Timeline
+      renderWeightHistoryTimeline(client);
+
+      // 7. Check if Trainer has Assigned a Program to this Client
       renderAssignedProgramState(client);
 
       // Automatically trigger modal on first load if metrics missing
@@ -1828,6 +1847,33 @@
       checkFormCheckinCountdownNotice();
     }
     window.renderClientProfileMetrics = renderClientProfileMetrics;
+
+    function renderWeightHistoryTimeline(client) {
+      const container = document.getElementById('weight-history-chart-container');
+      if (!container) return;
+
+      const history = (client && Array.isArray(client.weightHistory)) ? client.weightHistory : [];
+      if (history.length === 0) {
+        container.innerHTML = `<div style="color: var(--text-muted); font-size: 0.88rem; width: 100%; text-align: center; margin-top: 3rem;">Henüz kaydedilmiş kilo geçmişiniz bulunmuyor. Kilonuzu güncelleyerek grafik takibini başlatabilirsiniz.</div>`;
+        return;
+      }
+
+      const weights = history.map(h => Number(h.weight));
+      const minW = Math.min(...weights) - 2;
+      const maxW = Math.max(...weights) + 2;
+
+      container.innerHTML = history.map(h => {
+        const w = Number(h.weight);
+        const heightPct = Math.max(20, Math.min(100, ((w - minW) / (maxW - minW || 1)) * 100));
+        return `
+          <div style="flex: 1; min-width: 60px; text-align: center; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end;">
+            <span style="font-size: 0.75rem; font-weight: bold; color: #10B981; margin-bottom: 0.2rem;">${w} kg</span>
+            <div style="width: 100%; max-width: 28px; height: ${heightPct}%; background: linear-gradient(180deg, #10B981 0%, rgba(16,185,129,0.2) 100%); border-radius: 4px 4px 0 0; border: 1px solid #10B981;"></div>
+            <span style="font-size: 0.65rem; color: var(--text-muted); margin-top: 0.3rem;">${h.date}</span>
+          </div>
+        `;
+      }).join('');
+    }
 
     function renderAssignedProgramState(client) {
       const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
@@ -2179,6 +2225,20 @@
     function updateClientWeekDateBadges() {
       const startDateVal = (currentClientData && currentClientData.startDate) || new Date().toISOString().split('T')[0];
       const start = new Date(startDateVal);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Dynamic week calculation from startDate (MADDE 4)
+      const diffTime = today - start;
+      const diffDays = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+      const calcWeek = Math.min(4, Math.max(1, Math.floor(diffDays / 7) + 1));
+      clientCurrentWeek = calcWeek;
+
+      // Update Trainer Note Header to reflect calculated week
+      const noteTitleEl = document.getElementById('trainer-note-title');
+      if (noteTitleEl) {
+        noteTitleEl.innerHTML = `<i class="fas fa-comment-dots"></i> Umut Hoca'nın ${calcWeek}. Hafta Notu:`;
+      }
 
       document.querySelectorAll('.client-week-btn').forEach(btn => {
         const w = parseInt(btn.getAttribute('data-week'));
@@ -2199,6 +2259,16 @@
         }
 
         btn.textContent = `📅 ${w}. Hafta (${dateRangeStr})`;
+
+        if (w === calcWeek) {
+          btn.classList.add('active');
+          btn.style.borderColor = 'var(--accent-red)';
+          btn.style.background = 'rgba(239, 68, 68, 0.15)';
+        } else {
+          btn.classList.remove('active');
+          btn.style.borderColor = 'var(--border-light)';
+          btn.style.background = 'none';
+        }
       });
     }
 

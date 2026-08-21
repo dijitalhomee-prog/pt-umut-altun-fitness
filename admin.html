@@ -1489,6 +1489,16 @@
 
       const displayPassword = isPasswordVisibleInCard ? (client.password || 'TANIMSIZ') : '••••••';
 
+      const weightHistory = (Array.isArray(client.weightHistory)) ? client.weightHistory : [];
+      let weightHistoryHtml = '<span style="font-size: 0.78rem; color: var(--text-muted);">Henüz kaydedilmiş kilo geçmişi bulunmuyor.</span>';
+      if (weightHistory.length > 0) {
+        weightHistoryHtml = weightHistory.map(w => `
+          <span style="display: inline-flex; align-items: center; gap: 0.3rem; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; color: #10B981;">
+            📅 ${w.date}: <strong>${w.weight} kg</strong>
+          </span>
+        `).join('');
+      }
+
       container.style.display = 'block';
       container.innerHTML = `
         <div class="glass-panel" style="padding: 1.2rem 1.5rem; border-radius: var(--radius-lg); border: 2px solid var(--accent-red); background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(18,18,22,0.98) 100%);">
@@ -1542,6 +1552,16 @@
                 🔄 Arşivden Çıkar
               </button>
             `}
+          </div>
+
+          <!-- Kilo İlerleme Geçmişi (MADDE 5) -->
+          <div style="margin-top: 0.8rem; padding-top: 0.6rem; border-top: 1px dashed rgba(255,255,255,0.1);">
+            <div style="font-size: 0.78rem; font-weight: 700; color: #10B981; margin-bottom: 0.3rem;">
+              📈 Kilo İlerleme Geçmişi (${weightHistory.length} Kayıt):
+            </div>
+            <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+              ${weightHistoryHtml}
+            </div>
           </div>
         </div>
       `;
