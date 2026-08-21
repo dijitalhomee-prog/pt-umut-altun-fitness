@@ -206,6 +206,44 @@ function performDailyBackup(data) {
   }
 }
 
+function sanitizeCorruptPhotos(dbData) {
+  if (!Array.isArray(dbData.clients)) return false;
+
+  let totalRemoved = 0;
+  let modified = false;
+
+  dbData.clients.forEach(client => {
+    ['photos', 'formPhotos'].forEach(field => {
+      if (Array.isArray(client[field])) {
+        const initialCount = client[field].length;
+        client[field] = client[field].filter(p => {
+          if (!p || typeof p !== 'object' || Array.isArray(p)) return false;
+          const hasImage = Boolean(
+            (p.front && String(p.front).trim()) ||
+            (p.back && String(p.back).trim()) ||
+            (p.left && String(p.left).trim()) ||
+            (p.right && String(p.right).trim()) ||
+            (p.dataUrl && String(p.dataUrl).trim())
+          );
+          return hasImage;
+        });
+        const removed = initialCount - client[field].length;
+        if (removed > 0) {
+          totalRemoved += removed;
+          modified = true;
+          console.log(`[DB SANITIZE] Cleaned ${removed} corrupt photo entry/entries from client "${client.name}" (${client.id})`);
+        }
+      }
+    });
+  });
+
+  if (totalRemoved > 0) {
+    console.log(`[DB SANITIZE] TOTAL CORRUPT PHOTO RECORDS CLEANED: ${totalRemoved}`);
+  }
+
+  return modified;
+}
+
 // --------------------------------------------------------------------------
 // HELPER: Startup Deduplication & Cleanup Migration
 // --------------------------------------------------------------------------
@@ -368,6 +406,11 @@ function readDb(forceDiskRead = false) {
     const prevSessionCount = dbData.sessions.length;
     dbData.sessions = dbData.sessions.filter(s => s.expiresAt && s.expiresAt > nowIso);
     if (dbData.sessions.length < prevSessionCount) {
+      needDiskSave = true;
+    }
+
+    // 2. Sanitize corrupt photo records across all clients
+    if (sanitizeCorruptPhotos(dbData)) {
       needDiskSave = true;
     }
 
@@ -663,43 +706,64 @@ function sanitizeClient(client, includeSensitive = false) {
 // AUTHENTICATION & AUTHORIZATION MIDDLEWARE
 // --------------------------------------------------------------------------
 function authMiddleware(req, res, next) {
+  // Always reset session context first
+  req.session = null;
+  req.isTrainer = false;
+  req.client = null;
+
   const authHeader = req.headers.authorization;
   const customHeader = req.headers['x-session-token'];
   const cookieHeader = req.headers.cookie;
 
   let token = '';
+
   if (authHeader && authHeader.startsWith('Bearer ')) {
     token = authHeader.substring(7).trim();
   } else if (customHeader) {
     token = String(customHeader).trim();
   } else if (cookieHeader) {
     const match = cookieHeader.match(/session_token=([^;]+)/);
-    if (match) token = match[1];
+    if (match) token = match[1].trim();
   }
 
-  if (!token) {
-    req.session = null;
-    req.isTrainer = false;
-    req.client = null;
+  if (!token || token === 'null' || token === 'undefined' || token === 'false') {
     return next();
   }
 
   const db = readDb();
   const session = db.sessions.find(s => s.token === token);
   if (!session) {
-    req.session = null;
-    req.isTrainer = false;
-    req.client = null;
+    return next();
+  }
+
+  // Check session expiration
+  if (session.expiresAt && new Date(session.expiresAt) < new Date()) {
+    db.sessions = db.sessions.filter(s => s.token !== token);
+    writeDb(db);
     return next();
   }
 
   req.session = session;
   req.isTrainer = Boolean(session.isTrainer);
 
-  if (session.clientId) {
-    req.client = db.clients.find(c => c.id === session.clientId || normalizePhone(c.phone) === session.phone);
-  } else {
-    req.client = null;
+  if (session.clientId || session.phone) {
+    const normPhone = normalizePhone(session.phone);
+    const client = db.clients.find(c => c.id === session.clientId || (normPhone && normalizePhone(c.phone) === normPhone));
+
+    // Check if client or phone was deleted / blacklisted
+    const isDeleted = db.deletedPhones && db.deletedPhones.some(dp => {
+      const cleanDp = normalizePhone(dp) || dp;
+      return (normPhone && cleanDp === normPhone) || (session.clientId && cleanDp === session.clientId);
+    });
+
+    if (isDeleted || !client) {
+      req.session = null;
+      req.isTrainer = false;
+      req.client = null;
+      return next();
+    }
+
+    req.client = client;
   }
 
   next();
@@ -708,7 +772,7 @@ function authMiddleware(req, res, next) {
 app.use('/api', authMiddleware);
 
 function requireTrainer(req, res, next) {
-  if (!req.isTrainer) {
+  if (!req.session || !req.isTrainer) {
     return res.status(401).json({ success: false, message: '🔒 Yetkisiz Erişim: Bu işlem yalnızca eğitmen oturumu ile gerçekleştirilebilir.' });
   }
   next();
@@ -719,8 +783,10 @@ function requireAuth(req, res, next) {
     return res.status(401).json({ success: false, message: '🔒 Oturum Geçersiz: Lütfen sisteme tekrar giriş yapınız.' });
   }
 
-  // PASSIVE or ARCHIVED ACCOUNT CHECK FOR CLIENTS (MADDE 6)
-  if (!req.isTrainer && req.client) {
+  if (!req.isTrainer) {
+    if (!req.client) {
+      return res.status(401).json({ success: false, message: '🔒 Danışan Kaydı Bulunamadı veya Oturum Geçersiz.' });
+    }
     if (req.client.status === 'passive' || req.client.status === 'archived') {
       return res.status(403).json({
         success: false,
@@ -965,6 +1031,24 @@ app.post('/api/me/photos', requireAuth, (req, res) => {
   }
 
   const photoObj = req.body.photoGroup || req.body;
+
+  // Strict Body Validation
+  if (!photoObj || typeof photoObj !== 'object' || Array.isArray(photoObj)) {
+    return res.status(400).json({ success: false, message: 'Lütfen geçerli fotoğraf verisi yükleyiniz.' });
+  }
+
+  const hasImage = Boolean(
+    (photoObj.front && String(photoObj.front).trim()) ||
+    (photoObj.back && String(photoObj.back).trim()) ||
+    (photoObj.left && String(photoObj.left).trim()) ||
+    (photoObj.right && String(photoObj.right).trim()) ||
+    (photoObj.dataUrl && String(photoObj.dataUrl).trim())
+  );
+
+  if (!hasImage) {
+    return res.status(400).json({ success: false, message: 'Lütfen en az bir açıya ait geçerli fotoğraf yükleyiniz.' });
+  }
+
   const db = readDb();
   const client = db.clients.find(c => c.id === req.client.id);
 

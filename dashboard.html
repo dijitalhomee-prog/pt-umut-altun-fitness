@@ -1496,62 +1496,90 @@
     window.openImageZoomModal = openImageZoomModal;
 
     function renderClientFormPhotos() {
-      const photosList = (currentClientData && (currentClientData.formPhotos || currentClientData.photos)) || [];
       const gridEl = document.getElementById('form-photos-grid');
       if (!gridEl) return;
 
-      if (photosList.length === 0) {
-        gridEl.innerHTML = `
-          <div style="grid-column: 1 / -1; padding: 1.5rem; background: rgba(0,0,0,0.3); border: 1px dashed var(--border-light); border-radius: var(--radius-md); text-align: center; color: var(--text-muted);">
-            <i class="fas fa-camera-retro" style="font-size: 1.8rem; color: #10B981; margin-bottom: 0.5rem; display: block;"></i>
-            Henüz yüklenmiş form görseliniz yok. Üstteki <strong>"Yeni Form Fotoğrafı Ekle"</strong> butonuna basarak 4 açının ilk görsellerini ekleyebilirsiniz.
-          </div>
-        `;
-        return;
-      }
+      try {
+        const rawPhotos = (currentClientData && (currentClientData.formPhotos || currentClientData.photos)) || [];
+        const photosList = rawPhotos.filter(p => {
+          if (!p || typeof p !== 'object' || Array.isArray(p)) return false;
+          return Boolean(
+            (p.front && String(p.front).trim()) ||
+            (p.back && String(p.back).trim()) ||
+            (p.left && String(p.left).trim()) ||
+            (p.right && String(p.right).trim()) ||
+            (p.dataUrl && String(p.dataUrl).trim())
+          );
+        });
 
-      gridEl.innerHTML = photosList.map(p => {
-        const frontSrc = p.front || p.dataUrl;
-        const backSrc = p.back || p.dataUrl;
-        const rightSrc = p.right || p.dataUrl;
-        const leftSrc = p.left || p.dataUrl;
+        if (photosList.length === 0) {
+          gridEl.innerHTML = `
+            <div style="grid-column: 1 / -1; padding: 1.5rem; background: rgba(0,0,0,0.3); border: 1px dashed var(--border-light); border-radius: var(--radius-md); text-align: center; color: var(--text-muted);">
+              <i class="fas fa-camera-retro" style="font-size: 1.8rem; color: #10B981; margin-bottom: 0.5rem; display: block;"></i>
+              Henüz yüklenmiş form görseliniz yok. Üstteki <strong>"Yeni Form Fotoğrafı Ekle"</strong> butonuna basarak 4 açının ilk görsellerini ekleyebilirsiniz.
+            </div>
+          `;
+          return;
+        }
 
-        return `
-          <div style="background: rgba(18, 18, 22, 0.95); border: 1px solid var(--border-light); border-radius: var(--radius-md); overflow: hidden; padding: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.5rem;">
-              <div>
-                <span style="font-size: 0.82rem; color: #10B981; font-weight: 800; display: block;">
-                  <i class="fas fa-calendar-alt"></i> ${p.date || 'Tarih Belirtilmedi'}
+        gridEl.innerHTML = photosList.map(p => {
+          const renderAngle = (src, label, alt) => {
+            if (src && String(src).trim()) {
+              return `
+                <div style="text-align: center;">
+                  <span style="font-size: 0.68rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem; font-weight: bold;">${label}</span>
+                  <img src="${src}" alt="${alt}" onclick="window.openImageZoomModal('${src}')" style="width: 100%; height: 90px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-light); cursor: pointer;" title="Büyütmek için tıklayın">
+                </div>
+              `;
+            } else {
+              return `
+                <div style="text-align: center;">
+                  <span style="font-size: 0.68rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem; font-weight: bold;">${label}</span>
+                  <div style="width: 100%; height: 90px; background: rgba(255,255,255,0.03); border: 1px dashed var(--border-light); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: var(--text-muted);">Fotoğraf Yok</div>
+                </div>
+              `;
+            }
+          };
+
+          const frontSrc = p.front || p.dataUrl;
+          const backSrc = p.back || p.dataUrl;
+          const rightSrc = p.right || p.dataUrl;
+          const leftSrc = p.left || p.dataUrl;
+
+          return `
+            <div style="background: rgba(18, 18, 22, 0.95); border: 1px solid var(--border-light); border-radius: var(--radius-md); overflow: hidden; padding: 1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.5rem;">
+                <div>
+                  <span style="font-size: 0.82rem; color: #10B981; font-weight: 800; display: block;">
+                    <i class="fas fa-calendar-alt"></i> ${p.date || 'Tarih Belirtilmedi'}
+                  </span>
+                  <span style="font-size: 0.75rem; color: var(--text-muted);">${p.note ? `"${p.note}"` : 'Ek not yok'}</span>
+                </div>
+                <span style="font-size: 0.72rem; background: rgba(16,185,129,0.15); color: #10B981; padding: 0.2rem 0.6rem; border-radius: var(--radius-full); border: 1px solid #10B981; font-weight: 700;">
+                  <i class="fas fa-check-circle"></i> 4 Açı Yüklendi
                 </span>
-                <span style="font-size: 0.75rem; color: var(--text-muted);">${p.note ? `"${p.note}"` : 'Ek not yok'}</span>
               </div>
-              <span style="font-size: 0.72rem; background: rgba(16,185,129,0.15); color: #10B981; padding: 0.2rem 0.6rem; border-radius: var(--radius-full); border: 1px solid #10B981; font-weight: 700;">
-                <i class="fas fa-check-circle"></i> 4 Açı Yüklendi
-              </span>
-            </div>
 
-            <!-- 4 Angle Thumbnail Grid -->
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
-              <div style="text-align: center;">
-                <span style="font-size: 0.68rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem; font-weight: bold;">Ön Açı</span>
-                <img src="${frontSrc}" alt="Ön" onclick="window.openImageZoomModal('${frontSrc}')" style="width: 100%; height: 90px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-light); cursor: pointer;" title="Büyütmek için tıklayın">
-              </div>
-              <div style="text-align: center;">
-                <span style="font-size: 0.68rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem; font-weight: bold;">Arka (Sırt)</span>
-                <img src="${backSrc}" alt="Arka" onclick="window.openImageZoomModal('${backSrc}')" style="width: 100%; height: 90px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-light); cursor: pointer;" title="Büyütmek için tıklayın">
-              </div>
-              <div style="text-align: center;">
-                <span style="font-size: 0.68rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem; font-weight: bold;">Sağ Yan</span>
-                <img src="${rightSrc}" alt="Sağ" onclick="window.openImageZoomModal('${rightSrc}')" style="width: 100%; height: 90px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-light); cursor: pointer;" title="Büyütmek için tıklayın">
-              </div>
-              <div style="text-align: center;">
-                <span style="font-size: 0.68rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem; font-weight: bold;">Sol Yan</span>
-                <img src="${leftSrc}" alt="Sol" onclick="window.openImageZoomModal('${leftSrc}')" style="width: 100%; height: 90px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-light); cursor: pointer;" title="Büyütmek için tıklayın">
+              <!-- 4 Angle Thumbnail Grid -->
+              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+                ${renderAngle(frontSrc, 'Ön Açı', 'Ön')}
+                ${renderAngle(backSrc, 'Arka (Sırt)', 'Arka')}
+                ${renderAngle(rightSrc, 'Sağ Yan', 'Sağ')}
+                ${renderAngle(leftSrc, 'Sol Yan', 'Sol')}
               </div>
             </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error('renderClientFormPhotos error:', err);
+        gridEl.innerHTML = `
+          <div style="grid-column: 1 / -1; padding: 1.5rem; background: rgba(239,68,68,0.1); border: 1px solid var(--accent-red); border-radius: var(--radius-md); text-align: center; color: #EF4444;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
+            Fotoğraflar yüklenemedi. Lütfen sayfayı yenileyiniz.
           </div>
         `;
-      }).join('');
+      }
     }
     window.renderClientFormPhotos = renderClientFormPhotos;
 
@@ -1619,14 +1647,8 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ photoGroup })
       }).then(res => res.json()).then(data => {
-        if (data.success && currentClientData) {
-          currentClientData.formPhotos = data.photos;
-          currentClientData.photos = data.photos;
-          if (data.formChecks) currentClientData.formChecks = data.formChecks;
-          
-          renderClientFormPhotos();
-          renderClientProgressComparison(currentClientData);
-          renderClientFormCheckSchedule(currentClientData);
+        if (data.success) {
+          fetchMyData();
         }
       }).catch(err => console.log('Photo sync error', err));
 
