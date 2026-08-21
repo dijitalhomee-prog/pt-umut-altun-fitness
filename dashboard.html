@@ -1836,6 +1836,15 @@
       // 7. Check if Trainer has Assigned a Program to this Client
       renderAssignedProgramState(client);
 
+      // 8. Render Client Nutrition Plan (Calorie, Macros & Meal List)
+      renderClientNutrition(client);
+
+      // 9. Render Client Supplement Protocol
+      renderClientSupplements(client);
+
+      // 10. Update Navigation Tab Badges (Dot Indicators)
+      updateDashboardTabBadges(client);
+
       // Automatically trigger modal on first load if metrics missing
       const isAuth = (sessionStorage.getItem('client_authenticated') === 'true' || localStorage.getItem('client_authenticated') === 'true');
       if (isAuth && (!startWeight || !currentWeight) && !sessionStorage.getItem('profile_modal_shown')) {
@@ -1847,6 +1856,271 @@
       checkFormCheckinCountdownNotice();
     }
     window.renderClientProfileMetrics = renderClientProfileMetrics;
+
+    function renderClientNutrition(clientObj) {
+      const client = clientObj || currentClientData || {};
+      const container = document.getElementById('tab-nutrition');
+      if (!container) return;
+
+      const nutri = client.nutrition || {};
+      const hasNutri = Boolean(
+        (nutri.calories && String(nutri.calories).trim()) ||
+        (nutri.protein && String(nutri.protein).trim()) ||
+        (nutri.carbs && String(nutri.carbs).trim()) ||
+        (nutri.fat && String(nutri.fat).trim()) ||
+        (nutri.meals && String(nutri.meals).trim())
+      );
+
+      if (!hasNutri) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 3.5rem 1.5rem; background: rgba(0,0,0,0.3); border: 1px dashed var(--border-light); border-radius: var(--radius-lg); margin-top: 1rem;">
+            <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(239,68,68,0.15); color: var(--accent-red); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.2rem auto; border: 1px solid var(--accent-red);">
+              <i class="fas fa-utensils"></i>
+            </div>
+            <h3 style="font-size: 1.3rem; font-weight: 800; color: #FFFFFF; margin-bottom: 0.5rem;">Eğitmeniniz Henüz Beslenme Programı Yazmadı</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 520px; margin: 0 auto 1.8rem auto; line-height: 1.5;">
+              Umut Hoca kişisel hedeflerinize, günlük kalori ihtiyacınıza ve metabolizmanıza özel beslenme ve makro listenizi hazırladığında tüm öğünleriniz burada görünecektir.
+            </p>
+            <a href="https://wa.me/905389417861?text=${encodeURIComponent('Merhaba Umut Hoca, beslenme programım hakkında bilgi alabilir miyim?')}" target="_blank" class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 0.6rem; border-color: #25D366; color: #25D366; padding: 0.6rem 1.4rem; font-weight: 700;">
+              <i class="fab fa-whatsapp" style="font-size: 1.1rem;"></i> WhatsApp'tan Eğitmene Sor
+            </a>
+          </div>
+        `;
+        return;
+      }
+
+      const cal = nutri.calories ? `${parseInt(nutri.calories).toLocaleString('tr-TR')} kcal` : 'Belirtilmedi';
+      const pro = nutri.protein ? `${nutri.protein}g` : '—';
+      const carb = nutri.carbs ? `${nutri.carbs}g` : '—';
+      const fat = nutri.fat ? `${nutri.fat}g` : '—';
+      const water = nutri.water ? `${nutri.water} Litre` : null;
+
+      let mealsHtml = '';
+      if (typeof nutri.meals === 'string' && nutri.meals.trim()) {
+        const lines = nutri.meals.split('\n').filter(l => l.trim());
+        let currentMealTitle = 'Öğün';
+        let currentItems = [];
+        const mealBlocks = [];
+
+        lines.forEach(line => {
+          const lLower = line.toLowerCase();
+          if (lLower.includes('öğün') || lLower.includes('kahvaltı') || lLower.includes('öğle') || lLower.includes('akşam') || lLower.includes('ara öğün')) {
+            if (currentItems.length > 0) {
+              mealBlocks.push({ title: currentMealTitle, items: [...currentItems] });
+              currentItems = [];
+            }
+            currentMealTitle = line.trim();
+          } else {
+            currentItems.push(line.trim());
+          }
+        });
+        if (currentItems.length > 0 || mealBlocks.length === 0) {
+          mealBlocks.push({ title: currentMealTitle, items: currentItems.length > 0 ? currentItems : [nutri.meals] });
+        }
+
+        mealsHtml = mealBlocks.map((block, idx) => `
+          <div class="meal-block" style="margin-bottom: 1.5rem; background: rgba(0,0,0,0.4); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1.2rem;">
+            <div class="meal-header" style="margin-bottom: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
+              <h4 style="color: #FFFFFF; font-size: 1.05rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-utensils" style="color: var(--accent-red);"></i> ${block.title}
+              </h4>
+              <span style="font-size: 0.75rem; color: var(--accent-red); background: rgba(239,68,68,0.15); padding: 0.2rem 0.6rem; border-radius: var(--radius-full); font-weight: 700;">Öğün ${idx + 1}</span>
+            </div>
+            <div class="meal-food-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
+              ${block.items.map(item => `
+                <div class="meal-food-item" style="display: flex; align-items: center; justify-content: space-between; font-size: 0.88rem; color: #E5E7EB; padding: 0.4rem 0.6rem; background: rgba(255,255,255,0.02); border-radius: var(--radius-sm);">
+                  <span><i class="fas fa-check-circle" style="color: #10B981; margin-right: 0.5rem;"></i> ${item}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `).join('');
+      } else if (Array.isArray(nutri.meals) && nutri.meals.length > 0) {
+        mealsHtml = nutri.meals.map((m, idx) => `
+          <div class="meal-block" style="margin-bottom: 1.5rem; background: rgba(0,0,0,0.4); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1.2rem;">
+            <div class="meal-header" style="margin-bottom: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.5rem;">
+              <h4 style="color: #FFFFFF; font-size: 1.05rem; font-weight: 700; margin: 0;"><i class="fas fa-utensils" style="color: var(--accent-red);"></i> ${m.title || `Öğün ${idx+1}`}</h4>
+            </div>
+            <div class="meal-food-list">
+              ${(m.items || [m.content || m]).map(item => `<div style="padding: 0.4rem 0; color: #E5E7EB; font-size: 0.88rem;"><i class="fas fa-check-circle" style="color: #10B981; margin-right: 0.5rem;"></i> ${item}</div>`).join('')}
+            </div>
+          </div>
+        `).join('');
+      } else {
+        mealsHtml = `<div style="padding: 1.2rem; color: var(--text-muted); font-size: 0.88rem; text-align: center;">Kişisel öğün listeniz henüz tanımlanmadı.</div>`;
+      }
+
+      container.innerHTML = `
+        <div class="glass-panel" style="padding: 1.5rem; margin-bottom: 1.8rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1rem;">
+            <h3 style="margin-bottom: 0; font-size: 1.2rem; color: #FFFFFF; font-weight: 800;">
+              <i class="fas fa-fire" style="color: var(--accent-red); margin-right: 0.4rem;"></i> Kişiye Özel Günlük Makro Hedefi (<span id="nutri-target-kcal">${cal}</span>)
+            </h3>
+            <div style="display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap;">
+              ${water ? `<span style="font-size: 0.85rem; color: #3B82F6; background: rgba(59,130,246,0.15); border: 1px solid #3B82F6; padding: 0.35rem 0.8rem; border-radius: var(--radius-full); font-weight: 700;"><i class="fas fa-tint"></i> Günlük Su: ${water}</span>` : ''}
+              <button id="download-nutrition-pdf-btn" class="btn btn-outline" style="padding: 0.45rem 1rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-file-pdf" style="color: var(--accent-red);"></i> Beslenme Listesini PDF İndir
+              </button>
+            </div>
+          </div>
+          <div class="res-metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem;">
+            <div class="metric-card" style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-light); text-align: center;">
+              <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem;">Hedef Protein</span>
+              <h4 id="nutri-target-protein" style="font-size: 1.3rem; color: #EF4444; font-weight: 800; margin: 0;">${pro}</h4>
+            </div>
+            <div class="metric-card" style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-light); text-align: center;">
+              <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem;">Hedef Karbonhidrat</span>
+              <h4 id="nutri-target-carb" style="font-size: 1.3rem; color: #3B82F6; font-weight: 800; margin: 0;">${carb}</h4>
+            </div>
+            <div class="metric-card" style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-light); text-align: center;">
+              <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem;">Hedef Yağ</span>
+              <h4 id="nutri-target-fat" style="font-size: 1.3rem; color: #F59E0B; font-weight: 800; margin: 0;">${fat}</h4>
+            </div>
+          </div>
+        </div>
+
+        <div id="client-meal-list-box" class="meal-list">
+          ${mealsHtml}
+        </div>
+
+        <div style="padding: 1.2rem; background: rgba(6, 182, 212, 0.08); border: 1px dashed var(--accent-secondary); border-radius: var(--radius-md); display: flex; align-items: center; gap: 1rem; margin-top: 1.5rem;">
+          <i class="fas fa-lightbulb" style="font-size: 1.5rem; color: var(--accent-secondary);"></i>
+          <div style="font-size: 0.875rem; color: #E5E7EB;">
+            <strong>💡 Esnek Besin Değişim Rehberi:</strong> Canınız tavuk istemiyorsa 180g Tavuk Göğsü yerine <strong>200g Yağsız Dana Kıyma</strong>, <strong>220g Somon/Balık</strong> veya <strong>250g Lor Peyniri</strong> tüketebilirsiniz.
+          </div>
+        </div>
+      `;
+    }
+    window.renderClientNutrition = renderClientNutrition;
+
+    function renderClientSupplements(clientObj) {
+      const client = clientObj || currentClientData || {};
+      const container = document.getElementById('tab-supplements');
+      if (!container) return;
+
+      const supp = client.supplements || {};
+      const populated = [];
+
+      if (supp.whey && String(supp.whey).trim()) populated.push({ title: 'Whey Protein', val: supp.whey, icon: 'fa-wine-bottle', color: '#10B981' });
+      if (supp.creatine && String(supp.creatine).trim()) populated.push({ title: 'Creatine Monohydrate', val: supp.creatine, icon: 'fa-bolt', color: '#EF4444' });
+      if (supp.preworkout && String(supp.preworkout).trim()) populated.push({ title: 'Pre-Workout', val: supp.preworkout, icon: 'fa-fire', color: '#F59E0B' });
+      if (supp.multivitamin && String(supp.multivitamin).trim()) populated.push({ title: 'Multivitamin', val: supp.multivitamin, icon: 'fa-pills', color: '#3B82F6' });
+      if (supp.omega3 && String(supp.omega3).trim()) populated.push({ title: 'Omega-3 (Balık Yağı)', val: supp.omega3, icon: 'fa-heart', color: '#8B5CF6' });
+      if (supp.zma && String(supp.zma).trim()) populated.push({ title: 'ZMA / Magnezyum', val: supp.zma, icon: 'fa-moon', color: '#EC4899' });
+
+      const hasNotes = supp.notes && String(supp.notes).trim();
+
+      if (populated.length === 0 && !hasNotes) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 3.5rem 1.5rem; background: rgba(0,0,0,0.3); border: 1px dashed var(--border-light); border-radius: var(--radius-lg); margin-top: 1rem;">
+            <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(16,185,129,0.15); color: #10B981; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.2rem auto; border: 1px solid #10B981;">
+              <i class="fas fa-capsules"></i>
+            </div>
+            <h3 style="font-size: 1.3rem; font-weight: 800; color: #FFFFFF; margin-bottom: 0.5rem;">Eğitmeniniz Henüz Takviye Önerisi Yazmadı</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 520px; margin: 0 auto 1.8rem auto; line-height: 1.5;">
+              Umut Hoca antrenman yoğunluğunuza ve beslenme eksiklerinize göre gıda takviyesi ve supplement protokolünüzü hazırladığında öneriler burada görünecektir.
+            </p>
+            <a href="https://wa.me/905389417861?text=${encodeURIComponent('Merhaba Umut Hoca, takviye/supplement önerisi alabilir miyim?')}" target="_blank" class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 0.6rem; border-color: #25D366; color: #25D366; padding: 0.6rem 1.4rem; font-weight: 700;">
+              <i class="fab fa-whatsapp" style="font-size: 1.1rem;"></i> WhatsApp'tan Eğitmene Sor
+            </a>
+          </div>
+        `;
+        return;
+      }
+
+      const cardsHtml = populated.map(item => `
+        <div style="padding: 1.4rem; background: rgba(0,0,0,0.4); border: 1px solid var(--border-light); border-radius: var(--radius-md); display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h4 style="color: ${item.color}; margin-bottom: 0.6rem; font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+              <i class="fas ${item.icon}"></i> ${item.title}
+            </h4>
+            <p style="font-size: 0.9rem; color: #E5E7EB; line-height: 1.5; margin: 0;">${item.val}</p>
+          </div>
+        </div>
+      `).join('');
+
+      container.innerHTML = `
+        <div class="glass-panel" style="padding: 2rem;">
+          <h3 style="margin-bottom: 0.6rem; font-size: 1.25rem; color: #FFFFFF; font-weight: 800; display: flex; align-items: center; gap: 0.6rem;">
+            <i class="fas fa-capsules" style="color: #10B981;"></i> Kişiselleştirilmiş Gıda Takviye & Supplement Protokolü
+          </h3>
+          <p style="color: var(--text-muted); margin-bottom: 1.8rem; font-size: 0.88rem;">
+            Eğitmeniniz Umut Altun tarafından antrenman performansınız ve toparlanma süreciniz için özel olarak belirlenmiş kullanım rehberi:
+          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+            ${cardsHtml}
+          </div>
+
+          ${hasNotes ? `
+            <div style="padding: 1.2rem 1.5rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--accent-red); border-radius: var(--radius-md); margin-top: 1.5rem;">
+              <h5 style="color: #FFFFFF; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-comment-medical" style="color: var(--accent-red);"></i> Umut Hoca'nın Takviye Notu:
+              </h5>
+              <p style="color: #E5E7EB; font-size: 0.88rem; margin: 0; line-height: 1.5;">"${supp.notes}"</p>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+    window.renderClientSupplements = renderClientSupplements;
+
+    function updateDashboardTabBadges(clientObj) {
+      const client = clientObj || currentClientData || {};
+      
+      // 1. Workout Tab Badge
+      const btnWorkout = document.querySelector('.dash-tab-btn[data-tab="tab-workout"]');
+      if (btnWorkout) {
+        let dot = btnWorkout.querySelector('.tab-badge-dot');
+        if (client.hasAssignedProgram) {
+          if (!dot) {
+            dot = document.createElement('span');
+            dot.className = 'tab-badge-dot';
+            dot.style.cssText = 'width: 8px; height: 8px; border-radius: 50%; background: var(--accent-red); display: inline-block; margin-left: 6px; box-shadow: 0 0 8px var(--accent-red);';
+            btnWorkout.appendChild(dot);
+          }
+        } else if (dot) {
+          dot.remove();
+        }
+      }
+
+      // 2. Nutrition Tab Badge
+      const btnNutri = document.querySelector('.dash-tab-btn[data-tab="tab-nutrition"]');
+      if (btnNutri) {
+        const nutri = client.nutrition || {};
+        const hasNutri = Boolean(nutri.calories || nutri.protein || (nutri.meals && String(nutri.meals).trim()));
+        let dot = btnNutri.querySelector('.tab-badge-dot');
+        if (hasNutri) {
+          if (!dot) {
+            dot = document.createElement('span');
+            dot.className = 'tab-badge-dot';
+            dot.style.cssText = 'width: 8px; height: 8px; border-radius: 50%; background: #10B981; display: inline-block; margin-left: 6px; box-shadow: 0 0 8px #10B981;';
+            btnNutri.appendChild(dot);
+          }
+        } else if (dot) {
+          dot.remove();
+        }
+      }
+
+      // 3. Supplements Tab Badge
+      const btnSupp = document.querySelector('.dash-tab-btn[data-tab="tab-supplements"]');
+      if (btnSupp) {
+        const supp = client.supplements || {};
+        const hasSupp = Boolean(supp.whey || supp.creatine || supp.preworkout || supp.multivitamin || supp.omega3 || supp.zma || supp.notes);
+        let dot = btnSupp.querySelector('.tab-badge-dot');
+        if (hasSupp) {
+          if (!dot) {
+            dot = document.createElement('span');
+            dot.className = 'tab-badge-dot';
+            dot.style.cssText = 'width: 8px; height: 8px; border-radius: 50%; background: #3B82F6; display: inline-block; margin-left: 6px; box-shadow: 0 0 8px #3B82F6;';
+            btnSupp.appendChild(dot);
+          }
+        } else if (dot) {
+          dot.remove();
+        }
+      }
+    }
+    window.updateDashboardTabBadges = updateDashboardTabBadges;
 
     function renderWeightHistoryTimeline(client) {
       const container = document.getElementById('weight-history-chart-container');
