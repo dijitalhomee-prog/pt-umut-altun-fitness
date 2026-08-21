@@ -23,6 +23,11 @@
 
   <!-- Custom CSS -->
   <link rel="stylesheet" href="css/style.css">
+  <script>
+    if (localStorage.getItem('client_authenticated') === 'true' || sessionStorage.getItem('client_authenticated') === 'true') {
+      document.write('<style>#client-auth-overlay { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }</style>');
+    }
+  </script>
   <style>
     /* Dashboard Specific Styles */
     .dashboard-page {
@@ -1035,23 +1040,29 @@
 
     function renderClientProfileMetrics(matchingClientObj) {
       const storedClients = (liveClientsList && liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
-      const userPhone = sessionStorage.getItem('client_user_phone') || localStorage.getItem('client_user_phone') || '05376274415';
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
       const cleanPhone = userPhone.replace(/\D/g, '');
-      const userName = sessionStorage.getItem('client_user_name') || localStorage.getItem('client_user_name') || 'Danışanım';
+      
+      let rawName = localStorage.getItem('client_user_name') || sessionStorage.getItem('client_user_name');
+      if (!rawName || rawName === 'Danışanım') {
+        rawName = 'Egemen Güneş';
+      }
 
-      const client = matchingClientObj || storedClients.find(c => (c.phone || '').replace(/\D/g, '') === cleanPhone) || storedClients.find(c => c.name === userName) || {
-        name: userName,
+      const client = matchingClientObj || storedClients.find(c => (c.phone || '').replace(/\D/g, '') === cleanPhone) || storedClients.find(c => c.name === rawName) || {
+        name: rawName,
         phone: userPhone,
         package: "🌱 3 Aylık Başlangıç & Disiplin Paketi",
         stage: "1. Hafta"
       };
 
+      const displayName = (client.name && client.name !== 'Danışanım') ? client.name : rawName;
+
       // 1. Update Welcome Banner Name, Initials, Package Badge
       const nameEl = document.getElementById('client-name');
-      if (nameEl) nameEl.textContent = client.name;
+      if (nameEl) nameEl.textContent = displayName;
 
       const initialsEl = document.getElementById('client-initials');
-      if (initialsEl) initialsEl.textContent = getInitials(client.name);
+      if (initialsEl) initialsEl.textContent = getInitials(displayName);
 
       const pkgEl = document.getElementById('client-package-badge');
       if (pkgEl) {
@@ -1131,11 +1142,13 @@
       sessionStorage.setItem('client_authenticated', 'true');
       localStorage.setItem('client_authenticated', 'true');
 
-      const finalPhone = (matchingClient && matchingClient.phone) ? matchingClient.phone : (enteredPhone || '05386376258');
-      const finalName = (matchingClient && matchingClient.name) ? matchingClient.name : 'Danışanım';
+      const finalPhone = (matchingClient && matchingClient.phone) ? matchingClient.phone : (enteredPhone || '05376274415');
+      const finalName = (matchingClient && matchingClient.name && matchingClient.name !== 'Danışanım') ? matchingClient.name : 'Egemen Güneş';
 
       sessionStorage.setItem('client_user_phone', finalPhone);
       sessionStorage.setItem('client_user_name', finalName);
+      localStorage.setItem('client_user_phone', finalPhone);
+      localStorage.setItem('client_user_name', finalName);
 
       renderClientProfileMetrics(matchingClient);
 
