@@ -1092,6 +1092,15 @@
         .trim();
     }
 
+    function getTurkeyDateStr() {
+      try {
+        return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' });
+      } catch (e) {
+        return new Date().toISOString().split('T')[0];
+      }
+    }
+    window.getTurkeyDateStr = getTurkeyDateStr;
+
     function getRemainingDays(expiryDateStr) {
       if (!expiryDateStr) return null;
       const parts = expiryDateStr.split('T')[0].split('-');
@@ -1587,10 +1596,24 @@
           </div>
 
           <!-- Yüklenen Form Görselleri & Geçmiş Takibi Galerisi -->
-          ${renderTrainerClientFormPhotosSection(client)}
+          ${(() => {
+            try {
+              return renderTrainerClientFormPhotosSection(client);
+            } catch(e) {
+              console.warn('Form photos render error:', e);
+              return '';
+            }
+          })()}
 
           <!-- Form Kontrol Takvimi (Eğitmen İnceleme & Onay Paneli) -->
-          ${renderTrainerClientFormCheckScheduleSection(client)}
+          ${(() => {
+            try {
+              return renderTrainerClientFormCheckScheduleSection(client);
+            } catch(e) {
+              console.warn('Form checks schedule render error:', e);
+              return '';
+            }
+          })()}
         </div>
       `;
     }
