@@ -543,14 +543,18 @@
           </button>
         </div>
 
-        <!-- Master Calendar Grid for Admin (August 2026) -->
-        <div style="border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1rem; background: rgba(0,0,0,0.3);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h4 style="color: var(--accent-red); margin: 0;"><i class="fas fa-calendar-day"></i> Ağustos 2026 — Danışan Etkinlik & Paket Sonu Matrisi</h4>
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Bugün: <strong>20 Ağustos 2026</strong></span>
+        <!-- Dynamic Master Calendar Grid for Admin -->
+        <div style="border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1.2rem; background: rgba(0,0,0,0.35);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+            <h4 style="color: var(--accent-red); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+              <i class="fas fa-calendar-alt"></i> <span id="admin-calendar-title">Ağustos 2026 — Danışan Takvim Notu & Etkinlik Matrisi</span>
+            </h4>
+            <span style="font-size: 0.8rem; color: #10B981; font-weight: 700; background: rgba(16,185,129,0.15); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid #10B981;">
+              💡 İpucu: Gün kutularına basarak <span id="admin-active-client-note-target" style="color: #FFF; font-weight: 800;">Seçili Danışan</span> için takvim notu ekleyin.
+            </span>
           </div>
 
-          <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.4rem; text-align: center;">
+          <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.4rem; text-align: center; margin-bottom: 0.5rem;">
             <!-- Weekday Titles -->
             <div style="font-weight: 800; font-size: 0.75rem; color: var(--accent-red); padding: 0.4rem; background: rgba(239,68,68,0.15); border-radius: 4px;">Pzt</div>
             <div style="font-weight: 800; font-size: 0.75rem; color: var(--accent-red); padding: 0.4rem; background: rgba(239,68,68,0.15); border-radius: 4px;">Sal</div>
@@ -559,52 +563,59 @@
             <div style="font-weight: 800; font-size: 0.75rem; color: var(--accent-red); padding: 0.4rem; background: rgba(239,68,68,0.15); border-radius: 4px;">Cum</div>
             <div style="font-weight: 800; font-size: 0.75rem; color: var(--accent-red); padding: 0.4rem; background: rgba(239,68,68,0.15); border-radius: 4px;">Cmt</div>
             <div style="font-weight: 800; font-size: 0.75rem; color: var(--accent-red); padding: 0.4rem; background: rgba(239,68,68,0.15); border-radius: 4px;">Paz</div>
+          </div>
 
-            <!-- Clean Calendar Days (1-31) -->
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem; opacity: 0.6;">1</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem; opacity: 0.6;">2</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem; opacity: 0.6;">3</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem; opacity: 0.6;">4</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem; opacity: 0.6;">5</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem; opacity: 0.6;">6</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem; opacity: 0.6;">7</div>
-            
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem; opacity: 0.6;">8</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem; opacity: 0.6;">9</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem; opacity: 0.6;">10</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem; opacity: 0.6;">11</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem; opacity: 0.6;">12</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem; opacity: 0.6;">13</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem; opacity: 0.6;">14</div>
-            
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem; opacity: 0.6;">15</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem; opacity: 0.6;">16</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem; opacity: 0.6;">17</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem; opacity: 0.6;">18</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem; opacity: 0.6;">19</div>
-            
-            <!-- TODAY (20) -->
-            <div style="padding: 0.5rem; background: rgba(239,68,68,0.25); border: 2px solid var(--accent-red); border-radius: 4px; font-size: 0.85rem; font-weight: 800; color: #fff; box-shadow: 0 0 12px rgba(239,68,68,0.4);">
-              20<br><span style="font-size: 0.65rem; color: var(--accent-red);">📌 BUGÜN</span>
-            </div>
-
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem;">21</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem;">22</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem;">23</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem;">24</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem;">25</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem;">26</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem;">27</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem;">28</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem;">29</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem;">30</div>
-            <div style="padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 0.78rem;">31</div>
+          <!-- DYNAMIC INTERACTIVE CALENDAR DAYS CONTAINER -->
+          <div id="admin-calendar-days-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.4rem; text-align: center;">
+            <!-- Rendered dynamically by renderAdminCalendar() -->
           </div>
         </div>
 
       </div>
     </div>
   </main>
+
+  <!-- Modal: Danışana Takvim Notu Ekle (Eğitmen Paneli) -->
+  <div id="admin-calendar-note-modal" style="position: fixed; inset: 0; background: rgba(8, 8, 10, 0.92); z-index: 9999999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(12px); padding: 1.5rem;">
+    <div class="glass-panel" style="max-width: 520px; width: 100%; padding: 2rem; border-radius: var(--radius-lg); border: 2px solid var(--accent-red); box-shadow: 0 0 35px rgba(239, 68, 68, 0.3); position: relative; text-align: left;">
+      <button type="button" onclick="closeAdminCalendarNoteModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+      
+      <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.8rem;">
+        <div style="width: 46px; height: 46px; background: rgba(239, 68, 68, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--accent-red); flex-shrink: 0;">
+          <i class="fas fa-pin" style="color: var(--accent-red); font-size: 1.3rem;"></i>
+        </div>
+        <div>
+          <h4 style="color: #FFFFFF; font-size: 1.15rem; margin: 0 0 0.2rem 0;" id="admin-modal-client-name">Danışan Takvim Notu</h4>
+          <span style="font-size: 0.8rem; color: var(--accent-red); font-weight: 700;" id="admin-modal-target-date">21 Ağustos 2026</span>
+        </div>
+      </div>
+
+      <!-- Quick Shortcut Badges -->
+      <div style="margin-bottom: 1rem;">
+        <label class="calc-label" style="font-size: 0.78rem;">Hızlı Not Şablonu Seçin:</label>
+        <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+          <button type="button" class="btn btn-outline" style="font-size: 0.72rem; padding: 0.25rem 0.55rem; border-color: #25D366; color: #25D366;" onclick="applyCalendarNotePreset('📍 MACFit Birebir Salon Dersi (16:00)')">📍 Salon Dersi 16:00</button>
+          <button type="button" class="btn btn-outline" style="font-size: 0.72rem; padding: 0.25rem 0.55rem; border-color: #10B981; color: #10B981;" onclick="applyCalendarNotePreset('📸 Haftalık Form Görseli Yükleme Günü')">📸 Form Görseli Günü</button>
+          <button type="button" class="btn btn-outline" style="font-size: 0.72rem; padding: 0.25rem 0.55rem; border-color: #F59E0B; color: #F59E0B;" onclick="applyCalendarNotePreset('⚖️ Haftalık Kilo & Tartı Kontrolü')">⚖️ Tartı & Kilo Günü</button>
+          <button type="button" class="btn btn-outline" style="font-size: 0.72rem; padding: 0.25rem 0.55rem; border-color: #3B82F6; color: #3B82F6;" onclick="applyCalendarNotePreset('🥗 Yüksek Karbonhidrat Yükleme Günü')">🥗 Yüksek Karb Günü</button>
+        </div>
+      </div>
+
+      <div class="calc-form-group" style="margin-bottom: 1.2rem;">
+        <label class="calc-label">Danışanın Takviminde Görünecek Özel Notunuz:</label>
+        <textarea id="admin-calendar-note-input" class="input-field" rows="3" placeholder="Örn: Saat 16:00 MACFit stüdyomuzda Birebir Bacak dersimiz var. Çantana kilit almayı unutma!"></textarea>
+      </div>
+
+      <div style="display: flex; gap: 0.6rem;">
+        <button type="button" class="btn btn-primary-glow" onclick="saveAdminCalendarNote()" style="flex-grow: 1; padding: 0.75rem; font-size: 0.92rem; background: var(--accent-red); border-color: var(--accent-red); font-weight: 800;">
+          <i class="fas fa-save"></i> Takvim Notunu Kaydet & Danışan Paneline İşle
+        </button>
+        <button type="button" class="btn btn-outline" onclick="deleteAdminCalendarNote()" style="padding: 0.75rem; font-size: 0.92rem; border-color: rgba(239, 68, 68, 0.4); color: #EF4444;" title="Notu Sil">
+          <i class="fas fa-trash-alt"></i> Sil
+        </button>
+      </div>
+    </div>
+  </div>
 
   <footer style="padding: 2rem 0; border-top: 1px solid var(--border-light); margin-top: 3rem;">
     <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
@@ -1249,6 +1260,9 @@
 
       // 5. Render Client Form Photos & 4 Angle Inspector
       renderAdminClientPhotos(client);
+
+      // 6. Render Dynamic Calendar for Selected Client
+      renderAdminCalendar();
     }
 
     function renderAdminClientPhotos(client) {
@@ -1337,6 +1351,168 @@
       modal.style.display = 'flex';
     }
     window.openAdminImageZoom = openAdminImageZoom;
+
+    // ==========================================================================
+    // Dynamic Interactive Client Calendar Note System (Eğitmen Takvim Notları)
+    // ==========================================================================
+    let selectedCalendarDateKey = null;
+
+    function renderAdminCalendar() {
+      const grid = document.getElementById('admin-calendar-days-grid');
+      const activeTargetSpan = document.getElementById('admin-active-client-note-target');
+      if (!grid) return;
+
+      const currentSelected = clients.find(c => c.id === selectedClientId) || clients[0];
+      if (activeTargetSpan) {
+        activeTargetSpan.textContent = currentSelected ? currentSelected.name : 'Danışan';
+      }
+
+      const cleanPhone = currentSelected ? (currentSelected.phone || '').replace(/\D/g, '') : '';
+      const notesKey = `pt_calendar_notes_${cleanPhone}`;
+      const savedNotes = (currentSelected && currentSelected.calendarNotes) || JSON.parse(localStorage.getItem(notesKey)) || {};
+
+      grid.innerHTML = '';
+      const now = new Date();
+      const today = now.getDate();
+      const totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+
+      for (let day = 1; day <= totalDays; day++) {
+        const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const noteText = savedNotes[dateKey] || savedNotes[day] || savedNotes[String(day)];
+        const isToday = (day === today);
+
+        const cell = document.createElement('div');
+        cell.style.padding = '0.65rem 0.3rem';
+        cell.style.borderRadius = 'var(--radius-sm)';
+        cell.style.fontSize = '0.82rem';
+        cell.style.fontWeight = '700';
+        cell.style.cursor = 'pointer';
+        cell.style.position = 'relative';
+        cell.style.transition = 'var(--transition-fast)';
+
+        if (noteText) {
+          cell.style.background = 'rgba(239, 68, 68, 0.25)';
+          cell.style.border = '2px solid var(--accent-red)';
+          cell.style.color = '#FFFFFF';
+          cell.style.boxShadow = '0 0 10px rgba(239, 68, 68, 0.3)';
+          cell.innerHTML = `${day}<br><span style="font-size: 0.62rem; color: #10B981; font-weight: 800;">📌 Not Var</span>`;
+          cell.title = `Not: "${noteText}" (Düzenlemek için tıklayın)`;
+        } else if (isToday) {
+          cell.style.background = 'rgba(255,255,255,0.06)';
+          cell.style.border = '2px solid var(--accent-red)';
+          cell.style.color = '#FFFFFF';
+          cell.innerHTML = `${day}<br><span style="font-size: 0.62rem; color: var(--accent-red); font-weight: 800;">BUGÜN</span>`;
+          cell.title = 'Not Eklemek İçin Tıklayın';
+        } else {
+          cell.style.background = 'rgba(255,255,255,0.02)';
+          cell.style.border = '1px solid rgba(255,255,255,0.08)';
+          cell.style.color = '#E5E7EB';
+          cell.innerHTML = `${day}`;
+          cell.title = 'Not Eklemek İçin Tıklayın';
+        }
+
+        cell.addEventListener('click', () => {
+          openAdminCalendarNoteModal(day, dateKey);
+        });
+
+        grid.appendChild(cell);
+      }
+    }
+    window.renderAdminCalendar = renderAdminCalendar;
+
+    function openAdminCalendarNoteModal(dayNum, dateKey) {
+      const currentSelected = clients.find(c => c.id === selectedClientId) || clients[0];
+      if (!currentSelected) {
+        alert('Lütfen önce soldaki listeden bir danışan seçin!');
+        return;
+      }
+
+      selectedCalendarDateKey = dateKey || String(dayNum);
+
+      const modal = document.getElementById('admin-calendar-note-modal');
+      const nameEl = document.getElementById('admin-modal-client-name');
+      const dateEl = document.getElementById('admin-modal-target-date');
+      const inputEl = document.getElementById('admin-calendar-note-input');
+
+      if (nameEl) nameEl.textContent = `📌 ${currentSelected.name} — Takvim Notu`;
+      
+      const now = new Date();
+      const monthName = now.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+      if (dateEl) dateEl.textContent = `${dayNum} ${monthName}`;
+
+      const cleanPhone = (currentSelected.phone || '').replace(/\D/g, '');
+      const notesKey = `pt_calendar_notes_${cleanPhone}`;
+      const savedNotes = currentSelected.calendarNotes || JSON.parse(localStorage.getItem(notesKey)) || {};
+
+      if (inputEl) {
+        inputEl.value = savedNotes[selectedCalendarDateKey] || savedNotes[dayNum] || savedNotes[String(dayNum)] || '';
+      }
+
+      if (modal) modal.style.display = 'flex';
+    }
+    window.openAdminCalendarNoteModal = openAdminCalendarNoteModal;
+
+    function closeAdminCalendarNoteModal() {
+      const modal = document.getElementById('admin-calendar-note-modal');
+      if (modal) modal.style.display = 'none';
+    }
+    window.closeAdminCalendarNoteModal = closeAdminCalendarNoteModal;
+
+    function applyCalendarNotePreset(presetText) {
+      const inputEl = document.getElementById('admin-calendar-note-input');
+      if (inputEl) {
+        inputEl.value = presetText;
+      }
+    }
+    window.applyCalendarNotePreset = applyCalendarNotePreset;
+
+    function saveAdminCalendarNote() {
+      const currentSelected = clients.find(c => c.id === selectedClientId) || clients[0];
+      if (!currentSelected || !selectedCalendarDateKey) return;
+
+      const inputEl = document.getElementById('admin-calendar-note-input');
+      const noteText = inputEl ? inputEl.value.trim() : '';
+
+      if (!currentSelected.calendarNotes) {
+        currentSelected.calendarNotes = {};
+      }
+
+      if (noteText) {
+        currentSelected.calendarNotes[selectedCalendarDateKey] = noteText;
+        // Also map to day number for simple lookups
+        const dayOnly = selectedCalendarDateKey.split('-').pop();
+        if (dayOnly) currentSelected.calendarNotes[parseInt(dayOnly, 10)] = noteText;
+      } else {
+        delete currentSelected.calendarNotes[selectedCalendarDateKey];
+        const dayOnly = selectedCalendarDateKey.split('-').pop();
+        if (dayOnly) delete currentSelected.calendarNotes[parseInt(dayOnly, 10)];
+      }
+
+      const cleanPhone = (currentSelected.phone || '').replace(/\D/g, '');
+      const notesKey = `pt_calendar_notes_${cleanPhone}`;
+      localStorage.setItem(notesKey, JSON.stringify(currentSelected.calendarNotes));
+      saveClients();
+
+      // REST API Sync
+      fetch(`/api/clients/${currentSelected.id || cleanPhone}/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ calendarNotes: currentSelected.calendarNotes })
+      }).catch(err => console.log('Calendar note offline sync:', err));
+
+      closeAdminCalendarNoteModal();
+      renderAdminCalendar();
+
+      alert(`✅ Takvim Notu Başarıyla Kaydedildi!\n\n📌 Danışan: ${currentSelected.name}\n📅 Tarih Anahtarı: ${selectedCalendarDateKey}\n📝 Not: "${noteText || 'Silindi'}"\n\nBu not danışanın kendi paneline anında yansıyacaktır.`);
+    }
+    window.saveAdminCalendarNote = saveAdminCalendarNote;
+
+    function deleteAdminCalendarNote() {
+      const inputEl = document.getElementById('admin-calendar-note-input');
+      if (inputEl) inputEl.value = '';
+      saveAdminCalendarNote();
+    }
+    window.deleteAdminCalendarNote = deleteAdminCalendarNote;
 
     function renderClientsList() {
       checkAutomaticExpirations();

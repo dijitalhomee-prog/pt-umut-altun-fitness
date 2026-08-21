@@ -2167,39 +2167,71 @@
       }
     }
 
+    function getClientCalendarNotes() {
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
+      const cleanPhone = userPhone.replace(/\D/g, '');
+      const storedClients = (liveClientsList && liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
+      const client = storedClients.find(c => (c.phone || '').replace(/\D/g, '') === cleanPhone) || {};
+
+      const notesKey = `pt_calendar_notes_${cleanPhone}`;
+      return client.calendarNotes || JSON.parse(localStorage.getItem(notesKey)) || {};
+    }
+    window.getClientCalendarNotes = getClientCalendarNotes;
+
     function renderCalendar() {
       const gridBox = document.getElementById('calendar-days-grid');
       if (!gridBox) return;
 
       gridBox.innerHTML = '';
       const completedWorkoutDays = getUserCompletedDays();
+      const calendarNotes = getClientCalendarNotes();
+
       const now = new Date();
       const totalDaysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
       const today = now.getDate();
 
+      let todayNoteText = null;
+
       for (let day = 1; day <= totalDaysInMonth; day++) {
+        const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const hasNote = calendarNotes[dateKey] || calendarNotes[day] || calendarNotes[String(day)];
+        const isCompleted = completedWorkoutDays.includes(day);
+        const isToday = (day === today);
+
+        if (isToday && hasNote) {
+          todayNoteText = hasNote;
+        }
+
         const dayCell = document.createElement('div');
         dayCell.style.padding = '0.65rem 0.3rem';
         dayCell.style.borderRadius = 'var(--radius-sm)';
         dayCell.style.fontSize = '0.85rem';
         dayCell.style.fontWeight = '700';
         dayCell.style.position = 'relative';
+        dayCell.style.cursor = hasNote ? 'pointer' : 'default';
         dayCell.style.transition = 'var(--transition-fast)';
 
-        const isCompleted = completedWorkoutDays.includes(day);
-        const isToday = (day === today);
+        let noteBadgeHtml = '';
+        if (hasNote) {
+          noteBadgeHtml = `<div style="font-size: 0.65rem; color: #10B981; font-weight: 800; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Umut Hoca Notu: &quot;${hasNote}&quot;">📌 Not</div>`;
+        }
 
         if (isCompleted) {
           dayCell.style.background = 'rgba(239, 68, 68, 0.2)';
           dayCell.style.color = '#FFFFFF';
           dayCell.style.border = '1px solid var(--accent-red)';
-          dayCell.innerHTML = `<span>${day}</span> <i class="fas fa-check" style="color: var(--accent-red); font-size: 0.75rem; margin-left: 2px;"></i>`;
+          dayCell.innerHTML = `<span>${day}</span> <i class="fas fa-check" style="color: var(--accent-red); font-size: 0.75rem; margin-left: 2px;"></i>${noteBadgeHtml}`;
         } else if (isToday) {
-          dayCell.style.background = 'rgba(255, 255, 255, 0.05)';
+          dayCell.style.background = 'rgba(255, 255, 255, 0.08)';
           dayCell.style.color = '#FFFFFF';
           dayCell.style.border = '2px solid var(--accent-red)';
           dayCell.style.boxShadow = '0 0 12px rgba(239, 68, 68, 0.5)';
-          dayCell.innerHTML = `<span>${day}</span>`;
+          dayCell.innerHTML = `<span>${day}</span>${noteBadgeHtml}`;
+        } else if (hasNote) {
+          dayCell.style.background = 'rgba(16, 185, 129, 0.15)';
+          dayCell.style.color = '#FFFFFF';
+          dayCell.style.border = '1px solid #10B981';
+          dayCell.innerHTML = `<span>${day}</span>${noteBadgeHtml}`;
         } else {
           dayCell.style.background = 'rgba(255, 255, 255, 0.02)';
           dayCell.style.color = 'var(--text-muted)';
@@ -2207,7 +2239,40 @@
           dayCell.innerHTML = `<span>${day}</span>`;
         }
 
+        if (hasNote) {
+          dayCell.addEventListener('click', () => {
+            alert(`📌 Umut Hoca'nın ${day} Tarihli Takvim Notu:\n\n"${hasNote}"`);
+          });
+        }
+
         gridBox.appendChild(dayCell);
+      }
+
+      // Render Coach Calendar Note Banner if note exists for today
+      let noteBanner = document.getElementById('today-coach-calendar-note-banner');
+      if (todayNoteText) {
+        if (!noteBanner) {
+          noteBanner = document.createElement('div');
+          noteBanner.id = 'today-coach-calendar-note-banner';
+          noteBanner.style.cssText = 'background: linear-gradient(135deg, rgba(239, 68, 68, 0.18) 0%, rgba(18, 18, 22, 0.95) 100%); border: 1.5px solid var(--accent-red); padding: 1rem 1.2rem; border-radius: var(--radius-md); margin: 1.2rem 0; display: flex; align-items: center; gap: 0.8rem; box-shadow: 0 0 20px rgba(239,68,68,0.25);';
+          if (gridBox.parentNode) {
+            gridBox.parentNode.insertBefore(noteBanner, gridBox);
+          }
+        }
+        noteBanner.innerHTML = `
+          <div style="width: 44px; height: 44px; background: rgba(239, 68, 68, 0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--accent-red); flex-shrink: 0;">
+            <i class="fas fa-thumbtack" style="color: var(--accent-red); font-size: 1.3rem;"></i>
+          </div>
+          <div>
+            <h5 style="color: var(--accent-red); margin: 0 0 0.2rem 0; font-size: 0.9rem; font-weight: 800; display: flex; align-items: center; gap: 0.4rem;">
+              📌 Umut Hoca'nın Bugüne Özel Takvim Notu:
+            </h5>
+            <p style="color: #FFFFFF; font-size: 0.88rem; margin: 0; line-height: 1.4; font-weight: 600;">"${todayNoteText}"</p>
+          </div>
+        `;
+        noteBanner.style.display = 'flex';
+      } else if (noteBanner) {
+        noteBanner.style.display = 'none';
       }
 
       // Update Summary Stats

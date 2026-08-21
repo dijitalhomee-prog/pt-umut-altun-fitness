@@ -281,6 +281,7 @@ app.put('/api/clients/:id/profile', (req, res) => {
   if (measurements) client.measurements = measurements;
   if (photos) client.photos = photos;
   if (dayList) client.dayList = dayList;
+  if (req.body.calendarNotes) client.calendarNotes = req.body.calendarNotes;
 
   writeDb(db);
   res.json({ success: true, client });
