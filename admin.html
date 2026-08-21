@@ -154,7 +154,7 @@
 </head>
 <body>
 
-  <!-- Eğitmen Güvenlik Giriş Modalı (PIN: 586158) -->
+  <!-- Eğitmen Güvenlik Giriş Modalı -->
   <div id="trainer-auth-overlay" style="position: fixed; inset: 0; background: rgba(8, 8, 10, 0.98); z-index: 99999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(15px); padding: 1.5rem;">
     <div class="glass-panel" style="max-width: 420px; width: 100%; padding: 2.5rem; border-radius: var(--radius-lg); border: 2px solid var(--accent-red); text-align: center; box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);">
       <div style="width: 70px; height: 70px; background: rgba(239, 68, 68, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem auto; border: 1px solid var(--accent-red);">
@@ -1004,7 +1004,7 @@
       }
 
       // Perform backend REST API sync
-      fetch(`/api/clients/${targetClient.id}/profile`, {
+      trainerFetch(`/api/clients/${targetClient.id}/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1109,30 +1109,70 @@
 
   <script>
     // ==========================================================================
-    // Trainer Authentication Logic (586158 Şifre Doğrulama)
+    // Trainer Authentication Logic & Server Token Engine
     // ==========================================================================
     const trainerAuthOverlay = document.getElementById('trainer-auth-overlay');
     const trainerLoginForm = document.getElementById('trainer-login-form');
     const trainerPinInput = document.getElementById('trainer-pin-input');
     const trainerLoginError = document.getElementById('trainer-login-error');
 
-    if (sessionStorage.getItem('trainer_authenticated') === 'true') {
+    function getTrainerToken() {
+      return sessionStorage.getItem('trainer_session_token') || localStorage.getItem('trainer_session_token') || '';
+    }
+
+    async function trainerFetch(url, options = {}) {
+      const token = getTrainerToken();
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}`, 'x-session-token': token } : {}),
+        ...(options.headers || {})
+      };
+
+      const res = await fetch(url, { ...options, headers });
+      if (res.status === 401 && !url.includes('/api/auth/trainer')) {
+        sessionStorage.removeItem('trainer_session_token');
+        sessionStorage.removeItem('trainer_authenticated');
+        if (trainerAuthOverlay) trainerAuthOverlay.style.display = 'flex';
+      }
+      return res;
+    }
+
+    if (sessionStorage.getItem('trainer_authenticated') === 'true' && getTrainerToken()) {
       if (trainerAuthOverlay) trainerAuthOverlay.style.display = 'none';
     } else {
       if (trainerAuthOverlay) trainerAuthOverlay.style.display = 'flex';
     }
 
     if (trainerLoginForm) {
-      trainerLoginForm.addEventListener('submit', (e) => {
+      trainerLoginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const enteredPin = trainerPinInput.value.trim();
-        if (enteredPin === '586158') {
-          sessionStorage.setItem('trainer_authenticated', 'true');
-          trainerAuthOverlay.style.display = 'none';
-        } else {
-          trainerLoginError.style.display = 'block';
-          trainerPinInput.value = '';
-          trainerPinInput.focus();
+        try {
+          const res = await fetch('/api/auth/trainer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: enteredPin })
+          });
+          const data = await res.json();
+          if (res.ok && data.success && data.token) {
+            sessionStorage.setItem('trainer_session_token', data.token);
+            sessionStorage.setItem('trainer_authenticated', 'true');
+            if (trainerAuthOverlay) trainerAuthOverlay.style.display = 'none';
+            if (trainerLoginError) trainerLoginError.style.display = 'none';
+            loadServerClients();
+          } else {
+            if (trainerLoginError) {
+              trainerLoginError.textContent = data.message || '⚠️ Hatalı Şifre!';
+              trainerLoginError.style.display = 'block';
+            }
+            trainerPinInput.value = '';
+            trainerPinInput.focus();
+          }
+        } catch (err) {
+          if (trainerLoginError) {
+            trainerLoginError.textContent = '⚠️ Sunucu bağlantı hatası!';
+            trainerLoginError.style.display = 'block';
+          }
         }
       });
     }
@@ -1149,7 +1189,7 @@
     // Sunucudan (REST API) Kayıtlı Danışanları Canlı Çek ve Birleştir
     async function loadServerClients() {
       try {
-        const res = await fetch('/api/clients');
+        const res = await trainerFetch('/api/clients');
         const data = await res.json();
         if (data.success && Array.isArray(data.clients)) {
           mergeClientLists(data.clients);
@@ -1499,7 +1539,7 @@
       saveClients();
 
       // REST API Sync
-      fetch(`/api/clients/${currentSelected.id || cleanPhone}/profile`, {
+      trainerFetch(`/api/clients/${currentSelected.id || cleanPhone}/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ calendarNotes: currentSelected.calendarNotes })
@@ -1673,7 +1713,7 @@
 
               // Call REST API
               try {
-                await fetch(`/api/clients/${c.id}/password`, {
+                await trainerFetch(`/api/clients/${c.id}/password`, {
                   method: 'PUT',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ password: newPass })
@@ -1709,7 +1749,7 @@
 
             // 3. Call backend REST API delete
             try {
-              await fetch(`/api/clients/${c.id || cleanP}`, { method: 'DELETE' });
+              await trainerFetch(`/api/clients/${c.id || cleanP}`, { method: 'DELETE' });
             } catch (err) {
               console.warn('Backend delete sync completed locally.');
             }
@@ -1762,7 +1802,7 @@
       });
 
       localStorage.setItem('pt_clients_list', JSON.stringify(clients));
-      fetch('/api/clients/sync', {
+      trainerFetch('/api/clients/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ clients: clients })
@@ -1823,6 +1863,11 @@
 
         const phone = rawPhone.replace(/\D/g, '');
 
+        if (!name || phone.length < 10) {
+          alert('⚠️ Lütfen danışan adı ve geçerli 10 haneli telefon numarasını giriniz!');
+          return;
+        }
+
         // Auto Expiry Date Calculation
         let daysToAdd = 90;
         if (pkg.includes('1 Aylık')) daysToAdd = 30;
@@ -1836,7 +1881,6 @@
         const expiryDateStr = expDateObj.toISOString().split('T')[0];
 
         const newClient = {
-          id: 'client-' + Date.now(),
           name: name,
           phone: phone,
           password: password,
@@ -1847,18 +1891,22 @@
           note: status === 'active' ? `Aktif (Son Tarih: ${expiryDateStr})` : '🔴 Otomatik Pasife Alındı (Süresi Doldu)'
         };
 
-        clients.unshift(newClient);
-        selectedClientId = newClient.id;
-        saveClients();
-        renderClientsList();
-
-        // Backend Persistent Sync
-        fetch('/api/clients', {
+        // Single Upsert Request to Server API
+        trainerFetch('/api/clients', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newClient)
+        }).then(res => res.json()).then(data => {
+          if (data.success && data.client) {
+            const idx = clients.findIndex(c => c.id === data.client.id || (data.client.phone && c.phone && c.phone.endsWith(data.client.phone)));
+            if (idx >= 0) clients[idx] = data.client;
+            else clients.unshift(data.client);
+            selectedClientId = data.client.id;
+            localStorage.setItem('pt_clients_list', JSON.stringify(clients));
+            renderClientsList();
+          }
         }).catch(err => console.log('Offline fallback', err));
-        
+
         modal.classList.remove('active');
         addClientForm.reset();
         alert(`✨ Danışan Başarıyla Sisteme Kaydedildi!\n\n📌 Danışan: ${name}\n📱 Giriş Telefonu: ${rawPhone}\n🔑 Giriş Şifresi: ${password}\n📅 Paket Bitiş Tarihi: ${expiryDateStr}\n\nDanışan bu telefon ve şifre ile danışan paneline giriş yapabilir.`);
@@ -1868,7 +1916,7 @@
     // Backend Fetch Sync on init with auto-restore
     async function fetchServerClients() {
       try {
-        const res = await fetch('/api/clients');
+        const res = await trainerFetch('/api/clients');
         if (res.ok) {
           const data = await res.json();
           if (data.success && Array.isArray(data.clients) && data.clients.length > 0) {

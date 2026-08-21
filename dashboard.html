@@ -1135,6 +1135,71 @@
     }
     window.verifyClientAccessRevocation = verifyClientAccessRevocation;
 
+    // ==========================================================================
+    // Client Isolated Authentication & Session Engine (/api/me Protocol)
+    // ==========================================================================
+    let currentClientData = null;
+
+    function getClientToken() {
+      return sessionStorage.getItem('client_session_token') || localStorage.getItem('client_session_token') || '';
+    }
+
+    async function clientFetch(url, options = {}) {
+      const token = getClientToken();
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}`, 'x-session-token': token } : {}),
+        ...(options.headers || {})
+      };
+      return fetch(url, { ...options, headers });
+    }
+
+    function showClientAuthOverlay() {
+      const overlay = document.getElementById('client-auth-overlay');
+      if (overlay) overlay.style.setProperty('display', 'flex', 'important');
+    }
+
+    function hideClientAuthOverlay() {
+      const overlay = document.getElementById('client-auth-overlay');
+      if (overlay) overlay.style.setProperty('display', 'none', 'important');
+    }
+
+    function logoutClient(sendRequest = true) {
+      if (sendRequest && getClientToken()) {
+        clientFetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
+      }
+      sessionStorage.clear();
+      localStorage.clear();
+      currentClientData = null;
+      showClientAuthOverlay();
+    }
+    window.logoutClient = logoutClient;
+
+    async function fetchMyData() {
+      const token = getClientToken();
+      if (!token) {
+        showClientAuthOverlay();
+        return;
+      }
+
+      try {
+        const res = await clientFetch('/api/me');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.client) {
+            currentClientData = data.client;
+            hideClientAuthOverlay();
+            renderClientProfileMetrics(data.client);
+            return;
+          }
+        }
+        // If token invalid, expired or client deleted -> Logout and show overlay
+        logoutClient(false);
+      } catch (err) {
+        console.warn('Sunucu bağlantısı kurulamadı:', err);
+      }
+    }
+
     async function doClientLogin() {
       const phoneInput = document.getElementById('client-phone-input');
       const passInput = document.getElementById('client-pass-input');
@@ -1144,9 +1209,9 @@
       const passVal = passInput ? passInput.value.trim() : '';
       const cleanPhone = phoneVal.replace(/\D/g, '');
 
-      if (!cleanPhone || !passVal) {
+      if (!cleanPhone || cleanPhone.length < 10 || !passVal) {
         if (errBox) {
-          errBox.textContent = '⚠️ Lütfen telefon numarası ve şifrenizi eksiksiz giriniz!';
+          errBox.textContent = '⚠️ Lütfen geçerli 10 haneli telefon numarası ve şifrenizi giriniz!';
           errBox.style.display = 'block';
         }
         return false;
@@ -1160,17 +1225,19 @@
         });
         const data = await res.json();
 
+        // 1. Deleted Account Handler
         if (data.deleted || res.status === 403) {
           if (errBox) {
-            errBox.textContent = '🚫 BU HESAP SİLİNMİŞTİR: Eğitmeniniz Umut Altun tarafından bu hesabın sistem erişimi engellenmiştir.';
+            errBox.textContent = data.message || '🚫 Hesabınızın erişimi kapatılmıştır. Eğitmeniniz Umut Altun ile iletişime geçiniz.';
             errBox.style.display = 'block';
           }
           sessionStorage.clear();
-          localStorage.removeItem('client_authenticated');
+          localStorage.clear();
           renderAccessDeniedOverlay('🚫 DANIŞAN HESABINIZ SİLİNMİŞTİR', 'Eğitmeniniz Umut Altun tarafından bu hesabın sistem erişimi kapatılmıştır.');
           return false;
         }
 
+        // 2. Not Found / Password Error / Invalid Auth Handler
         if (!data.success) {
           if (errBox) {
             errBox.textContent = data.message || '⚠️ Giriş bilgileriniz hatalıdır!';
@@ -1179,62 +1246,36 @@
           return false;
         }
 
-        // Login successful
-        localStorage.setItem('client_user_phone', cleanPhone);
-        localStorage.setItem('client_user_name', data.client.name);
+        // 3. Login Successful
+        if (data.token) {
+          sessionStorage.setItem('client_session_token', data.token);
+          localStorage.setItem('client_session_token', data.token);
+        }
         sessionStorage.setItem('client_authenticated', 'true');
         localStorage.setItem('client_authenticated', 'true');
+        localStorage.setItem('client_user_phone', cleanPhone);
+        if (data.client && data.client.name) {
+          localStorage.setItem('client_user_name', data.client.name);
+        }
 
-        const overlay = document.getElementById('client-auth-overlay');
-        if (overlay) overlay.style.display = 'none';
+        currentClientData = data.client;
+        hideClientAuthOverlay();
 
         renderClientProfileMetrics(data.client);
         return true;
       } catch (err) {
-        // Offline Fallback
-        const deletedList = JSON.parse(localStorage.getItem('pt_deleted_phones')) || [];
-        if (deletedList.includes(cleanPhone)) {
-          if (errBox) {
-            errBox.textContent = '🚫 BU HESAP SİLİNMİŞTİR: Eğitmeniniz Umut Altun tarafından hesabınız silinmiştir.';
-            errBox.style.display = 'block';
-          }
-          renderAccessDeniedOverlay('🚫 DANIŞAN HESABINIZ SİLİNMİŞTİR', 'Eğitmeniniz Umut Altun tarafından bu hesabın sistem erişimi kapatılmıştır.');
-          return false;
+        // STRICT SECURITY: NO OFFLINE FALLBACK LOGINS!
+        if (errBox) {
+          errBox.textContent = '⚠️ Sunucuya bağlanılamadı. Lütfen internet bağlantınızı kontrol edip tekrar deneyiniz.';
+          errBox.style.display = 'block';
         }
-
-        localStorage.setItem('client_user_phone', cleanPhone);
-        sessionStorage.setItem('client_authenticated', 'true');
-        localStorage.setItem('client_authenticated', 'true');
-        const overlay = document.getElementById('client-auth-overlay');
-        if (overlay) overlay.style.display = 'none';
-        renderClientProfileMetrics();
-        return true;
+        return false;
       }
     }
     window.doClientLogin = doClientLogin;
 
-    // Live Clients Fetching Engine (Sunucu REST API Senkronizasyonu)
-    let liveClientsList = JSON.parse(localStorage.getItem('pt_clients_list')) || [];
-
-    function fetchLiveClients() {
-      fetch('/api/clients')
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            if (Array.isArray(data.clients)) {
-              liveClientsList = data.clients;
-              localStorage.setItem('pt_clients_list', JSON.stringify(liveClientsList));
-            }
-            if (Array.isArray(data.deletedPhones)) {
-              localStorage.setItem('pt_deleted_phones', JSON.stringify(data.deletedPhones));
-            }
-            verifyClientAccessRevocation(data.clients, data.deletedPhones);
-            renderClientProfileMetrics();
-          }
-        })
-        .catch(err => console.warn('Sunucu senkronizasyonu yerel hafızadan alındı:', err));
-    }
-    fetchLiveClients();
+    // Run fetchMyData on initialization
+    fetchMyData();
 
     // ==========================================================================
     // Dynamic Client Profile & Body Metrics Engine (Her Danışana Özel Vücut Ölçüleri)
@@ -1304,14 +1345,20 @@
         updatedAt: new Date().toISOString()
       };
 
-      localStorage.setItem(profileKey, JSON.stringify(profileData));
-      fetch(`/api/clients/${cleanPhone}/profile`, {
+      clientFetch('/api/me/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profileData)
-      }).catch(err => console.log('Profile sync offline fallback:', err));
+      }).catch(err => console.log('Profile sync error:', err));
 
-      renderClientProfileMetrics();
+      if (currentClientData) {
+        currentClientData.height = h;
+        currentClientData.startWeight = sw;
+        currentClientData.currentWeight = cw;
+        currentClientData.targetWeight = tw || '';
+      }
+
+      renderClientProfileMetrics(currentClientData);
       alert("✅ Vücut ölçüleriniz başarıyla güncellendi!");
     }
     window.triggerPromptProfileUpdate = triggerPromptProfileUpdate;
@@ -1470,11 +1517,7 @@
     window.openImageZoomModal = openImageZoomModal;
 
     function renderClientFormPhotos() {
-      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
-      const cleanPhone = userPhone.replace(/\D/g, '');
-      const photosKey = `pt_client_photos_${cleanPhone}`;
-      const photosList = JSON.parse(localStorage.getItem(photosKey)) || [];
-
+      const photosList = (currentClientData && (currentClientData.formPhotos || currentClientData.photos)) || [];
       const gridEl = document.getElementById('form-photos-grid');
       if (!gridEl) return;
 
@@ -1592,11 +1635,17 @@
         localStorage.setItem('pt_clients_list', JSON.stringify(storedClientsList));
       }
 
-      fetch(`/api/clients/${cleanPhone}/photos`, {
+      clientFetch('/api/me/photos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ photoGroup })
-      }).catch(err => console.log('Photo sync offline fallback', err));
+      }).then(res => res.json()).then(data => {
+        if (data.success && currentClientData) {
+          currentClientData.formPhotos = data.photos;
+          currentClientData.photos = data.photos;
+          renderClientFormPhotos();
+        }
+      }).catch(err => console.log('Photo sync error', err));
 
       closeFormPhotoModal();
       renderClientFormPhotos();
@@ -1626,9 +1675,6 @@
         return false;
       }
 
-      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
-      const cleanPhone = userPhone.replace(/\D/g, '');
-
       const profileData = {
         height: height || '180',
         startWeight: startWeight,
@@ -1637,10 +1683,12 @@
         updatedAt: new Date().toISOString()
       };
 
-      const profileKey = `pt_client_profile_${cleanPhone}`;
-      localStorage.setItem(profileKey, JSON.stringify(profileData));
-      localStorage.setItem('pt_client_profile_global', JSON.stringify(profileData));
-      sessionStorage.setItem('pt_client_profile_global', JSON.stringify(profileData));
+      if (currentClientData) {
+        currentClientData.height = profileData.height;
+        currentClientData.startWeight = profileData.startWeight;
+        currentClientData.currentWeight = profileData.currentWeight;
+        currentClientData.targetWeight = profileData.targetWeight;
+      }
 
       // Instant DOM Update for instant feedback!
       const initWEl = document.getElementById('stat-initial-weight');
@@ -1657,37 +1705,23 @@
 
       closeProfileUpdateModal();
 
-      fetch(`/api/clients/${cleanPhone}/profile`, {
+      clientFetch('/api/me/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profileData)
-      }).catch(err => console.log('Profile sync offline fallback:', err));
+      }).catch(err => console.log('Profile sync error:', err));
 
       alert(`✅ Vücut ölçüleriniz başarıyla kaydedildi!\n\n⚖️ Başlangıç Kilosu: ${parseFloat(startWeight).toFixed(1)} kg\n⚖️ Güncel Kilo: ${parseFloat(currentWeight).toFixed(1)} kg\n📏 Boy: ${height || '180'} cm`);
 
-      renderClientProfileMetrics();
+      renderClientProfileMetrics(currentClientData);
       return false;
     }
     window.saveClientProfileMetrics = saveClientProfileMetrics;
 
     function renderClientProfileMetrics(matchingClientObj) {
-      const storedClients = (liveClientsList && liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
-      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
-      const cleanPhone = userPhone.replace(/\D/g, '');
-      
-      let rawName = localStorage.getItem('client_user_name') || sessionStorage.getItem('client_user_name');
-      if (!rawName || rawName === 'Danışanım') {
-        rawName = 'Değerli Danışanımız';
-      }
-
-      const client = matchingClientObj || storedClients.find(c => cleanPhone && (c.phone || '').replace(/\D/g, '') === cleanPhone) || {
-        name: rawName,
-        phone: userPhone,
-        package: "Özel Koçluk Paketi",
-        stage: "1. Hafta"
-      };
-
-      const displayName = (client.name && client.name !== 'Danışanım') ? client.name : rawName;
+      const client = matchingClientObj || currentClientData || {};
+      const rawName = client.name || localStorage.getItem('client_user_name') || 'Değerli Danışanımız';
+      const displayName = rawName;
 
       // 1. Update Welcome Banner Name, Initials, Package Badge
       const nameEl = document.getElementById('client-name');
@@ -1702,14 +1736,10 @@
       }
 
       // 2. Read Client Specific Body Metrics Profile
-      const profileKey = `pt_client_profile_${cleanPhone}`;
-      const savedProfile = JSON.parse(localStorage.getItem(profileKey)) || JSON.parse(localStorage.getItem('pt_client_profile_global')) || {};
-      const globalProfile = JSON.parse(localStorage.getItem('pt_client_profile_global')) || {};
-
-      const startWeight = savedProfile.startWeight || globalProfile.startWeight || client.startWeight || null;
-      const currentWeight = savedProfile.currentWeight || globalProfile.currentWeight || client.currentWeight || null;
-      const height = savedProfile.height || globalProfile.height || client.height || null;
-      const checkinPeriod = savedProfile.checkinPeriod || client.checkinPeriod || "Haftalık";
+      const startWeight = client.startWeight || null;
+      const currentWeight = client.currentWeight || null;
+      const height = client.height || null;
+      const checkinPeriod = client.checkinPeriod || "Haftalık";
 
       // 3. Update the 4 Metric Cards
       const initWEl = document.getElementById('stat-initial-weight');
@@ -1839,55 +1869,16 @@
     let clientCurrentDay = 1;
 
     async function syncClientProgramFromBackend() {
-      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
-      const cleanPhone = userPhone.replace(/\D/g, '');
-      if (!cleanPhone) return;
-
-      try {
-        const res = await fetch('/api/clients');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success && Array.isArray(data.clients)) {
-            const myClient = data.clients.find(c => c.phone && c.phone.replace(/\D/g, '') === cleanPhone);
-            if (myClient) {
-              if (myClient.hasAssignedProgram !== undefined) {
-                localStorage.setItem('pt_assigned_program_' + cleanPhone, myClient.hasAssignedProgram ? 'true' : 'false');
-              }
-              if (myClient.programMatrix) {
-                localStorage.setItem('pt_matrix_program_' + cleanPhone, JSON.stringify(myClient.programMatrix));
-              }
-              if (myClient.startDate) {
-                localStorage.setItem('pt_start_date_' + cleanPhone, myClient.startDate);
-              }
-              if (myClient.dayList) {
-                localStorage.setItem('pt_day_list_' + cleanPhone, JSON.stringify(myClient.dayList));
-                renderClientDayBar(myClient.dayList);
-              }
-
-              if (myClient.nutrition) {
-                localStorage.setItem('pt_nutrition_' + cleanPhone, JSON.stringify(myClient.nutrition));
-                renderClientNutrition(myClient.nutrition);
-              }
-              if (myClient.supplements) {
-                localStorage.setItem('pt_supplements_' + cleanPhone, JSON.stringify(myClient.supplements));
-                renderClientSupplements(myClient.supplements);
-              }
-
-              // Re-render Client UI elements with fresh backend data
-              if (typeof renderAssignedProgramState === 'function') {
-                renderAssignedProgramState(myClient);
-              }
-              if (typeof renderMatrixExercises === 'function') {
-                renderMatrixExercises(clientCurrentWeek, clientCurrentDay);
-              }
-              if (typeof updateClientWeekDateBadges === 'function') {
-                updateClientWeekDateBadges();
-              }
-            }
-          }
+      if (currentClientData) {
+        if (typeof renderAssignedProgramState === 'function') {
+          renderAssignedProgramState(currentClientData);
         }
-      } catch (err) {
-        console.warn('Backend sync fallback:', err);
+        if (typeof renderMatrixExercises === 'function') {
+          renderMatrixExercises(clientCurrentWeek, clientCurrentDay);
+        }
+        if (typeof updateClientWeekDateBadges === 'function') {
+          updateClientWeekDateBadges();
+        }
       }
     }
 
@@ -1926,14 +1917,7 @@
     }
 
     function renderClientNutrition(passedData) {
-      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
-      const cleanPhone = userPhone.replace(/\D/g, '');
-
-      const storedClients = (liveClientsList && liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
-      const matchingClient = storedClients.find(c => (c.phone || '').replace(/\D/g, '') === cleanPhone || (cleanPhone && cleanPhone.length >= 10 && (c.phone || '').replace(/\D/g, '').endsWith(cleanPhone.slice(-10))));
-
-      const nutrition = passedData || (matchingClient && matchingClient.nutrition) || JSON.parse(localStorage.getItem('pt_nutrition_' + cleanPhone));
-
+      const nutrition = passedData || (currentClientData && currentClientData.nutrition);
       const kcalEl = document.getElementById('nutri-target-kcal');
       const protEl = document.getElementById('nutri-target-protein');
       const carbEl = document.getElementById('nutri-target-carb');
@@ -1967,13 +1951,7 @@
     window.renderClientNutrition = renderClientNutrition;
 
     function renderClientSupplements(suppData) {
-      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
-      const cleanPhone = userPhone.replace(/\D/g, '');
-
-      const storedClients = (liveClientsList && liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
-      const matchingClient = storedClients.find(c => (c.phone || '').replace(/\D/g, '') === cleanPhone || (cleanPhone && cleanPhone.length >= 10 && (c.phone || '').replace(/\D/g, '').endsWith(cleanPhone.slice(-10))));
-
-      const supp = suppData || (matchingClient && matchingClient.supplements) || JSON.parse(localStorage.getItem('pt_supplements_' + cleanPhone));
+      const supp = suppData || (currentClientData && currentClientData.supplements);
       if (!supp) return;
 
       if (document.getElementById('client-supp-whey')) document.getElementById('client-supp-whey').textContent = supp.whey || 'Tavsiye edilmedi';
@@ -1985,56 +1963,16 @@
     window.renderClientSupplements = renderClientSupplements;
 
     document.addEventListener('DOMContentLoaded', () => {
-      syncClientProgramFromBackend();
       renderClientNutrition();
       renderClientSupplements();
       renderClientDayBar();
     });
-    setTimeout(syncClientProgramFromBackend, 300);
 
     function getClientProgramMatrix() {
-      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
-      const cleanPhone = userPhone.replace(/\D/g, '');
-
-      // 1. Check live client object from server synchronization
-      const storedClients = (liveClientsList && liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
-      const matchingClient = storedClients.find(c => (c.phone || '').replace(/\D/g, '') === cleanPhone || (cleanPhone && cleanPhone.length >= 10 && (c.phone || '').replace(/\D/g, '').endsWith(cleanPhone.slice(-10))));
-
-      if (matchingClient && matchingClient.programMatrix && typeof matchingClient.programMatrix === 'object' && Object.keys(matchingClient.programMatrix).length > 0) {
-        return matchingClient.programMatrix;
+      if (currentClientData && currentClientData.programMatrix && typeof currentClientData.programMatrix === 'object' && Object.keys(currentClientData.programMatrix).length > 0) {
+        return currentClientData.programMatrix;
       }
-
-      // 2. Check local storage key
-      if (cleanPhone) {
-        let matrix = JSON.parse(localStorage.getItem('pt_matrix_program_' + cleanPhone));
-        if (matrix && typeof matrix === 'object' && Object.keys(matrix).length > 0) {
-          return matrix;
-        }
-      }
-
-      // 3. Demo fallback matrix
-      return {
-        "1_1": [
-          { name: "Dumbbell Chest Press (Düz Sehpa)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
-          { name: "Incline Dumbbell Fly", sets: "3 Set", reps: "12-15 Tekrar", rest: "60 sn Dinlenme" },
-          { name: "Barbell Biceps Curl (Ön Kol)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" }
-        ],
-        "1_2": [
-          { name: "Lat Pulldown (Göğse Çekiş)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
-          { name: "Seated Cable Row (Kürek)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
-          { name: "Triceps Rope Pushdown (Arka Kol)", sets: "3 Set", reps: "15 Tekrar", rest: "60 sn Dinlenme" }
-        ],
-        "1_3": [
-          { name: "Goblet Squat (Dambıl ile Squat)", sets: "4 Set", reps: "10-12 Tekrar", rest: "90 sn Dinlenme" },
-          { name: "Leg Press", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
-          { name: "Seated Dumbbell Shoulder Press (Omuz)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" }
-        ],
-        "1_4": [
-          { name: "Plank Hold", sets: "3 Set", reps: "45 sn", rest: "45 sn Dinlenme" },
-          { name: "Hanging Leg Raise (Alt Karın)", sets: "3 Set", reps: "15 Tekrar", rest: "45 sn Dinlenme" },
-          { name: "Eğimli Yürüyüş Kardiyo", sets: "1 Seans", reps: "25 dk (Eğim 8, Hız 5.5)", rest: "Antrenman Sonu" }
-        ]
-      };
+      return {};
     }
 
     function renderMatrixExercises(week, day) {
@@ -2090,12 +2028,7 @@
     window.renderMatrixExercises = renderMatrixExercises;
 
     function getWorkoutDayTargetDate(week, day) {
-      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
-      const cleanPhone = userPhone.replace(/\D/g, '');
-      const startStr = localStorage.getItem('pt_start_date_' + cleanPhone) || 
-                       localStorage.getItem('pt_start_date_global') || 
-                       new Date().toISOString().split('T')[0];
-
+      const startStr = (currentClientData && currentClientData.startDate) || new Date().toISOString().split('T')[0];
       const start = new Date(startStr);
       // Offset: (week - 1) * 7 + (day - 1)
       const offsetDays = (week - 1) * 7 + (day - 1);
@@ -2199,9 +2132,7 @@
     window.updateWorkoutCompletionState = updateWorkoutCompletionState;
 
     function updateClientWeekDateBadges() {
-      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
-      const cleanPhone = userPhone.replace(/\D/g, '');
-      const startDateVal = localStorage.getItem('pt_start_date_' + cleanPhone) || localStorage.getItem('pt_start_date_global') || new Date().toISOString().split('T')[0];
+      const startDateVal = (currentClientData && currentClientData.startDate) || new Date().toISOString().split('T')[0];
       const start = new Date(startDateVal);
 
       document.querySelectorAll('.client-week-btn').forEach(btn => {
@@ -2254,7 +2185,6 @@
         renderMatrixExercises(clientCurrentWeek, d);
       });
     });
-    renderClientProfileMetrics();
 
     if (clientLoginForm) {
       clientLoginForm.addEventListener('submit', (e) => {
@@ -2265,10 +2195,9 @@
 
     // Live New Program Popup Notification Checker
     function checkNewProgramPopup() {
-      const isAuth = (sessionStorage.getItem('client_authenticated') === 'true');
-      const hasNotification = localStorage.getItem('pt_new_program_notification_global');
+      const hasNotification = currentClientData && currentClientData.hasNewProgramNotification === true;
 
-      if (isAuth && hasNotification && !document.getElementById('new-program-popup-modal')) {
+      if (hasNotification && !document.getElementById('new-program-popup-modal')) {
         const modalDiv = document.createElement('div');
         modalDiv.id = 'new-program-popup-modal';
         modalDiv.style.cssText = 'position: fixed; inset: 0; background: rgba(8, 8, 10, 0.95); z-index: 999999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(15px); padding: 1.5rem;';
@@ -2293,7 +2222,8 @@
         document.body.appendChild(modalDiv);
 
         document.getElementById('dismiss-new-prog-alert-btn').addEventListener('click', () => {
-          localStorage.removeItem('pt_new_program_notification_global');
+          if (currentClientData) currentClientData.hasNewProgramNotification = false;
+          clientFetch('/api/me/dismiss-notification', { method: 'POST' }).catch(() => {});
           modalDiv.remove();
         });
       }
@@ -2461,13 +2391,7 @@
     }
 
     function getClientCalendarNotes() {
-      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
-      const cleanPhone = userPhone.replace(/\D/g, '');
-      const storedClients = (liveClientsList && liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
-      const client = storedClients.find(c => (c.phone || '').replace(/\D/g, '') === cleanPhone) || {};
-
-      const notesKey = `pt_calendar_notes_${cleanPhone}`;
-      return client.calendarNotes || JSON.parse(localStorage.getItem(notesKey)) || {};
+      return (currentClientData && currentClientData.calendarNotes) || {};
     }
     window.getClientCalendarNotes = getClientCalendarNotes;
 
