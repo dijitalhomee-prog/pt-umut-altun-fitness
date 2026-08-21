@@ -1067,7 +1067,6 @@
     }
     window.showClientAuthOverlay = showClientAuthOverlay;
 
-    const clientAuthOverlay = document.getElementById('client-auth-overlay');
     if (sessionStorage.getItem('client_authenticated') === 'true' || localStorage.getItem('client_authenticated') === 'true') {
       if (clientAuthOverlay) {
         clientAuthOverlay.style.setProperty('display', 'none', 'important');
