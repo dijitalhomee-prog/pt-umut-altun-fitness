@@ -145,6 +145,28 @@
       align-items: center;
     }
 
+    .wiz-week-tab-btn {
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border-light);
+      color: #E5E7EB;
+      font-weight: bold;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .wiz-week-tab-btn.active {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: var(--accent-red);
+      color: #FFF;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+    }
+
     @media (max-width: 992px) {
       .exercise-row-item {
         grid-template-columns: 1fr;
@@ -356,12 +378,17 @@
           </div>
         </div>
 
-        <!-- STEP 2: 🏋️‍♂️ ANTRENMAN PROGRAMI MATRİSİ -->
+        <!-- STEP 2: 🏋️‍♂️ ANTRENMAN PROGRAMI MATRİSİ (HAFTALAR TAMAMEN BAĞIMSIZ) -->
         <div class="wizard-step-pane" id="wizard-pane-2">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1rem;">
-            <h3 style="color: #FFF; font-size: 1.15rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-              <i class="fas fa-dumbbell" style="color: var(--accent-red);"></i> Adım 2: Kişiselleştirilmiş Antrenman Programı Matrisi
-            </h3>
+            <div>
+              <h3 style="color: #FFF; font-size: 1.15rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-dumbbell" style="color: var(--accent-red);"></i> Adım 2: Antrenman Programı Matrisi (Haftalık & Günlük Bağımsız)
+              </h3>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
+                Her hafta ve gün kendi bağımsız içeriğine sahiptir. Bir haftada yapılan değişiklik diğer haftaları etkilemez.
+              </p>
+            </div>
 
             <!-- Quick Template & Clone Actions -->
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
@@ -377,17 +404,32 @@
             </div>
           </div>
 
-          <!-- Week Tabs -->
-          <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-            <button class="wiz-week-btn active" data-week="1" onclick="window.setWizardWeek(1);" style="padding: 0.4rem 1rem; border-radius: 4px; background: rgba(239,68,68,0.2); border: 1px solid var(--accent-red); color: #fff; font-weight: bold; cursor: pointer;">1. Hafta</button>
-            <button class="wiz-week-btn" data-week="2" onclick="window.setWizardWeek(2);" style="padding: 0.4rem 1rem; border-radius: 4px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-light); color: #E5E7EB; font-weight: bold; cursor: pointer;">2. Hafta</button>
-            <button class="wiz-week-btn" data-week="3" onclick="window.setWizardWeek(3);" style="padding: 0.4rem 1rem; border-radius: 4px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-light); color: #E5E7EB; font-weight: bold; cursor: pointer;">3. Hafta</button>
-            <button class="wiz-week-btn" data-week="4" onclick="window.setWizardWeek(4);" style="padding: 0.4rem 1rem; border-radius: 4px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-light); color: #E5E7EB; font-weight: bold; cursor: pointer;">4. Hafta</button>
+          <!-- Week Navigation Tabs with Filled Indicators -->
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap;" id="wiz-week-tabs-container">
+            <button class="wiz-week-tab-btn active" data-week="1" onclick="window.setWizardWeek(1);">
+              <span class="week-indicator">🟢</span> 1. Hafta
+            </button>
+            <button class="wiz-week-tab-btn" data-week="2" onclick="window.setWizardWeek(2);">
+              <span class="week-indicator">⚪</span> 2. Hafta
+            </button>
+            <button class="wiz-week-tab-btn" data-week="3" onclick="window.setWizardWeek(3);">
+              <span class="week-indicator">⚪</span> 3. Hafta
+            </button>
+            <button class="wiz-week-tab-btn" data-week="4" onclick="window.setWizardWeek(4);">
+              <span class="week-indicator">⚪</span> 4. Hafta
+            </button>
           </div>
 
-          <!-- Days List & Exercises Editor -->
+          <!-- Days List & Exercises Editor for Currently Active Week -->
           <div id="wiz-exercises-container">
-            <!-- Exercise Editor Rows -->
+            <!-- Exercise Editor Rows Rendered Dynamically -->
+          </div>
+
+          <!-- Add Day Button for Current Week -->
+          <div style="margin-top: 1rem;">
+            <button type="button" class="btn btn-outline" style="width: 100%; border-dashed: 1px dashed var(--accent-red); color: var(--accent-red); padding: 0.6rem;" onclick="window.addWizardDayToCurrentWeek();">
+              <i class="fas fa-plus-circle"></i> + Bu Haftaya Yeni Gün Ekle
+            </button>
           </div>
         </div>
 
@@ -647,7 +689,7 @@
   <!-- App Scripts -->
   <script>
     // --------------------------------------------------------------------------
-    // STATE & UTILITIES
+    // STATE & MIGRATION UTILITIES
     // --------------------------------------------------------------------------
     let clients = [];
     let selectedClientId = null;
@@ -655,9 +697,68 @@
     let wizardCurrentWeek = 1;
     let wizardState = {
       programMatrix: {},
-      dayList: ['1. Gün: Göğüs & Biceps', '2. Gün: Sırt & Triceps', '3. Gün: Bacak & Omuz', '4. Gün: Kardiyo & Karın'],
       isUnsaved: false
     };
+
+    function normalizeProgramMatrix(pm, legacyDayList) {
+      const defaultDayTitles = [
+        '1. Gün: Göğüs & Biceps',
+        '2. Gün: Sırt & Triceps',
+        '3. Gün: Bacak & Omuz',
+        '4. Gün: Kardiyo & Karın'
+      ];
+
+      const result = {
+        "1": { days: [] },
+        "2": { days: [] },
+        "3": { days: [] },
+        "4": { days: [] }
+      };
+
+      if (!pm || typeof pm !== 'object') {
+        for (let w = 1; w <= 4; w++) {
+          result[w].days = defaultDayTitles.map((title, idx) => ({
+            id: idx + 1,
+            title: title,
+            exercises: []
+          }));
+        }
+        return result;
+      }
+
+      // Case 1: Already in new nested format { "1": { days: [...] }, ... }
+      if (pm["1"] && Array.isArray(pm["1"].days)) {
+        for (let w = 1; w <= 4; w++) {
+          if (pm[w] && Array.isArray(pm[w].days)) {
+            result[w] = { days: JSON.parse(JSON.stringify(pm[w].days)) };
+          } else {
+            result[w] = {
+              days: defaultDayTitles.map((title, idx) => ({
+                id: idx + 1,
+                title: title,
+                exercises: []
+              }))
+            };
+          }
+        }
+        return result;
+      }
+
+      // Case 2: Convert Legacy Flat Keys "1_1", "1_2"...
+      const titles = (Array.isArray(legacyDayList) && legacyDayList.length > 0) ? legacyDayList : defaultDayTitles;
+      for (let w = 1; w <= 4; w++) {
+        const weekDays = [];
+        titles.forEach((title, idx) => {
+          const dayNum = idx + 1;
+          const key = `${w}_${dayNum}`;
+          const exercises = Array.isArray(pm[key]) ? JSON.parse(JSON.stringify(pm[key])) : [];
+          weekDays.push({ id: dayNum, title: title, exercises: exercises });
+        });
+        result[w] = { days: weekDays };
+      }
+
+      return result;
+    }
 
     function getTrainerToken() {
       return sessionStorage.getItem('trainer_session_token') || localStorage.getItem('trainer_session_token') || '';
@@ -707,7 +808,6 @@
       }
     });
 
-    // Check token on start
     if (getTrainerToken()) {
       document.getElementById('trainer-auth-overlay').style.display = 'none';
     }
@@ -834,12 +934,13 @@
       // Populate Step 5 Coach Note
       document.getElementById('wiz-coach-note').value = client.coachNote || '';
 
-      // Populate Step 2 Program Matrix
-      wizardState.programMatrix = JSON.parse(JSON.stringify(client.programMatrix || {}));
-      wizardState.dayList = client.dayList || wizardState.dayList;
+      // Normalize & Deep Clone Program Matrix (Per-Week Independent Scoped)
+      wizardState.programMatrix = normalizeProgramMatrix(client.programMatrix, client.dayList);
       wizardState.isUnsaved = false;
       document.getElementById('wizard-unsaved-badge').style.display = 'none';
 
+      wizardCurrentWeek = 1;
+      renderWizardWeekTabs();
       renderWizardExerciseMatrix();
       renderWizardLivePreview();
       updateWizardLockState();
@@ -852,7 +953,6 @@
       }
     }
 
-    // Mark as unsaved changes
     document.querySelectorAll('#wizard-container-box input, #wizard-container-box select, #wizard-container-box textarea').forEach(el => {
       el.addEventListener('input', () => {
         wizardState.isUnsaved = true;
@@ -871,7 +971,6 @@
 
       wizardCurrentStep = stepNum;
 
-      // Update progress bar pills
       document.querySelectorAll('.wizard-step-pill').forEach(pill => {
         const step = parseInt(pill.getAttribute('data-wizard-step'));
         pill.classList.remove('active');
@@ -879,14 +978,12 @@
         if (step < stepNum) pill.classList.add('completed');
       });
 
-      // Update panes
       document.querySelectorAll('.wizard-step-pane').forEach(pane => {
         pane.classList.remove('active');
       });
       const targetPane = document.getElementById(`wizard-pane-${stepNum}`);
       if (targetPane) targetPane.classList.add('active');
 
-      // Update Footer Navigation Buttons
       const prevBtn = document.getElementById('wiz-btn-prev');
       const nextBtn = document.getElementById('wiz-btn-next');
       const finalSaveBtn = document.getElementById('wiz-btn-final-save');
@@ -924,20 +1021,33 @@
     window.wizardSkipStep = wizardSkipStep;
 
     // --------------------------------------------------------------------------
-    // STEP 2: EXERCISE MATRIX EDITOR
+    // STEP 2: INDEPENDENT WEEK & DAY EXERCISE MATRIX EDITOR
     // --------------------------------------------------------------------------
+    function renderWizardWeekTabs() {
+      const container = document.getElementById('wiz-week-tabs-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      for (let w = 1; w <= 4; w++) {
+        const weekData = wizardState.programMatrix[w] || { days: [] };
+        const totalEx = weekData.days.reduce((sum, d) => sum + (d.exercises ? d.exercises.length : 0), 0);
+        const isActive = (w === wizardCurrentWeek);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `wiz-week-tab-btn ${isActive ? 'active' : ''}`;
+        btn.setAttribute('data-week', w);
+        btn.onclick = () => window.setWizardWeek(w);
+
+        const icon = totalEx > 0 ? '🟢' : '⚪';
+        btn.innerHTML = `<span>${icon}</span> ${w}. Hafta ${totalEx > 0 ? `(${totalEx} Egzersiz)` : '(Boş)'}`;
+        container.appendChild(btn);
+      }
+    }
+
     function setWizardWeek(weekNum) {
       wizardCurrentWeek = weekNum;
-      document.querySelectorAll('.wiz-week-btn').forEach(btn => {
-        btn.classList.remove('active');
-        btn.style.background = 'rgba(255,255,255,0.05)';
-        btn.style.borderColor = 'var(--border-light)';
-        if (parseInt(btn.getAttribute('data-week')) === weekNum) {
-          btn.classList.add('active');
-          btn.style.background = 'rgba(239,68,68,0.2)';
-          btn.style.borderColor = 'var(--accent-red)';
-        }
-      });
+      renderWizardWeekTabs();
       renderWizardExerciseMatrix();
     }
     window.setWizardWeek = setWizardWeek;
@@ -947,11 +1057,20 @@
       if (!container) return;
       container.innerHTML = '';
 
-      wizardState.dayList.forEach((dayTitle, dayIdx) => {
-        const dayNum = dayIdx + 1;
-        const matrixKey = `${wizardCurrentWeek}_${dayNum}`;
-        const exercises = wizardState.programMatrix[matrixKey] || [];
+      const currentWeekData = wizardState.programMatrix[wizardCurrentWeek] || { days: [] };
 
+      if (currentWeekData.days.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 2rem; border: 1px dashed var(--border-light); border-radius: var(--radius-md); background: rgba(0,0,0,0.2);">
+            <i class="fas fa-calendar-times" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 0.5rem; display: block;"></i>
+            <h4 style="color: #FFF; font-size: 0.95rem;">${wizardCurrentWeek}. Haftaya Henüz Gün Eklenmedi</h4>
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1rem;">Aşağıdaki butona basarak bu haftaya özel antrenman günü ekleyebilirsiniz.</p>
+          </div>
+        `;
+        return;
+      }
+
+      currentWeekData.days.forEach((day, dayIdx) => {
         const dayBox = document.createElement('div');
         dayBox.style.background = 'rgba(255,255,255,0.02)';
         dayBox.style.border = '1px solid var(--border-light)';
@@ -961,24 +1080,32 @@
 
         dayBox.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
-            <input type="text" class="input-field" value="${dayTitle}" onchange="window.updateWizardDayTitle(${dayIdx}, this.value)" style="font-weight: 800; color: var(--accent-red); margin: 0; max-width: 300px;">
-            <button type="button" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="window.addWizardExercise('${matrixKey}')">
-              <i class="fas fa-plus"></i> Egzersiz Ekle
-            </button>
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 200px;">
+              <input type="text" class="input-field" value="${day.title || `Gün ${dayIdx + 1}`}" oninput="window.updateWizardDayTitle(${dayIdx}, this.value)" style="font-weight: 800; color: var(--accent-red); margin: 0;">
+            </div>
+
+            <div style="display: flex; gap: 0.4rem;">
+              <button type="button" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem; border-color: rgba(16,185,129,0.4); color: #10B981;" onclick="window.addWizardExercise(${dayIdx})">
+                <i class="fas fa-plus"></i> Egzersiz Ekle
+              </button>
+              <button type="button" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem; border-color: rgba(239,68,68,0.4); color: #EF4444;" onclick="window.removeWizardDayFromCurrentWeek(${dayIdx})">
+                <i class="fas fa-trash-alt"></i> Günü Sil
+              </button>
+            </div>
           </div>
-          <div id="wiz-ex-list-${matrixKey}"></div>
+          <div id="wiz-ex-list-${wizardCurrentWeek}-${dayIdx}"></div>
         `;
 
-        const exListEl = dayBox.querySelector(`#wiz-ex-list-${matrixKey}`);
-        exercises.forEach((ex, exIdx) => {
+        const exListEl = dayBox.querySelector(`#wiz-ex-list-${wizardCurrentWeek}-${dayIdx}`);
+        (day.exercises || []).forEach((ex, exIdx) => {
           const row = document.createElement('div');
           row.className = 'exercise-row-item';
           row.innerHTML = `
-            <input type="text" class="input-field" placeholder="Egzersiz Adı" value="${ex.name || ''}" oninput="window.updateWizardExerciseField('${matrixKey}', ${exIdx}, 'name', this.value)">
-            <input type="text" class="input-field" placeholder="Set" value="${ex.sets || ''}" oninput="window.updateWizardExerciseField('${matrixKey}', ${exIdx}, 'sets', this.value)">
-            <input type="text" class="input-field" placeholder="Tekrar" value="${ex.reps || ''}" oninput="window.updateWizardExerciseField('${matrixKey}', ${exIdx}, 'reps', this.value)">
-            <input type="text" class="input-field" placeholder="Dinlenme" value="${ex.rest || ''}" oninput="window.updateWizardExerciseField('${matrixKey}', ${exIdx}, 'rest', this.value)">
-            <button type="button" style="background: none; border: none; color: #EF4444; cursor: pointer; font-size: 1.1rem;" onclick="window.removeWizardExercise('${matrixKey}', ${exIdx})">
+            <input type="text" class="input-field" placeholder="Egzersiz Adı" value="${ex.name || ''}" oninput="window.updateWizardExerciseField(${dayIdx}, ${exIdx}, 'name', this.value)">
+            <input type="text" class="input-field" placeholder="Set" value="${ex.sets || ''}" oninput="window.updateWizardExerciseField(${dayIdx}, ${exIdx}, 'sets', this.value)">
+            <input type="text" class="input-field" placeholder="Tekrar" value="${ex.reps || ''}" oninput="window.updateWizardExerciseField(${dayIdx}, ${exIdx}, 'reps', this.value)">
+            <input type="text" class="input-field" placeholder="Dinlenme" value="${ex.rest || ''}" oninput="window.updateWizardExerciseField(${dayIdx}, ${exIdx}, 'rest', this.value)">
+            <button type="button" style="background: none; border: none; color: #EF4444; cursor: pointer; font-size: 1.1rem;" onclick="window.removeWizardExercise(${dayIdx}, ${exIdx})">
               <i class="fas fa-trash-alt"></i>
             </button>
           `;
@@ -989,48 +1116,101 @@
       });
     }
 
-    function updateWizardDayTitle(idx, val) {
-      wizardState.dayList[idx] = val;
-      wizardState.isUnsaved = true;
+    function updateWizardDayTitle(dayIdx, val) {
+      if (wizardState.programMatrix[wizardCurrentWeek] && wizardState.programMatrix[wizardCurrentWeek].days[dayIdx]) {
+        wizardState.programMatrix[wizardCurrentWeek].days[dayIdx].title = val;
+        wizardState.isUnsaved = true;
+        document.getElementById('wizard-unsaved-badge').style.display = 'inline-block';
+      }
     }
     window.updateWizardDayTitle = updateWizardDayTitle;
 
-    function addWizardExercise(matrixKey) {
-      if (!wizardState.programMatrix[matrixKey]) wizardState.programMatrix[matrixKey] = [];
-      wizardState.programMatrix[matrixKey].push({ name: '', sets: '3 Set', reps: '12 Tekrar', rest: '60 sn' });
-      wizardState.isUnsaved = true;
-      renderWizardExerciseMatrix();
+    function addWizardExercise(dayIdx) {
+      if (!wizardState.programMatrix[wizardCurrentWeek]) wizardState.programMatrix[wizardCurrentWeek] = { days: [] };
+      if (wizardState.programMatrix[wizardCurrentWeek].days[dayIdx]) {
+        if (!wizardState.programMatrix[wizardCurrentWeek].days[dayIdx].exercises) {
+          wizardState.programMatrix[wizardCurrentWeek].days[dayIdx].exercises = [];
+        }
+        wizardState.programMatrix[wizardCurrentWeek].days[dayIdx].exercises.push({ name: '', sets: '3 Set', reps: '12 Tekrar', rest: '60 sn' });
+        wizardState.isUnsaved = true;
+        document.getElementById('wizard-unsaved-badge').style.display = 'inline-block';
+        renderWizardWeekTabs();
+        renderWizardExerciseMatrix();
+      }
     }
     window.addWizardExercise = addWizardExercise;
 
-    function updateWizardExerciseField(matrixKey, exIdx, field, val) {
-      if (wizardState.programMatrix[matrixKey] && wizardState.programMatrix[matrixKey][exIdx]) {
-        wizardState.programMatrix[matrixKey][exIdx][field] = val;
+    function updateWizardExerciseField(dayIdx, exIdx, field, val) {
+      if (wizardState.programMatrix[wizardCurrentWeek] && 
+          wizardState.programMatrix[wizardCurrentWeek].days[dayIdx] && 
+          wizardState.programMatrix[wizardCurrentWeek].days[dayIdx].exercises[exIdx]) {
+        wizardState.programMatrix[wizardCurrentWeek].days[dayIdx].exercises[exIdx][field] = val;
         wizardState.isUnsaved = true;
+        document.getElementById('wizard-unsaved-badge').style.display = 'inline-block';
+        renderWizardWeekTabs();
       }
     }
     window.updateWizardExerciseField = updateWizardExerciseField;
 
-    function removeWizardExercise(matrixKey, exIdx) {
-      if (wizardState.programMatrix[matrixKey]) {
-        wizardState.programMatrix[matrixKey].splice(exIdx, 1);
+    function removeWizardExercise(dayIdx, exIdx) {
+      if (wizardState.programMatrix[wizardCurrentWeek] && 
+          wizardState.programMatrix[wizardCurrentWeek].days[dayIdx]) {
+        wizardState.programMatrix[wizardCurrentWeek].days[dayIdx].exercises.splice(exIdx, 1);
         wizardState.isUnsaved = true;
+        document.getElementById('wizard-unsaved-badge').style.display = 'inline-block';
+        renderWizardWeekTabs();
         renderWizardExerciseMatrix();
       }
     }
     window.removeWizardExercise = removeWizardExercise;
 
+    function addWizardDayToCurrentWeek() {
+      if (!wizardState.programMatrix[wizardCurrentWeek]) {
+        wizardState.programMatrix[wizardCurrentWeek] = { days: [] };
+      }
+      const daysArr = wizardState.programMatrix[wizardCurrentWeek].days;
+      const nextNum = daysArr.length + 1;
+      daysArr.push({
+        id: Date.now(),
+        title: `${nextNum}. Gün: Antrenman Günü`,
+        exercises: []
+      });
+      wizardState.isUnsaved = true;
+      document.getElementById('wizard-unsaved-badge').style.display = 'inline-block';
+      renderWizardWeekTabs();
+      renderWizardExerciseMatrix();
+    }
+    window.addWizardDayToCurrentWeek = addWizardDayToCurrentWeek;
+
+    function removeWizardDayFromCurrentWeek(dayIdx) {
+      if (wizardState.programMatrix[wizardCurrentWeek] && wizardState.programMatrix[wizardCurrentWeek].days[dayIdx]) {
+        wizardState.programMatrix[wizardCurrentWeek].days.splice(dayIdx, 1);
+        wizardState.isUnsaved = true;
+        document.getElementById('wizard-unsaved-badge').style.display = 'inline-block';
+        renderWizardWeekTabs();
+        renderWizardExerciseMatrix();
+      }
+    }
+    window.removeWizardDayFromCurrentWeek = removeWizardDayFromCurrentWeek;
+
+    // Copy to Other Weeks with Confirmation & Deep Copy
     function copyCurrentWeekToOtherWeeks() {
+      if (!confirm(`⚠️ ${wizardCurrentWeek}. Hafta içeriği 1, 2, 3 ve 4. haftalara kopyalanacaktır. Diğer haftalardaki mevcut içerik üzerine yazılacaktır. Onaylıyor musunuz?`)) {
+        return;
+      }
+
+      const sourceDays = JSON.parse(JSON.stringify(wizardState.programMatrix[wizardCurrentWeek].days || []));
       for (let w = 1; w <= 4; w++) {
-        if (w === wizardCurrentWeek) continue;
-        for (let d = 1; d <= 4; d++) {
-          const srcKey = `${wizardCurrentWeek}_${d}`;
-          const dstKey = `${w}_${d}`;
-          wizardState.programMatrix[dstKey] = JSON.parse(JSON.stringify(wizardState.programMatrix[srcKey] || []));
+        if (w !== wizardCurrentWeek) {
+          wizardState.programMatrix[w] = {
+            days: JSON.parse(JSON.stringify(sourceDays))
+          };
         }
       }
       wizardState.isUnsaved = true;
-      alert(`✨ ${wizardCurrentWeek}. Hafta antrenman programı 2, 3 ve 4. haftalara kopyalandı!`);
+      document.getElementById('wizard-unsaved-badge').style.display = 'inline-block';
+      renderWizardWeekTabs();
+      alert(`✨ ${wizardCurrentWeek}. Hafta antrenman programı 1, 2, 3 ve 4. haftalara bağımsız kopyalandı!`);
     }
     window.copyCurrentWeekToOtherWeeks = copyCurrentWeekToOtherWeeks;
 
@@ -1053,10 +1233,11 @@
       if (!srcId) return;
       const srcClient = clients.find(c => c.id === srcId);
       if (srcClient && srcClient.programMatrix) {
-        wizardState.programMatrix = JSON.parse(JSON.stringify(srcClient.programMatrix));
-        wizardState.dayList = srcClient.dayList || wizardState.dayList;
+        wizardState.programMatrix = normalizeProgramMatrix(srcClient.programMatrix, srcClient.dayList);
         wizardState.isUnsaved = true;
+        document.getElementById('wizard-unsaved-badge').style.display = 'inline-block';
         document.getElementById('clone-client-modal').classList.remove('active');
+        renderWizardWeekTabs();
         renderWizardExerciseMatrix();
         alert(`✨ "${srcClient.name}" danışanının antrenman matrisi kopyalandı!`);
       }
@@ -1070,38 +1251,52 @@
     window.openPresetModal = openPresetModal;
 
     function applyPreset(presetType) {
-      const presetMatrix = {
-        "1_1": [
-          { name: "Dumbbell Bench Press", sets: "4 Set", reps: "10-12 Tekrar", rest: "60 sn" },
-          { name: "Incline Dumbbell Fly", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" },
-          { name: "Barbell Biceps Curl", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" }
-        ],
-        "1_2": [
-          { name: "Lat Pulldown", sets: "4 Set", reps: "10-12 Tekrar", rest: "60 sn" },
-          { name: "Seated Cable Row", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" },
-          { name: "Triceps Rope Pushdown", sets: "3 Set", reps: "15 Tekrar", rest: "60 sn" }
-        ],
-        "1_3": [
-          { name: "Goblet Squat", sets: "4 Set", reps: "10 Tekrar", rest: "90 sn" },
-          { name: "Leg Press", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" },
-          { name: "Dumbbell Shoulder Press", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" }
-        ],
-        "1_4": [
-          { name: "Plank Hold", sets: "3 Set", reps: "45 sn", rest: "45 sn" },
-          { name: "Hanging Leg Raise", sets: "3 Set", reps: "15 Tekrar", rest: "45 sn" }
-        ]
-      };
+      const presetDays = [
+        {
+          id: 1, title: '1. Gün: Göğüs & Biceps',
+          exercises: [
+            { name: "Dumbbell Bench Press", sets: "4 Set", reps: "10-12 Tekrar", rest: "60 sn" },
+            { name: "Incline Dumbbell Fly", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" },
+            { name: "Barbell Biceps Curl", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" }
+          ]
+        },
+        {
+          id: 2, title: '2. Gün: Sırt & Triceps',
+          exercises: [
+            { name: "Lat Pulldown", sets: "4 Set", reps: "10-12 Tekrar", rest: "60 sn" },
+            { name: "Seated Cable Row", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" },
+            { name: "Triceps Rope Pushdown", sets: "3 Set", reps: "15 Tekrar", rest: "60 sn" }
+          ]
+        },
+        {
+          id: 3, title: '3. Gün: Bacak & Omuz',
+          exercises: [
+            { name: "Goblet Squat", sets: "4 Set", reps: "10 Tekrar", rest: "90 sn" },
+            { name: "Leg Press", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" },
+            { name: "Dumbbell Shoulder Press", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn" }
+          ]
+        },
+        {
+          id: 4, title: '4. Gün: Kardiyo & Karın',
+          exercises: [
+            { name: "Plank Hold", sets: "3 Set", reps: "45 sn", rest: "45 sn" },
+            { name: "Hanging Leg Raise", sets: "3 Set", reps: "15 Tekrar", rest: "45 sn" }
+          ]
+        }
+      ];
 
       for (let w = 1; w <= 4; w++) {
-        for (let d = 1; d <= 4; d++) {
-          wizardState.programMatrix[`${w}_${d}`] = JSON.parse(JSON.stringify(presetMatrix[`1_${d}`] || []));
-        }
+        wizardState.programMatrix[w] = {
+          days: JSON.parse(JSON.stringify(presetDays))
+        };
       }
 
       wizardState.isUnsaved = true;
+      document.getElementById('wizard-unsaved-badge').style.display = 'inline-block';
       document.getElementById('preset-modal').classList.remove('active');
+      renderWizardWeekTabs();
       renderWizardExerciseMatrix();
-      alert('✨ Antrenman şablonu yüklendi!');
+      alert('✨ Hazır antrenman şablonu yüklendi!');
     }
     window.applyPreset = applyPreset;
 
@@ -1118,6 +1313,9 @@
       const coachNote = document.getElementById('wiz-coach-note').value || 'Eğitmeniniz henüz özel not yazmadı.';
       const calories = document.getElementById('wiz-nutri-calories').value || '2200';
       const whey = document.getElementById('wiz-supp-whey').value || 'Tanımsız';
+
+      const week1ExCount = (wizardState.programMatrix[1]?.days || []).reduce((sum, d) => sum + (d.exercises ? d.exercises.length : 0), 0);
+      const week2ExCount = (wizardState.programMatrix[2]?.days || []).reduce((sum, d) => sum + (d.exercises ? d.exercises.length : 0), 0);
 
       container.innerHTML = `
         <div style="background: rgba(18,18,22,0.9); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1.2rem;">
@@ -1139,6 +1337,14 @@
             <div style="background: rgba(255,255,255,0.05); padding: 0.8rem; border-radius: 4px; text-align: center;">
               <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">Whey Protein</span>
               <strong style="color: #FFF; font-size: 0.9rem;">${whey}</strong>
+            </div>
+            <div style="background: rgba(255,255,255,0.05); padding: 0.8rem; border-radius: 4px; text-align: center;">
+              <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">1. Hafta Egzersiz</span>
+              <strong style="color: #10B981; font-size: 1rem;">${week1ExCount} Hareket</strong>
+            </div>
+            <div style="background: rgba(255,255,255,0.05); padding: 0.8rem; border-radius: 4px; text-align: center;">
+              <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">2. Hafta Egzersiz</span>
+              <strong style="color: #10B981; font-size: 1rem;">${week2ExCount} Hareket</strong>
             </div>
           </div>
         </div>
@@ -1167,7 +1373,6 @@
         height: document.getElementById('wiz-client-height').value,
         hasAssignedProgram: true,
         programMatrix: wizardState.programMatrix,
-        dayList: wizardState.dayList,
         coachNote: document.getElementById('wiz-coach-note').value,
         nutrition: {
           calories: document.getElementById('wiz-nutri-calories').value,
@@ -1199,7 +1404,7 @@
         if (res.ok && data.success) {
           wizardState.isUnsaved = false;
           document.getElementById('wizard-unsaved-badge').style.display = 'none';
-          alert(`✨ PROGRAM BAŞARIYLA KAYDEDİLDİ VE DANIŞANA AKTARILDI!\n\n📌 Danışan: ${clientData.name}\n🚀 Danışan kendi paneline girdiğinde yeni antrenman, beslenme ve eğitmen notunu anında görecektir.`);
+          alert(`✨ PROGRAM BAŞARIYLA KAYDEDİLDİ VE DANIŞANA AKTARILDI!\n\n📌 Danışan: ${clientData.name}\n🚀 Danışan kendi paneline girdiğinde 4 haftanın bağımsız antrenman, beslenme ve eğitmen notunu anında görecektir.`);
           fetchServerClients();
         } else {
           alert('⚠️ Program kaydedilemedi: ' + (data.message || 'Sunucu hatası'));
@@ -1214,7 +1419,7 @@
     // BULK ADMIN ACTIONS
     // --------------------------------------------------------------------------
     async function triggerPassivateAllClients() {
-      if (!confirm("⚠️ TÜM DANIŞAN ÜYELİKLERİNİ PASİFE ALMAK İSTEDİĞİNİZE EMİN MİSİNİZ?\n\nTüm danışanların durumu 'pasif' yapılacak ve aktif tüm danışan oturumları sonlandırılacaktır.")) return;
+      if (!confirm("⚠️ TÜM DANIŞAN ÜYELİKLERİNİ PASİFE ALMAK İSTEDİĞİNİZE EMİN MİSİNİZ?")) return;
       try {
         const res = await trainerFetch('/api/admin/passivate-all-clients', { method: 'POST' });
         const data = await res.json();

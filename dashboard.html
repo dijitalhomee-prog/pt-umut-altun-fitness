@@ -1902,28 +1902,90 @@
       }
     }
 
-    function renderClientDayBar(customDayList) {
+    function normalizeProgramMatrix(pm, legacyDayList) {
+      const defaultDayTitles = [
+        '1. Gün: Göğüs & Biceps',
+        '2. Gün: Sırt & Triceps',
+        '3. Gün: Bacak & Omuz',
+        '4. Gün: Kardiyo & Karın'
+      ];
+
+      const result = {
+        "1": { days: [] },
+        "2": { days: [] },
+        "3": { days: [] },
+        "4": { days: [] }
+      };
+
+      if (!pm || typeof pm !== 'object') {
+        for (let w = 1; w <= 4; w++) {
+          result[w].days = defaultDayTitles.map((title, idx) => ({
+            id: idx + 1,
+            title: title,
+            exercises: []
+          }));
+        }
+        return result;
+      }
+
+      // Case 1: Already in new nested format { "1": { days: [...] }, ... }
+      if (pm["1"] && Array.isArray(pm["1"].days)) {
+        for (let w = 1; w <= 4; w++) {
+          if (pm[w] && Array.isArray(pm[w].days)) {
+            result[w] = { days: JSON.parse(JSON.stringify(pm[w].days)) };
+          } else {
+            result[w] = {
+              days: defaultDayTitles.map((title, idx) => ({
+                id: idx + 1,
+                title: title,
+                exercises: []
+              }))
+            };
+          }
+        }
+        return result;
+      }
+
+      // Case 2: Convert Legacy Flat Keys "1_1", "1_2"...
+      const titles = (Array.isArray(legacyDayList) && legacyDayList.length > 0) ? legacyDayList : defaultDayTitles;
+      for (let w = 1; w <= 4; w++) {
+        const weekDays = [];
+        titles.forEach((title, idx) => {
+          const dayNum = idx + 1;
+          const key = `${w}_${dayNum}`;
+          const exercises = Array.isArray(pm[key]) ? JSON.parse(JSON.stringify(pm[key])) : [];
+          weekDays.push({ id: dayNum, title: title, exercises: exercises });
+        });
+        result[w] = { days: weekDays };
+      }
+
+      return result;
+    }
+
+    function renderClientDayBar() {
       const dayContainer = document.getElementById('workout-day-container');
       if (!dayContainer) return;
 
-      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
-      const cleanPhone = userPhone.replace(/\D/g, '');
+      const matrixObj = normalizeProgramMatrix(
+        currentClientData ? currentClientData.programMatrix : null,
+        currentClientData ? currentClientData.dayList : null
+      );
 
-      const dayList = customDayList || JSON.parse(localStorage.getItem('pt_day_list_' + cleanPhone)) || [
-        { id: 1, title: 'Göğüs & Ön Kol' },
-        { id: 2, title: 'Sırt & Arka Kol' },
-        { id: 3, title: 'Bacak & Omuz' },
-        { id: 4, title: 'Kardiyo & Karın' }
-      ];
+      const weekDays = (matrixObj[clientCurrentWeek] && matrixObj[clientCurrentWeek].days) || [];
+
+      // Ensure clientCurrentDay is valid for current week
+      if (weekDays.length > 0 && !weekDays.some(d => d.id === clientCurrentDay)) {
+        clientCurrentDay = weekDays[0].id;
+      }
 
       dayContainer.innerHTML = '';
-      dayList.forEach(d => {
+      weekDays.forEach(d => {
         const isActive = (d.id === clientCurrentDay);
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = `day-pill ${isActive ? 'active' : ''}`;
         btn.setAttribute('data-day', d.id);
-        btn.textContent = `Gün ${d.id}: ${d.title}`;
+        btn.textContent = d.title || `Gün ${d.id}`;
 
         btn.addEventListener('click', () => {
           document.querySelectorAll('#workout-day-container .day-pill').forEach(b => b.classList.remove('active'));
@@ -1936,81 +1998,27 @@
       });
     }
 
-    function renderClientNutrition(passedData) {
-      const nutrition = passedData || (currentClientData && currentClientData.nutrition);
-      const kcalEl = document.getElementById('nutri-target-kcal');
-      const protEl = document.getElementById('nutri-target-protein');
-      const carbEl = document.getElementById('nutri-target-carb');
-      const fatEl = document.getElementById('nutri-target-fat');
-      const mealListBox = document.getElementById('client-meal-list-box');
-
-      if (!nutrition) return;
-
-      if (kcalEl) kcalEl.textContent = `${nutrition.kcal || '2,100'} kcal`;
-      if (protEl) protEl.textContent = `${nutrition.protein || '160'}g`;
-      if (carbEl) carbEl.textContent = `${nutrition.carb || '210'}g`;
-      if (fatEl) fatEl.textContent = `${nutrition.fat || '58'}g`;
-
-      if (mealListBox && Array.isArray(nutrition.meals) && nutrition.meals.length > 0) {
-        mealListBox.innerHTML = '';
-        nutrition.meals.forEach((m, idx) => {
-          const card = document.createElement('div');
-          card.className = 'meal-block';
-          card.innerHTML = `
-            <div class="meal-header">
-              <h4><i class="fas fa-utensils" style="color: var(--accent-red);"></i> ${m.title || `Öğün ${idx + 1}`}</h4>
-            </div>
-            <div class="meal-food-list" style="padding: 1.2rem; color: #F3F4F6; line-height: 1.6; font-size: 0.95rem; white-space: pre-wrap; font-weight: 500;">
-              ${m.text}
-            </div>
-          `;
-          mealListBox.appendChild(card);
-        });
-      }
-    }
-    window.renderClientNutrition = renderClientNutrition;
-
-    function renderClientSupplements(suppData) {
-      const supp = suppData || (currentClientData && currentClientData.supplements);
-      if (!supp) return;
-
-      if (document.getElementById('client-supp-whey')) document.getElementById('client-supp-whey').textContent = supp.whey || 'Tavsiye edilmedi';
-      if (document.getElementById('client-supp-creatine')) document.getElementById('client-supp-creatine').textContent = supp.creatine || 'Tavsiye edilmedi';
-      if (document.getElementById('client-supp-vitamins')) document.getElementById('client-supp-vitamins').textContent = supp.vitamins || 'Tavsiye edilmedi';
-      if (document.getElementById('client-supp-zma')) document.getElementById('client-supp-zma').textContent = supp.zma || 'Tavsiye edilmedi';
-      if (document.getElementById('client-supp-notes')) document.getElementById('client-supp-notes').textContent = supp.notes || 'Düzenli kullanım ve bol su tüketimi tavsiye edilir.';
-    }
-    window.renderClientSupplements = renderClientSupplements;
-
-    document.addEventListener('DOMContentLoaded', () => {
-      renderClientNutrition();
-      renderClientSupplements();
-      renderClientDayBar();
-    });
-
-    function getClientProgramMatrix() {
-      if (currentClientData && currentClientData.programMatrix && typeof currentClientData.programMatrix === 'object' && Object.keys(currentClientData.programMatrix).length > 0) {
-        return currentClientData.programMatrix;
-      }
-      return {};
-    }
-
-    function renderMatrixExercises(week, day) {
+    function renderMatrixExercises(week, dayId) {
       clientCurrentWeek = week || clientCurrentWeek || 1;
-      clientCurrentDay = day || clientCurrentDay || 1;
+      clientCurrentDay = dayId || clientCurrentDay || 1;
 
       const exerciseListBox = document.getElementById('exercise-list-box');
       if (!exerciseListBox) return;
 
-      const matrix = getClientProgramMatrix();
-      const key = `${clientCurrentWeek}_${clientCurrentDay}`;
-      const exercises = matrix[key] || [];
+      const matrixObj = normalizeProgramMatrix(
+        currentClientData ? currentClientData.programMatrix : null,
+        currentClientData ? currentClientData.dayList : null
+      );
+
+      const weekDays = (matrixObj[clientCurrentWeek] && matrixObj[clientCurrentWeek].days) || [];
+      const currentDayObj = weekDays.find(d => d.id === clientCurrentDay) || weekDays[0] || { exercises: [] };
+      const exercises = currentDayObj.exercises || [];
 
       if (exercises.length === 0) {
         exerciseListBox.innerHTML = `
           <div class="glass-panel" style="padding: 2.5rem; text-align: center; border-radius: var(--radius-md); border: 1px dashed var(--border-light);">
             <i class="fas fa-info-circle" style="font-size: 2rem; color: var(--accent-red); margin-bottom: 0.8rem; display: block;"></i>
-            <h4 style="color: #FFFFFF; font-size: 1.1rem; margin-bottom: 0.4rem;">${clientCurrentWeek}. Hafta — Gün ${clientCurrentDay} Boş</h4>
+            <h4 style="color: #FFFFFF; font-size: 1.1rem; margin-bottom: 0.4rem;">${clientCurrentWeek}. Hafta — ${currentDayObj.title || 'Boş Gün'}</h4>
             <p style="color: var(--text-muted); font-size: 0.88rem;">
               Antrenörünüz <strong>Umut Altun</strong> bu gün için dinlenme veya serbest aktivite planladı.
             </p>
