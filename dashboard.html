@@ -1499,12 +1499,9 @@
               if (myClient.startDate) {
                 localStorage.setItem('pt_start_date_' + cleanPhone, myClient.startDate);
               }
-              if (myClient.supplements) {
-                localStorage.setItem('pt_supplements_' + cleanPhone, JSON.stringify(myClient.supplements));
-                renderClientSupplements(myClient.supplements);
-              }
-              if (myClient.nutrition) {
-                localStorage.setItem('pt_nutrition_' + cleanPhone, JSON.stringify(myClient.nutrition));
+              if (myClient.dayList) {
+                localStorage.setItem('pt_day_list_' + cleanPhone, JSON.stringify(myClient.dayList));
+                renderClientDayBar(myClient.dayList);
               }
 
               // Re-render Client UI elements with fresh backend data
@@ -1525,6 +1522,40 @@
       }
     }
 
+    function renderClientDayBar(customDayList) {
+      const dayContainer = document.getElementById('workout-day-container');
+      if (!dayContainer) return;
+
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
+      const cleanPhone = userPhone.replace(/\D/g, '');
+
+      const dayList = customDayList || JSON.parse(localStorage.getItem('pt_day_list_' + cleanPhone)) || [
+        { id: 1, title: 'Göğüs & Ön Kol' },
+        { id: 2, title: 'Sırt & Arka Kol' },
+        { id: 3, title: 'Bacak & Omuz' },
+        { id: 4, title: 'Kardiyo & Karın' }
+      ];
+
+      dayContainer.innerHTML = '';
+      dayList.forEach(d => {
+        const isActive = (d.id === clientCurrentDay);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `day-pill ${isActive ? 'active' : ''}`;
+        btn.setAttribute('data-day', d.id);
+        btn.textContent = `Gün ${d.id}: ${d.title}`;
+
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#workout-day-container .day-pill').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          clientCurrentDay = d.id;
+          renderMatrixExercises(clientCurrentWeek, d.id);
+        });
+
+        dayContainer.appendChild(btn);
+      });
+    }
+
     function renderClientSupplements(suppData) {
       const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
       const cleanPhone = userPhone.replace(/\D/g, '');
@@ -1541,6 +1572,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       syncClientProgramFromBackend();
       renderClientSupplements();
+      renderClientDayBar();
     });
     setTimeout(syncClientProgramFromBackend, 300);
 

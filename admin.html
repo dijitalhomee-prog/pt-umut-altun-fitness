@@ -321,14 +321,16 @@
 
             <!-- Gün Bölüm Seçici -->
             <div style="margin-bottom: 1.2rem;">
-              <label style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; display: block;">
-                🏋️ HANGİ GÜNÜ DÜZENLİYORSUNUZ?
-              </label>
-              <div class="admin-day-bar" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <button type="button" class="btn btn-outline admin-day-btn active" data-day="1" style="border-color: var(--accent-red); color: #FFF; background: rgba(239,68,68,0.18); font-weight: bold; font-size: 0.85rem; padding: 0.5rem 0.9rem;">Gün 1: Göğüs & Ön Kol</button>
-                <button type="button" class="btn btn-outline admin-day-btn" data-day="2" style="font-size: 0.85rem; padding: 0.5rem 0.9rem;">Gün 2: Sırt & Arka Kol</button>
-                <button type="button" class="btn btn-outline admin-day-btn" data-day="3" style="font-size: 0.85rem; padding: 0.5rem 0.9rem;">Gün 3: Bacak & Omuz</button>
-                <button type="button" class="btn btn-outline admin-day-btn" data-day="4" style="font-size: 0.85rem; padding: 0.5rem 0.9rem;">Gün 4: Kardiyo & Karın</button>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <label style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-bottom: 0;">
+                  🏋️ HANGİ GÜNÜ DÜZENLİYORSUNUZ?
+                </label>
+                <button type="button" class="btn btn-outline" id="add-new-day-btn" style="padding: 0.35rem 0.75rem; font-size: 0.78rem; border-color: #10B981; color: #10B981; background: rgba(16,185,129,0.1); font-weight: bold;">
+                  <i class="fas fa-plus-circle"></i> Yeni Gün Ekle (Gün 5, Gün 6...)
+                </button>
+              </div>
+              <div class="admin-day-bar" id="admin-day-bar-container" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <!-- Rendered dynamically by script -->
               </div>
             </div>
 
@@ -740,30 +742,65 @@
       });
     });
 
-    // Day selector buttons in admin
-    document.querySelectorAll('.admin-day-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        saveCurrentInputsToState();
-        document.querySelectorAll('.admin-day-btn').forEach(b => {
-          b.classList.remove('active');
-          b.style.borderColor = 'var(--border-light)';
-          b.style.background = 'none';
-          b.style.fontWeight = 'normal';
+    window.adminDayList = [
+      { id: 1, title: 'Göğüs & Ön Kol' },
+      { id: 2, title: 'Sırt & Arka Kol' },
+      { id: 3, title: 'Bacak & Omuz' },
+      { id: 4, title: 'Kardiyo & Karın' }
+    ];
+
+    function renderAdminDayButtons() {
+      const container = document.getElementById('admin-day-bar-container');
+      if (!container) return;
+
+      container.innerHTML = '';
+      window.adminDayList.forEach(d => {
+        const isActive = (d.id === currentAdminDay);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `btn btn-outline admin-day-btn ${isActive ? 'active' : ''}`;
+        btn.setAttribute('data-day', d.id);
+        btn.style.cssText = isActive ? 
+          'border-color: var(--accent-red); color: #FFF; background: rgba(239,68,68,0.18); font-weight: bold; font-size: 0.85rem; padding: 0.5rem 0.9rem;' :
+          'font-size: 0.85rem; padding: 0.5rem 0.9rem;';
+        
+        btn.textContent = `Gün ${d.id}: ${d.title}`;
+
+        btn.addEventListener('click', () => {
+          saveCurrentInputsToState();
+          currentAdminDay = d.id;
+          renderAdminDayButtons();
+          updateAdminTargetTitle();
+          loadInputsFromState();
         });
-        btn.classList.add('active');
-        btn.style.borderColor = 'var(--accent-red)';
-        btn.style.background = 'rgba(239, 68, 68, 0.18)';
-        btn.style.fontWeight = 'bold';
-        currentAdminDay = parseInt(btn.getAttribute('data-day'));
-        updateAdminTargetTitle();
-        loadInputsFromState();
+
+        container.appendChild(btn);
       });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderAdminDayButtons();
+      const addDayBtn = document.getElementById('add-new-day-btn');
+      if (addDayBtn) {
+        addDayBtn.addEventListener('click', () => {
+          saveCurrentInputsToState();
+          const nextDayNum = window.adminDayList.length + 1;
+          const customTitle = prompt(`Yeni gün başlığını girin (Örn: Kol & Omuz Focus / Gün ${nextDayNum}):`, `Gün ${nextDayNum} Antrenmanı`);
+          if (customTitle && customTitle.trim()) {
+            window.adminDayList.push({ id: nextDayNum, title: customTitle.trim() });
+            currentAdminDay = nextDayNum;
+            renderAdminDayButtons();
+            updateAdminTargetTitle();
+            loadInputsFromState();
+          }
+        });
+      }
     });
 
     function updateAdminTargetTitle() {
       const titleEl = document.getElementById('admin-current-target-title');
-      const dayNames = ['Göğüs & Ön Kol', 'Sırt & Arka Kol', 'Bacak & Omuz', 'Kardiyo & Karın'];
-      const dayName = dayNames[currentAdminDay - 1] || `Gün ${currentAdminDay}`;
+      const activeObj = window.adminDayList.find(d => d.id === currentAdminDay);
+      const dayName = activeObj ? activeObj.title : `Gün ${currentAdminDay}`;
       if (titleEl) {
         titleEl.textContent = `${currentAdminWeek}. Hafta — Gün ${currentAdminDay}: ${dayName} Hareketleri`;
       }
@@ -1179,6 +1216,17 @@
           coachNoteInput.value = `${client.package} ailesine hoş geldin ${firstName}! İlk 2 haftamızda temel hedefimiz ağır kitleler kaldırmak değil, hareket formlarını eksiksiz öğrenmek ve vücudunu antrenman ritmine alıştırmaktır. Beslenme listendeki makrolara sadık kal!`;
         }
       }
+
+      // 4. Load Custom Day List
+      window.adminDayList = client.dayList || 
+                            JSON.parse(localStorage.getItem('pt_day_list_' + client.id)) ||
+                            JSON.parse(localStorage.getItem('pt_day_list_' + cleanPhone)) || [
+        { id: 1, title: 'Göğüs & Ön Kol' },
+        { id: 2, title: 'Sırt & Arka Kol' },
+        { id: 3, title: 'Bacak & Omuz' },
+        { id: 4, title: 'Kardiyo & Karın' }
+      ];
+      renderAdminDayButtons();
     }
 
     function renderClientsList() {

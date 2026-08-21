@@ -259,7 +259,7 @@ app.put('/api/clients/:id/password', (req, res) => {
 // Update Client Body Metrics Profile & Assigned Program Data Endpoint
 app.put('/api/clients/:id/profile', (req, res) => {
   const { id } = req.params;
-  const { height, startWeight, currentWeight, targetWeight, coachNote, hasAssignedProgram, programMatrix, startDate, nutrition } = req.body;
+  const { height, startWeight, currentWeight, targetWeight, coachNote, hasAssignedProgram, programMatrix, startDate, nutrition, supplements, measurements, photos, dayList } = req.body;
 
   const db = readDb();
   const client = db.clients.find(c => c.id === id || (c.phone && c.phone.replace(/\D/g, '') === id.replace(/\D/g, '')));
@@ -277,6 +277,10 @@ app.put('/api/clients/:id/profile', (req, res) => {
   if (programMatrix) client.programMatrix = programMatrix;
   if (startDate) client.startDate = startDate;
   if (nutrition) client.nutrition = nutrition;
+  if (supplements) client.supplements = supplements;
+  if (measurements) client.measurements = measurements;
+  if (photos) client.photos = photos;
+  if (dayList) client.dayList = dayList;
 
   writeDb(db);
   res.json({ success: true, client });
