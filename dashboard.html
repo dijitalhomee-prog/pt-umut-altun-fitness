@@ -1747,6 +1747,8 @@
       if (isAuth && (!startWeight || !currentWeight) && !sessionStorage.getItem('profile_modal_shown')) {
         sessionStorage.setItem('profile_modal_shown', 'true');
         setTimeout(() => { openProfileUpdateModal(); }, 600);
+      }
+
       // Trigger 4-day countdown popup check if form check-in is approaching
       checkFormCheckinCountdownNotice();
     }
