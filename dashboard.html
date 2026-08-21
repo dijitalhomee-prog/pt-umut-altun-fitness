@@ -545,15 +545,15 @@
 
       <!-- Quick Stats Overview -->
       <div class="client-stats-row" style="margin-bottom: 2rem;">
-        <div class="client-stat-card" onclick="openProfileUpdateModal()" style="cursor: pointer;" title="Ölçüleri Güncelle">
+        <div class="client-stat-card" onclick="window.openProfileUpdateModal();" style="cursor: pointer;" title="Ölçüleri Güncelle">
           <div class="label">Başlangıç Kilosu</div>
-          <div class="value" id="stat-initial-weight">Girilecek kg</div>
+          <div class="value" id="stat-initial-weight"><span style="font-size: 0.88rem; color: #EF4444; font-weight: 700; cursor: pointer;">✏️ Kilonuzu Girin</span></div>
         </div>
-        <div class="client-stat-card" onclick="openProfileUpdateModal()" style="cursor: pointer;" title="Ölçüleri Güncelle">
+        <div class="client-stat-card" onclick="window.openProfileUpdateModal();" style="cursor: pointer;" title="Ölçüleri Güncelle">
           <div class="label">Güncel Kilo</div>
-          <div class="value green" id="stat-current-weight">Girilecek kg</div>
+          <div class="value green" id="stat-current-weight"><span style="font-size: 0.88rem; color: #EF4444; font-weight: 700; cursor: pointer;">✏️ Kilonuzu Girin</span></div>
         </div>
-        <div class="client-stat-card" onclick="openProfileUpdateModal()" style="cursor: pointer;" title="Ölçüleri Güncelle">
+        <div class="client-stat-card" onclick="window.openProfileUpdateModal();" style="cursor: pointer;" title="Ölçüleri Güncelle">
           <div class="label">Boy & Periyot</div>
           <div class="value" id="stat-checkin-period" style="font-size: 1.1rem; padding-top: 0.3rem;">Haftalık</div>
         </div>
@@ -1254,6 +1254,7 @@
 
       const profileKey = `pt_client_profile_${cleanPhone}`;
       localStorage.setItem(profileKey, JSON.stringify(profileData));
+      localStorage.setItem('pt_client_profile_global', JSON.stringify(profileData));
 
       fetch(`/api/clients/${cleanPhone}/profile`, {
         method: 'PUT',
@@ -1299,27 +1300,34 @@
 
       // 2. Read Client Specific Body Metrics Profile
       const profileKey = `pt_client_profile_${cleanPhone}`;
-      const savedProfile = JSON.parse(localStorage.getItem(profileKey)) || {};
+      const savedProfile = JSON.parse(localStorage.getItem(profileKey)) || JSON.parse(localStorage.getItem('pt_client_profile_global')) || {};
+      const globalProfile = JSON.parse(localStorage.getItem('pt_client_profile_global')) || {};
 
-      const startWeight = savedProfile.startWeight || client.startWeight || null;
-      const currentWeight = savedProfile.currentWeight || client.currentWeight || null;
-      const height = savedProfile.height || client.height || null;
+      const startWeight = savedProfile.startWeight || globalProfile.startWeight || client.startWeight || null;
+      const currentWeight = savedProfile.currentWeight || globalProfile.currentWeight || client.currentWeight || null;
+      const height = savedProfile.height || globalProfile.height || client.height || null;
       const checkinPeriod = savedProfile.checkinPeriod || client.checkinPeriod || "Haftalık";
 
       // 3. Update the 4 Metric Cards
       const initWEl = document.getElementById('stat-initial-weight');
       if (initWEl) {
-        initWEl.innerHTML = startWeight ? `${parseFloat(startWeight).toFixed(1)} kg` : `<span style="font-size: 0.85rem; color: var(--accent-red); cursor: pointer;" onclick="openProfileUpdateModal()">✏️ Girin</span>`;
+        initWEl.innerHTML = (startWeight && !isNaN(parseFloat(startWeight))) 
+          ? `${parseFloat(startWeight).toFixed(1)} kg` 
+          : `<span style="font-size: 0.88rem; color: #EF4444; font-weight: 700; cursor: pointer;" onclick="window.openProfileUpdateModal();">✏️ Kilonuzu Girin</span>`;
       }
 
       const curWEl = document.getElementById('stat-current-weight');
       if (curWEl) {
-        curWEl.innerHTML = currentWeight ? `${parseFloat(currentWeight).toFixed(1)} kg` : `<span style="font-size: 0.85rem; color: var(--accent-red); cursor: pointer;" onclick="openProfileUpdateModal()">✏️ Girin</span>`;
+        curWEl.innerHTML = (currentWeight && !isNaN(parseFloat(currentWeight))) 
+          ? `${parseFloat(currentWeight).toFixed(1)} kg` 
+          : `<span style="font-size: 0.88rem; color: #EF4444; font-weight: 700; cursor: pointer;" onclick="window.openProfileUpdateModal();">✏️ Kilonuzu Girin</span>`;
       }
 
       const checkinEl = document.getElementById('stat-checkin-period');
       if (checkinEl) {
-        checkinEl.textContent = height ? `${height} cm (${checkinPeriod})` : checkinPeriod;
+        checkinEl.textContent = (height && !isNaN(parseFloat(height))) 
+          ? `${height} cm (${checkinPeriod})` 
+          : checkinPeriod;
       }
 
       // 4. Update Personal Coach Note for this Client
