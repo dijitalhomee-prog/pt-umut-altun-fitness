@@ -1330,6 +1330,17 @@
       photosList.unshift(photoGroup);
       localStorage.setItem(photosKey, JSON.stringify(photosList));
 
+      // Update client in local pt_clients_list
+      const storedClientsList = JSON.parse(localStorage.getItem('pt_clients_list')) || [];
+      const matchIdx = storedClientsList.findIndex(c => (c.phone || '').replace(/\D/g, '') === cleanPhone);
+      if (matchIdx >= 0) {
+        if (!storedClientsList[matchIdx].photos) storedClientsList[matchIdx].photos = [];
+        if (!storedClientsList[matchIdx].formPhotos) storedClientsList[matchIdx].formPhotos = [];
+        storedClientsList[matchIdx].photos.unshift(photoGroup);
+        storedClientsList[matchIdx].formPhotos.unshift(photoGroup);
+        localStorage.setItem('pt_clients_list', JSON.stringify(storedClientsList));
+      }
+
       fetch(`/api/clients/${cleanPhone}/photos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

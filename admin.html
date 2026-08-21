@@ -473,11 +473,16 @@
           <!-- TAB 4: FORM PHOTO INSPECTOR FOR TRAINER -->
           <div id="tab-photo-inspector" class="builder-pane" style="display: none;">
             <div class="glass-panel" style="padding: 1.5rem; margin-bottom: 1.5rem;">
-              <h4 style="color: #FFFFFF; font-size: 1.1rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                <i class="fas fa-camera" style="color: #10B981;"></i> <span id="photo-inspector-client-name">Seçili Danışan</span> — Form Fotoğrafları & 4 Cephe Gelişim Analizi
-              </h4>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.6rem;">
+                <h4 style="color: #FFFFFF; font-size: 1.1rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                  <i class="fas fa-camera" style="color: #10B981;"></i> <span id="photo-inspector-client-name">Seçili Danışan</span> — Form Fotoğrafları & 4 Cephe Gelişim Analizi
+                </h4>
+                <button type="button" class="btn btn-outline" onclick="fetchServerClients()" style="font-size: 0.78rem; padding: 0.35rem 0.8rem; border-color: #10B981; color: #10B981;">
+                  <i class="fas fa-sync-alt"></i> Fotoğrafları Yenile
+                </button>
+              </div>
               <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.2rem;">
-                Danışanın yüklediği Ön, Arka (Sırt), Sağ Yan ve Sol Yan görselleri aşağıda gösterilmektedir. Fotoğrafları yüksek çözünürlükte incelemek için üzerlerine tıklayın.
+                Danışanın kendi panelinden yüklediği Ön, Arka (Sırt), Sağ Yan ve Sol Yan görselleri aşağıda gösterilmektedir. Görselleri tam ekranda incelemek için üzerlerine tıklayın.
               </p>
 
               <div id="admin-client-photos-container" style="display: grid; grid-template-columns: 1fr; gap: 1.2rem;">
@@ -1849,6 +1854,14 @@
       const targetPane = document.getElementById(targetTabId);
       if (targetPane) {
         targetPane.style.display = 'block';
+      }
+
+      // If photo inspector tab is opened, re-render photos for currently selected client!
+      if (targetTabId === 'tab-photo-inspector') {
+        const currentSelected = clients.find(c => c.id === selectedClientId) || clients[0];
+        if (currentSelected) {
+          renderAdminClientPhotos(currentSelected);
+        }
       }
     }
     window.switchAdminBuilderTab = switchAdminBuilderTab;

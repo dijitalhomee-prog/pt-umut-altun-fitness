@@ -292,8 +292,12 @@ app.post('/api/clients/:id/photos', (req, res) => {
   const { id } = req.params;
   const photoObj = req.body.photoGroup || req.body;
 
-  const db = readDb();
-  const client = db.clients.find(c => c.id === id || (c.phone && c.phone.replace(/\D/g, '') === id.replace(/\D/g, '')));
+  const cleanId = id.replace(/\D/g, '');
+  const client = db.clients.find(c => 
+    c.id === id || 
+    (c.phone && c.phone.replace(/\D/g, '') === cleanId) ||
+    (cleanId && cleanId.length >= 10 && c.phone && c.phone.replace(/\D/g, '').endsWith(cleanId.slice(-10)))
+  );
 
   if (!client) {
     return res.status(404).json({ success: false, message: 'Danışan bulunamadı.' });
