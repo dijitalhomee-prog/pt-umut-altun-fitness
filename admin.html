@@ -1003,14 +1003,13 @@
     let currentFilter = 'all';
     let selectedClientId = clients.length > 0 ? clients[0].id : null;
 
-    // Sunucudan (REST API) Kayıtlı Danışanları Canlı Çek
+    // Sunucudan (REST API) Kayıtlı Danışanları Canlı Çek ve Birleştir
     async function loadServerClients() {
       try {
         const res = await fetch('/api/clients');
         const data = await res.json();
         if (data.success && Array.isArray(data.clients)) {
-          clients = data.clients;
-          localStorage.setItem('pt_clients_list', JSON.stringify(clients));
+          mergeClientLists(data.clients);
           if (!selectedClientId && clients.length > 0) {
             selectedClientId = clients[0].id;
           }
@@ -1289,8 +1288,29 @@
       });
     }
 
+    function mergeClientLists(serverList) {
+      if (!Array.isArray(serverList)) return;
+      serverList.forEach(srvClient => {
+        if (!srvClient || (!srvClient.id && !srvClient.phone)) return;
+        const cleanP = (srvClient.phone || '').replace(/\D/g, '');
+        const idx = clients.findIndex(c => c.id === srvClient.id || (cleanP && c.phone && c.phone.replace(/\D/g, '') === cleanP));
+        if (idx >= 0) {
+          clients[idx] = { ...clients[idx], ...srvClient };
+        } else {
+          clients.push(srvClient);
+        }
+      });
+      localStorage.setItem('pt_clients_list', JSON.stringify(clients));
+    }
+    window.mergeClientLists = mergeClientLists;
+
     function saveClients() {
       localStorage.setItem('pt_clients_list', JSON.stringify(clients));
+      fetch('/api/clients/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clients: clients })
+      }).catch(err => console.warn('Offline sync fallback:', err));
     }
 
     // Status Filters
@@ -1372,6 +1392,7 @@
         };
 
         clients.unshift(newClient);
+        selectedClientId = newClient.id;
         saveClients();
         renderClientsList();
 
@@ -1395,8 +1416,7 @@
         if (res.ok) {
           const data = await res.json();
           if (data.success && Array.isArray(data.clients) && data.clients.length > 0) {
-            clients = data.clients;
-            saveClients();
+            mergeClientLists(data.clients);
             renderClientsList();
           }
         }

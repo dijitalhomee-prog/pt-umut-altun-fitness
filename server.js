@@ -178,6 +178,47 @@ app.post('/api/clients', (req, res) => {
   res.json({ success: true, client: newClient });
 });
 
+// Bulk Sync Clients Endpoint (Ensures Clients Are Never Lost)
+app.post('/api/clients/sync', (req, res) => {
+  const { clients: incoming } = req.body;
+  if (!Array.isArray(incoming)) {
+    return res.status(400).json({ success: false, message: 'Danışan dizisi geçersiz.' });
+  }
+
+  const db = readDb();
+  incoming.forEach(inc => {
+    if (!inc || (!inc.id && !inc.phone)) return;
+    const cleanPhone = (inc.phone || '').replace(/\D/g, '');
+    const idx = db.clients.findIndex(c => c.id === inc.id || (cleanPhone && c.phone && c.phone.replace(/\D/g, '') === cleanPhone));
+
+    if (idx >= 0) {
+      db.clients[idx] = { ...db.clients[idx], ...inc };
+    } else {
+      db.clients.unshift(inc);
+    }
+  });
+
+  writeDb(db);
+  res.json({ success: true, clients: db.clients });
+});
+
+// Delete Client Endpoint (Trainer Action Only)
+app.delete('/api/clients/:id', (req, res) => {
+  const { id } = req.params;
+  const db = readDb();
+  const cleanId = id.replace(/\D/g, '');
+
+  const initialCount = db.clients.length;
+  db.clients = db.clients.filter(c => c.id !== id && (cleanId ? c.phone.replace(/\D/g, '') !== cleanId : true));
+
+  if (db.clients.length < initialCount) {
+    writeDb(db);
+    res.json({ success: true, message: 'Danışan başarıyla silindi.' });
+  } else {
+    res.status(404).json({ success: false, message: 'Silinecek danışan bulunamadı.' });
+  }
+});
+
 // 3. Toggle Client Active / Passive Status
 app.put('/api/clients/:id/status', (req, res) => {
   const { id } = req.params;
