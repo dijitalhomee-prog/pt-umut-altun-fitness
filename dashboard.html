@@ -818,7 +818,7 @@
       <div id="tab-nutrition" class="tab-content-pane">
         <div class="glass-panel" style="padding: 1.5rem; margin-bottom: 2rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
-            <h3 style="margin-bottom: 0;">Başlangıç Seviye Günlük Makro Hedefi (2,100 kcal)</h3>
+            <h3 style="margin-bottom: 0;">Kişiye Özel Günlük Makro Hedefi (<span id="nutri-target-kcal">2,100 kcal</span>)</h3>
             <button id="download-nutrition-pdf-btn" class="btn btn-outline" style="padding: 0.45rem 1rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.5rem;">
               <i class="fas fa-file-pdf" style="color: var(--accent-red);"></i> Beslenme Listesini PDF İndir
             </button>
@@ -826,18 +826,20 @@
           <div class="res-metrics-grid">
             <div class="metric-card">
               <span>Hedef Protein</span>
-              <h4>160g</h4>
+              <h4 id="nutri-target-protein">160g</h4>
             </div>
             <div class="metric-card">
               <span>Hedef Karbonhidrat</span>
-              <h4>210g</h4>
+              <h4 id="nutri-target-carb">210g</h4>
             </div>
             <div class="metric-card">
               <span>Hedef Yağ</span>
-              <h4>58g</h4>
+              <h4 id="nutri-target-fat">58g</h4>
             </div>
           </div>
         </div>
+
+        <div id="client-meal-list-box" class="meal-list">
 
         <div class="meal-block">
           <div class="meal-header">
@@ -890,6 +892,7 @@
             </div>
           </div>
         </div>
+        </div> <!-- End of #client-meal-list-box -->
 
         <!-- Besin Değişim Rehberi İpucu Kutusu -->
         <div style="padding: 1.2rem; background: rgba(6, 182, 212, 0.08); border: 1px dashed var(--accent-secondary); border-radius: var(--radius-md); display: flex; align-items: center; gap: 1rem;">
@@ -1861,6 +1864,15 @@
                 renderClientDayBar(myClient.dayList);
               }
 
+              if (myClient.nutrition) {
+                localStorage.setItem('pt_nutrition_' + cleanPhone, JSON.stringify(myClient.nutrition));
+                renderClientNutrition(myClient.nutrition);
+              }
+              if (myClient.supplements) {
+                localStorage.setItem('pt_supplements_' + cleanPhone, JSON.stringify(myClient.supplements));
+                renderClientSupplements(myClient.supplements);
+              }
+
               // Re-render Client UI elements with fresh backend data
               if (typeof renderAssignedProgramState === 'function') {
                 renderAssignedProgramState(myClient);
@@ -1913,10 +1925,55 @@
       });
     }
 
+    function renderClientNutrition(passedData) {
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
+      const cleanPhone = userPhone.replace(/\D/g, '');
+
+      const storedClients = (liveClientsList && liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
+      const matchingClient = storedClients.find(c => (c.phone || '').replace(/\D/g, '') === cleanPhone || (cleanPhone && cleanPhone.length >= 10 && (c.phone || '').replace(/\D/g, '').endsWith(cleanPhone.slice(-10))));
+
+      const nutrition = passedData || (matchingClient && matchingClient.nutrition) || JSON.parse(localStorage.getItem('pt_nutrition_' + cleanPhone));
+
+      const kcalEl = document.getElementById('nutri-target-kcal');
+      const protEl = document.getElementById('nutri-target-protein');
+      const carbEl = document.getElementById('nutri-target-carb');
+      const fatEl = document.getElementById('nutri-target-fat');
+      const mealListBox = document.getElementById('client-meal-list-box');
+
+      if (!nutrition) return;
+
+      if (kcalEl) kcalEl.textContent = `${nutrition.kcal || '2,100'} kcal`;
+      if (protEl) protEl.textContent = `${nutrition.protein || '160'}g`;
+      if (carbEl) carbEl.textContent = `${nutrition.carb || '210'}g`;
+      if (fatEl) fatEl.textContent = `${nutrition.fat || '58'}g`;
+
+      if (mealListBox && Array.isArray(nutrition.meals) && nutrition.meals.length > 0) {
+        mealListBox.innerHTML = '';
+        nutrition.meals.forEach((m, idx) => {
+          const card = document.createElement('div');
+          card.className = 'meal-block';
+          card.innerHTML = `
+            <div class="meal-header">
+              <h4><i class="fas fa-utensils" style="color: var(--accent-red);"></i> ${m.title || `Öğün ${idx + 1}`}</h4>
+            </div>
+            <div class="meal-food-list" style="padding: 1.2rem; color: #F3F4F6; line-height: 1.6; font-size: 0.95rem; white-space: pre-wrap; font-weight: 500;">
+              ${m.text}
+            </div>
+          `;
+          mealListBox.appendChild(card);
+        });
+      }
+    }
+    window.renderClientNutrition = renderClientNutrition;
+
     function renderClientSupplements(suppData) {
       const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
       const cleanPhone = userPhone.replace(/\D/g, '');
-      const supp = suppData || JSON.parse(localStorage.getItem('pt_supplements_' + cleanPhone));
+
+      const storedClients = (liveClientsList && liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
+      const matchingClient = storedClients.find(c => (c.phone || '').replace(/\D/g, '') === cleanPhone || (cleanPhone && cleanPhone.length >= 10 && (c.phone || '').replace(/\D/g, '').endsWith(cleanPhone.slice(-10))));
+
+      const supp = suppData || (matchingClient && matchingClient.supplements) || JSON.parse(localStorage.getItem('pt_supplements_' + cleanPhone));
       if (!supp) return;
 
       if (document.getElementById('client-supp-whey')) document.getElementById('client-supp-whey').textContent = supp.whey || 'Tavsiye edilmedi';
@@ -1925,9 +1982,11 @@
       if (document.getElementById('client-supp-zma')) document.getElementById('client-supp-zma').textContent = supp.zma || 'Tavsiye edilmedi';
       if (document.getElementById('client-supp-notes')) document.getElementById('client-supp-notes').textContent = supp.notes || 'Düzenli kullanım ve bol su tüketimi tavsiye edilir.';
     }
+    window.renderClientSupplements = renderClientSupplements;
 
     document.addEventListener('DOMContentLoaded', () => {
       syncClientProgramFromBackend();
+      renderClientNutrition();
       renderClientSupplements();
       renderClientDayBar();
     });
