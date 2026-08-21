@@ -409,6 +409,9 @@ function readDb(forceDiskRead = false) {
         return !activePhones.includes(normDp) && !activeIds.includes(dp);
       });
 
+      if (dbData.deletedPhones.length < initialLen) needDiskSave = true;
+    }
+
     // 5. Packages catalog initialization & client schema migration (MADDELER 1, 2, 3, 5)
     if (!Array.isArray(dbData.packages) || dbData.packages.length === 0) {
       dbData.packages = DEFAULT_PACKAGES;
