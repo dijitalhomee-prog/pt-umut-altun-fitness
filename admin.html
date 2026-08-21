@@ -1562,6 +1562,10 @@
                 🔄 Arşivden Çıkar
               </button>
             `}
+
+            <button class="btn btn-outline" style="border-color: #EF4444; color: #EF4444; background: rgba(239, 68, 68, 0.15); font-size: 0.8rem; padding: 0.4rem 0.75rem; font-weight: 800;" onclick="window.permanentlyDeleteClient('${client.id}')">
+              🗑️ Sistemden Sil
+            </button>
           </div>
 
           <!-- Kilo İlerleme Geçmişi (MADDE 5) -->
@@ -1944,6 +1948,44 @@
       }
     }
     window.restoreClientFromArchive = restoreClientFromArchive;
+
+    async function permanentlyDeleteClient(clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+
+      const clientName = client.name || 'Danışan';
+      const clientPhone = client.phone || '—';
+
+      const confirmed = confirm(
+        `⚠️ DİKKAT: Danışan "${clientName}" (${clientPhone}) sistemden tamamen silinecektir!\n\n` +
+        `• Telefon numarası ve şifresi veritabanından tamamen silinir.\n` +
+        `• Danışan sisteme tekrar kesinlikle giriş yapamaz.\n` +
+        `• Tüm antrenman, form fotoğrafı ve kilo verileri silinir.\n\n` +
+        `Danışanı sistemden silmek istediğinize emin misiniz?`
+      );
+
+      if (!confirmed) return;
+
+      try {
+        const res = await trainerFetch(`/api/clients/${clientId}`, {
+          method: 'DELETE'
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showTrainerSuccessBannerMsg(`🗑️ Danışan "${clientName}" ve telefon numarası (${clientPhone}) sistemden tamamen silindi.`);
+          resetWizardStateAndForm();
+          fetchServerClients();
+          fetchTrainerAgenda();
+        } else {
+          showTrainerErrorBanner(`⚠️ Danışan silinemedi: ${data.message || 'Hata'}`);
+        }
+      } catch (err) {
+        console.error('Danışan silme hatası:', err);
+        showTrainerErrorBanner('⚠️ Danışan silinirken sunucu hatası oluştu.');
+      }
+    }
+    window.permanentlyDeleteClient = permanentlyDeleteClient;
 
     let hardDeleteTargetClientId = null;
 

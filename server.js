@@ -1938,6 +1938,9 @@ app.delete('/api/clients/:id', requireTrainer, (req, res) => {
     if (db.programs && db.programs[targetClient.id]) delete db.programs[targetClient.id];
     if (db.programs && clean10 && db.programs[clean10]) delete db.programs[clean10];
 
+    // Revoke active sessions for deleted client
+    db.sessions = (db.sessions || []).filter(s => s.clientId !== targetClient.id && normalizePhone(s.phone) !== clean10);
+
     writeDb(db);
     return res.json({ success: true, message: 'Danışan hesabı kalıcı olarak silindi ve erişimi engellendi.', deletedPhone: clean10 });
   }
