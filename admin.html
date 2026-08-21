@@ -1603,14 +1603,22 @@
               ${c.package}
             </span>
           </div>
-          <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 0.5rem 0;">${c.stage}</p>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 0.3rem 0;">${c.stage}</p>
 
-          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem;">
+          <div style="font-size: 0.78rem; color: #E5E7EB; background: rgba(255,255,255,0.04); padding: 0.4rem 0.6rem; border-radius: 4px; margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.08);">
+            <span>📱 <strong>Tel:</strong> ${c.phone || 'Girilmedi'}</span>
+            <span>🔑 <strong>Şifre:</strong> <strong style="color: #F59E0B; font-size: 0.88rem;">${c.password || '123456'}</strong></span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem; flex-wrap: wrap; gap: 0.4rem;">
             <span style="font-size: 0.75rem; color: ${isActive ? '#10B981' : '#EF4444'};">
               <i class="fas ${isActive ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${c.note || (isActive ? 'Aktif' : 'Paket Bitti')}
             </span>
             
-            <div style="display: flex; gap: 0.35rem;">
+            <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+              <button class="send-wa-info-btn" data-phone="${c.phone || ''}" data-name="${c.name}" data-pass="${c.password || '123456'}" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: var(--radius-sm); border: 1px solid #25D366; background: rgba(37,211,102,0.15); color: #25D366; cursor: pointer; font-weight: bold;" title="WhatsApp'tan Giriş Bilgilerini Gönder">
+                <i class="fab fa-whatsapp"></i> Bilgi Gönder
+              </button>
               <button class="toggle-status-btn" data-id="${c.id}" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: var(--radius-sm); border: 1px solid ${isActive ? '#10B981' : '#EF4444'}; background: ${isActive ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}; color: ${isActive ? '#10B981' : '#EF4444'}; cursor: pointer; font-weight: bold;">
                 ${isActive ? '🟢 Aktif' : '🔴 Pasif Yap'}
               </button>
@@ -1630,6 +1638,19 @@
           selectedClientId = c.id;
           renderClientsList();
         });
+
+        // WhatsApp Send Info Event
+        const sendWaBtn = card.querySelector('.send-wa-info-btn');
+        if (sendWaBtn) {
+          sendWaBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const phoneStr = (c.phone || '').replace(/\D/g, '');
+            const passStr = c.password || '123456';
+            const waText = encodeURIComponent(`Merhaba ${c.name}, PT Umut Altun Danışan Paneline erişim bilgileriniz:\n\n📱 Telefon Numarası: ${c.phone}\n🔑 Giriş Şifreniz: ${passStr}\n\nPanelinize giriş yapmak için linke tıklayabilirsiniz:\nhttps://ptumutaltun.com/dashboard.html`);
+            const waUrl = `https://wa.me/90${phoneStr}?text=${waText}`;
+            window.open(waUrl, '_blank');
+          });
+        }
 
         // Toggle status event
         card.querySelector('.toggle-status-btn').addEventListener('click', (e) => {
