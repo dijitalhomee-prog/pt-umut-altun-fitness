@@ -1794,7 +1794,28 @@
 
       const actionStatus = document.getElementById('pkg-action-status');
       if (actionStatus) {
-        actionStatus.innerHTML = `<i class="fas fa-calendar-check"></i> ${client.status === 'active' ? 'Aktif Üyelik' : 'Pasif Üyelik'} (Son Tarih: ${client.expiryDate || 'Belirtilmedi'})`;
+        const plannedSession = (Array.isArray(client.sessions)) ? client.sessions.find(s => s.status === 'planned') : null;
+        if (plannedSession) {
+          const sessionD = new Date(plannedSession.date);
+          const dateStr = sessionD.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' });
+          actionStatus.innerHTML = `<i class="fas fa-calendar-check"></i> 📅 ${dateStr} ${plannedSession.time || '14:00'} (${plannedSession.location || 'Cevahir MACFit'})`;
+        } else if (client.expiryDate) {
+          const expD = new Date(client.expiryDate);
+          const todayD = new Date();
+          todayD.setHours(0, 0, 0, 0);
+          const daysLeft = Math.ceil((expD - todayD) / (1000 * 60 * 60 * 24));
+          const ent = client.entitlements || {};
+          let entInfo = '';
+          if (ent.ptSessionsTotal > 0) {
+            const remPt = Math.max(0, ent.ptSessionsTotal - (ent.ptSessionsUsed || 0));
+            entInfo = ` | Kalan PT: ${remPt}/${ent.ptSessionsTotal} Ders`;
+          }
+          if (daysLeft > 0) {
+            actionStatus.innerHTML = `<i class="fas fa-check-circle" style="color: #10B981;"></i> 🟢 Aktif Üyelik (${daysLeft} Gün Kaldı${entInfo})`;
+          } else {
+            actionStatus.innerHTML = `<i class="fas fa-exclamation-triangle" style="color: #EF4444;"></i> 🔴 Üyelik Süresi Doldu (${client.expiryDate})`;
+          }
+        }
       }
 
       // 5. Render Uploaded Form Photos Gallery

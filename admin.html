@@ -121,7 +121,6 @@
       animation: fadeIn 0.3s ease;
     }
 
-    /* Wizard Action Navigation Footer Bar */
     .wizard-nav-footer {
       display: flex;
       justify-content: space-between;
@@ -165,6 +164,63 @@
       border-color: var(--accent-red);
       color: #FFF;
       box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+    }
+
+    /* Agenda Task Row Item Styling */
+    .agenda-task-item {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.6rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    .agenda-task-item.overdue {
+      border-left: 4px solid #EF4444;
+    }
+    .agenda-task-item.today {
+      border-left: 4px solid #F59E0B;
+    }
+    .agenda-task-item.week {
+      border-left: 4px solid #10B981;
+    }
+
+    /* Calendar Cell Styling */
+    .calendar-day-cell {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      min-height: 90px;
+      padding: 0.4rem;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      display: flex;
+      flex-direction: column;
+    }
+    .calendar-day-cell:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--accent-red);
+    }
+    .calendar-day-cell.today {
+      border: 2px solid #10B981;
+      background: rgba(16, 185, 129, 0.05);
+    }
+
+    .cal-event-pill {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.15rem 0.35rem;
+      border-radius: 3px;
+      margin-top: 0.2rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #FFF;
     }
 
     @media (max-width: 992px) {
@@ -256,7 +312,26 @@
             <button id="open-add-client-btn" class="btn btn-primary-glow" style="padding: 0.45rem 0.9rem; font-size: 0.82rem;">
               <i class="fas fa-user-plus"></i> Yeni Danışan Ekle
             </button>
+            <button class="btn btn-outline" style="padding: 0.45rem 0.9rem; font-size: 0.82rem; border-color: #10B981; color: #10B981;" onclick="window.openPlanSessionModal();">
+              <i class="fas fa-calendar-plus"></i> Birebir Ders Planla
+            </button>
           </div>
+        </div>
+      </div>
+
+      <!-- TRAINER TODAY'S AGENDA CARD (BÖLÜM 1) -->
+      <div id="trainer-agenda-card" class="glass-panel" style="margin-bottom: 1.5rem; padding: 1.2rem 1.5rem; border-radius: var(--radius-lg); border: 1px solid rgba(245,158,11,0.3); background: linear-gradient(135deg, rgba(245,158,11,0.05) 0%, rgba(18,18,22,0.95) 100%);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.8rem;">
+          <h3 style="font-size: 1.1rem; color: #FFF; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-tasks" style="color: #F59E0B;"></i> 📋 Eğitmen Günlük Ajandası & Yapılacaklar (<span id="agenda-total-badge">0</span>)
+          </h3>
+          <button class="btn btn-outline" style="font-size: 0.78rem; padding: 0.35rem 0.75rem;" onclick="window.fetchTrainerAgenda();">
+            <i class="fas fa-sync-alt"></i> Yenile
+          </button>
+        </div>
+
+        <div id="agenda-groups-container">
+          <!-- Rendered dynamically -->
         </div>
       </div>
 
@@ -390,7 +465,6 @@
               </p>
             </div>
 
-            <!-- Quick Template & Clone Actions -->
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
               <button type="button" class="btn btn-outline" style="font-size: 0.78rem; padding: 0.4rem 0.8rem; border-color: rgba(16,185,129,0.4); color: #10B981;" onclick="window.openPresetModal();">
                 <i class="fas fa-magic"></i> Hazır Şablon Yükle
@@ -404,7 +478,6 @@
             </div>
           </div>
 
-          <!-- Week Navigation Tabs with Filled Indicators -->
           <div style="display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap;" id="wiz-week-tabs-container">
             <button class="wiz-week-tab-btn active" data-week="1" onclick="window.setWizardWeek(1);">
               <span class="week-indicator">🟢</span> 1. Hafta
@@ -420,12 +493,10 @@
             </button>
           </div>
 
-          <!-- Days List & Exercises Editor for Currently Active Week -->
           <div id="wiz-exercises-container">
-            <!-- Exercise Editor Rows Rendered Dynamically -->
+            <!-- Exercise Editor Rows -->
           </div>
 
-          <!-- Add Day Button for Current Week -->
           <div style="margin-top: 1rem;">
             <button type="button" class="btn btn-outline" style="width: 100%; border-dashed: 1px dashed var(--accent-red); color: var(--accent-red); padding: 0.6rem;" onclick="window.addWizardDayToCurrentWeek();">
               <i class="fas fa-plus-circle"></i> + Bu Haftaya Yeni Gün Ekle
@@ -545,7 +616,6 @@
             </button>
           </div>
 
-          <!-- Live Client Panel Preview Container -->
           <div style="background: rgba(0,0,0,0.5); border: 2px solid #10B981; border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.8rem;">
               <h4 style="color: #10B981; margin: 0; font-size: 1.1rem;"><i class="fas fa-mobile-alt"></i> Danışan Ekran Görünümü</h4>
@@ -579,6 +649,39 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- DEDICATED MONTHLY TRAINER CALENDAR SECTION (BÖLÜM 2) -->
+      <div id="trainer-calendar-section" class="glass-panel" style="margin-top: 2.5rem; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-light);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h3 style="color: #FFF; font-size: 1.15rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+              <i class="fas fa-calendar-alt" style="color: #3B82F6;"></i> 📅 Aylık Takvim & Planlama Görünümü
+            </h3>
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.2rem;">
+              Üyelik bitişleri, 4 haftalık program sonları, form kontrolleri ve birebir derslerin aylık takvim dağılımı.
+            </p>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+            <select id="cal-filter-type" class="input-field" onchange="window.renderTrainerCalendar();" style="padding: 0.4rem 0.6rem; font-size: 0.8rem; margin: 0; min-width: 150px;">
+              <option value="all">🎨 Tüm Olaylar</option>
+              <option value="expiry">🔴 Üyelik Bitişleri</option>
+              <option value="program">🟠 Program Bitişleri</option>
+              <option value="form">🔵 Form Kontrolleri</option>
+              <option value="pt">🟢 Birebir Dersler</option>
+            </select>
+
+            <button class="btn btn-outline" onclick="window.navCalendarMonth(-1);" style="padding: 0.4rem 0.7rem; font-size: 0.8rem;"><i class="fas fa-chevron-left"></i> Önceki Ay</button>
+            <strong id="cal-month-title" style="color: #FFF; font-size: 0.95rem; min-width: 130px; text-align: center;">Ağustos 2026</strong>
+            <button class="btn btn-outline" onclick="window.navCalendarMonth(1);" style="padding: 0.4rem 0.7rem; font-size: 0.8rem;">Sonraki Ay <i class="fas fa-chevron-right"></i></button>
+            <button class="btn btn-outline" onclick="window.resetCalendarToday();" style="padding: 0.4rem 0.7rem; font-size: 0.8rem; border-color: #10B981; color: #10B981;">Bugün</button>
+          </div>
+        </div>
+
+        <div id="trainer-calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem;">
+          <!-- Rendered dynamically -->
+        </div>
       </div>
 
       <!-- SEPARATE SYSTEM MANAGEMENT & BULK TOOLS SECTION -->
@@ -652,6 +755,57 @@
     </div>
   </div>
 
+  <!-- Plan Session Modal -->
+  <div class="modal-overlay" id="plan-session-modal">
+    <div class="modal-container">
+      <button class="close-modal-btn" onclick="document.getElementById('plan-session-modal').classList.remove('active');">&times;</button>
+      <div class="modal-header">
+        <h3><i class="fas fa-calendar-plus" style="color: #10B981;"></i> Birebir PT / Stüdyo Ders Planla</h3>
+        <p>Danışana özel yüz yüze veya stüdyo ders randevusu oluşturun.</p>
+      </div>
+
+      <form id="plan-session-form" onsubmit="window.executePlanSession(event)">
+        <div class="calc-form-group">
+          <label class="calc-label">Danışan Seçimi *</label>
+          <select id="plan-session-client-select" class="input-field" required></select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
+          <div class="calc-form-group">
+            <label class="calc-label">Ders Tarihi *</label>
+            <input type="date" id="plan-session-date" class="input-field" required>
+          </div>
+          <div class="calc-form-group">
+            <label class="calc-label">Ders Saati *</label>
+            <input type="time" id="plan-session-time" class="input-field" value="14:00" required>
+          </div>
+        </div>
+
+        <div class="calc-form-group">
+          <label class="calc-label">Ders Türü</label>
+          <select id="plan-session-type" class="input-field">
+            <option value="pt">🟢 Birebir PT Özel Ders</option>
+            <option value="studio">📍 Cevahir AVM MACFit Hibrit Stüdyo Seansı</option>
+          </select>
+        </div>
+
+        <div class="calc-form-group">
+          <label class="calc-label">Konum / Salon</label>
+          <input type="text" id="plan-session-location" class="input-field" value="Cevahir AVM MACFit Stüdyo">
+        </div>
+
+        <div class="calc-form-group">
+          <label class="calc-label">Eğitmen Notu</label>
+          <input type="text" id="plan-session-note" class="input-field" placeholder="Örn: Squat & postür analizi yapılacak">
+        </div>
+
+        <button type="submit" class="btn btn-primary-glow btn-block" style="margin-top: 1rem; background: #10B981; border-color: #10B981;">
+          <i class="fas fa-check"></i> Seansı Planla & Danışana Bildir
+        </button>
+      </form>
+    </div>
+  </div>
+
   <!-- Presets Modal -->
   <div class="modal-overlay" id="preset-modal">
     <div class="modal-container">
@@ -700,6 +854,9 @@
       isUnsaved: false
     };
 
+    let calendarCurrentDate = new Date();
+    let calendarEvents = [];
+
     function normalizeProgramMatrix(pm, legacyDayList) {
       const defaultDayTitles = [
         '1. Gün: Göğüs & Biceps',
@@ -726,7 +883,6 @@
         return result;
       }
 
-      // Case 1: Already in new nested format { "1": { days: [...] }, ... }
       if (pm["1"] && Array.isArray(pm["1"].days)) {
         for (let w = 1; w <= 4; w++) {
           if (pm[w] && Array.isArray(pm[w].days)) {
@@ -744,7 +900,6 @@
         return result;
       }
 
-      // Case 2: Convert Legacy Flat Keys "1_1", "1_2"...
       const titles = (Array.isArray(legacyDayList) && legacyDayList.length > 0) ? legacyDayList : defaultDayTitles;
       for (let w = 1; w <= 4; w++) {
         const weekDays = [];
@@ -800,6 +955,8 @@
           localStorage.setItem('trainer_session_token', data.token);
           document.getElementById('trainer-auth-overlay').style.display = 'none';
           fetchServerClients();
+          fetchTrainerAgenda();
+          renderTrainerCalendar();
         } else {
           errBox.style.display = 'block';
         }
@@ -899,7 +1056,6 @@
         badge.innerHTML = `<i class="fas fa-user"></i> ${client.name} | ${client.package} | ${client.status === 'active' ? '🟢 Aktif' : '🔴 Pasif'}`;
       }
 
-      // Populate Step 1 Form Fields
       document.getElementById('wiz-client-name').value = client.name || '';
       document.getElementById('wiz-client-phone').value = client.phone || '';
       document.getElementById('wiz-client-password').value = client.password || '';
@@ -912,7 +1068,6 @@
       document.getElementById('wiz-client-targetweight').value = client.targetWeight || '';
       document.getElementById('wiz-client-height').value = client.height || '';
 
-      // Populate Step 3 Nutrition Fields
       const nutri = client.nutrition || {};
       document.getElementById('wiz-nutri-calories').value = nutri.calories || '';
       document.getElementById('wiz-nutri-protein').value = nutri.protein || '';
@@ -921,7 +1076,6 @@
       document.getElementById('wiz-nutri-water').value = nutri.water || '';
       document.getElementById('wiz-nutri-meals').value = nutri.meals || '';
 
-      // Populate Step 4 Supplement Fields
       const supp = client.supplements || {};
       document.getElementById('wiz-supp-whey').value = supp.whey || '';
       document.getElementById('wiz-supp-creatine').value = supp.creatine || '';
@@ -931,10 +1085,8 @@
       document.getElementById('wiz-supp-zma').value = supp.zma || '';
       document.getElementById('wiz-supp-notes').value = supp.notes || '';
 
-      // Populate Step 5 Coach Note
       document.getElementById('wiz-coach-note').value = client.coachNote || '';
 
-      // Normalize & Deep Clone Program Matrix (Per-Week Independent Scoped)
       wizardState.programMatrix = normalizeProgramMatrix(client.programMatrix, client.dayList);
       wizardState.isUnsaved = false;
       document.getElementById('wizard-unsaved-badge').style.display = 'none';
@@ -959,6 +1111,352 @@
         document.getElementById('wizard-unsaved-badge').style.display = 'inline-block';
       });
     });
+
+    // --------------------------------------------------------------------------
+    // BÖLÜM 1: EĞİTMEN GÜNLÜK AJANDASI (AGENDA ENGINE)
+    // --------------------------------------------------------------------------
+    async function fetchTrainerAgenda() {
+      const container = document.getElementById('agenda-groups-container');
+      const badge = document.getElementById('agenda-total-badge');
+      if (!container) return;
+
+      try {
+        const res = await trainerFetch('/api/agenda');
+        const data = await res.json();
+        if (data.success && data.agenda) {
+          if (badge) badge.textContent = data.totalCount || 0;
+          renderAgendaGroups(data.agenda);
+        }
+      } catch (err) {
+        console.warn('Agenda fetch error:', err);
+      }
+    }
+    window.fetchTrainerAgenda = fetchTrainerAgenda;
+
+    function renderAgendaGroups(agendaObj) {
+      const container = document.getElementById('agenda-groups-container');
+      if (!container) return;
+
+      const overdue = agendaObj.overdue || [];
+      const today = agendaObj.today || [];
+      const week = agendaObj.week || [];
+
+      if (overdue.length === 0 && today.length === 0 && week.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 1.5rem; color: #10B981; border: 1px dashed rgba(16,185,129,0.3); border-radius: var(--radius-md);">
+            <i class="fas fa-check-circle" style="font-size: 1.8rem; margin-bottom: 0.4rem; display: block;"></i>
+            <strong>✨ Harika! Bugün bekleyen bir ajanda göreviniz yok.</strong>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+
+      // 🔴 GECİKMİŞ İŞLER
+      if (overdue.length > 0) {
+        html += `<h4 style="color: #EF4444; font-size: 0.88rem; margin: 0.8rem 0 0.4rem 0;"><i class="fas fa-exclamation-circle"></i> 🔴 Gecikmiş Görevler (${overdue.length})</h4>`;
+        overdue.forEach(item => { html += renderAgendaTaskRow(item, 'overdue'); });
+      }
+
+      // 🟡 BUGÜNÜN İŞLERİ
+      if (today.length > 0) {
+        html += `<h4 style="color: #F59E0B; font-size: 0.88rem; margin: 0.8rem 0 0.4rem 0;"><i class="fas fa-clock"></i> 🟡 Bugüne Düşen Görevler (${today.length})</h4>`;
+        today.forEach(item => { html += renderAgendaTaskRow(item, 'today'); });
+      }
+
+      // 🟢 BU HAFTANIN İŞLERİ
+      if (week.length > 0) {
+        html += `<h4 style="color: #10B981; font-size: 0.88rem; margin: 0.8rem 0 0.4rem 0;"><i class="fas fa-calendar-week"></i> 🟢 Bu Hafta Yaklaşan Görevler (${week.length})</h4>`;
+        week.forEach(item => { html += renderAgendaTaskRow(item, 'week'); });
+      }
+
+      container.innerHTML = html;
+    }
+
+    function renderAgendaTaskRow(item, groupKey) {
+      const phone = item.clientPhone || '5303008936';
+
+      let actionBtnsHtml = '';
+      if (item.type === 'membership_expired' || item.type === 'membership_expiring') {
+        actionBtnsHtml = `
+          <button class="btn btn-outline" style="font-size: 0.72rem; padding: 0.25rem 0.5rem; border-color: #10B981; color: #10B981;" onclick="window.quickExtendMembership('${item.clientId}')">Uzat (+1 Ay)</button>
+          <button class="btn btn-outline" style="font-size: 0.72rem; padding: 0.25rem 0.5rem; border-color: #EF4444; color: #EF4444;" onclick="window.quickPassivateMembership('${item.clientId}')">Pasife Al</button>
+          <button class="btn btn-outline" style="font-size: 0.72rem; padding: 0.25rem 0.5rem; border-color: #25D366; color: #25D366;" onclick="window.sendWAForMembership('${phone}', '${item.clientName}')"><i class="fab fa-whatsapp"></i> Mesaj At</button>
+        `;
+      } else if (item.type === 'program_expired') {
+        actionBtnsHtml = `
+          <button class="btn btn-primary-glow" style="font-size: 0.72rem; padding: 0.25rem 0.55rem;" onclick="window.selectClientForWizard('${item.clientId}')">Yeni Program Yaz 🪄</button>
+        `;
+      } else if (item.type === 'form_check_due') {
+        actionBtnsHtml = `
+          <button class="btn btn-outline" style="font-size: 0.72rem; padding: 0.25rem 0.5rem; border-color: #25D366; color: #25D366;" onclick="window.sendWAForFormCheck('${phone}', '${item.clientName}')"><i class="fab fa-whatsapp"></i> Hatırlat</button>
+          <button class="btn btn-outline" style="font-size: 0.72rem; padding: 0.25rem 0.5rem; border-color: #10B981; color: #10B981;" onclick="window.quickMarkFormCheckDone('${item.clientId}', '${item.dueDate}')">Tamamlandı</button>
+        `;
+      } else if (item.type === 'pt_session') {
+        actionBtnsHtml = `
+          <button class="btn btn-outline" style="font-size: 0.72rem; padding: 0.25rem 0.5rem; border-color: #10B981; color: #10B981;" onclick="window.quickMarkSessionDone('${item.clientId}', '${item.sessionId}')">Yapıldı ✅</button>
+        `;
+      }
+
+      return `
+        <div class="agenda-task-item ${groupKey}">
+          <div style="display: flex; align-items: center; gap: 0.8rem;">
+            <strong style="color: #FFF; font-size: 0.88rem; cursor: pointer;" onclick="window.selectClientForWizard('${item.clientId}')">
+              👤 ${item.clientName}
+            </strong>
+            <span style="font-size: 0.8rem; color: #E5E7EB;">— <strong>${item.title}:</strong> ${item.subtitle}</span>
+          </div>
+          <div style="display: flex; gap: 0.4rem; align-items: center;">
+            ${actionBtnsHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    // Agenda Quick Actions
+    async function quickExtendMembership(clientId) {
+      try {
+        const res = await trainerFetch(`/api/clients/${clientId}/extend`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ months: 1 })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('✨ Üyelik süresi +1 ay uzatıldı!');
+          fetchTrainerAgenda();
+          fetchServerClients();
+        }
+      } catch (err) {
+        alert('⚠️ İşlem hatası');
+      }
+    }
+    window.quickExtendMembership = quickExtendMembership;
+
+    async function quickPassivateMembership(clientId) {
+      try {
+        const res = await trainerFetch(`/api/clients/${clientId}/extend`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'passive' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('✨ Danışan üyelik durumu pasife alındı!');
+          fetchTrainerAgenda();
+          fetchServerClients();
+        }
+      } catch (err) {
+        alert('⚠️ İşlem hatası');
+      }
+    }
+    window.quickPassivateMembership = quickPassivateMembership;
+
+    async function quickMarkFormCheckDone(clientId, dueDate) {
+      try {
+        const res = await trainerFetch(`/api/clients/${clientId}/form-checks/${dueDate}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'done' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('✨ Form kontrolü tamamlandı işaretlendi!');
+          fetchTrainerAgenda();
+        }
+      } catch (err) {
+        alert('⚠️ İşlem hatası');
+      }
+    }
+    window.quickMarkFormCheckDone = quickMarkFormCheckDone;
+
+    async function quickMarkSessionDone(clientId, sessionId) {
+      try {
+        const res = await trainerFetch(`/api/clients/${clientId}/sessions/${sessionId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'done' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('✨ Seans başarıyla tamamlandı işaretlendi ve hak düşüldü!');
+          fetchTrainerAgenda();
+        }
+      } catch (err) {
+        alert('⚠️ İşlem hatası');
+      }
+    }
+    window.quickMarkSessionDone = quickMarkSessionDone;
+
+    function sendWAForMembership(phone, name) {
+      const waText = encodeURIComponent(`Merhaba ${name}, PT Umut Altun üyelik süreniz dolmak üzeredir. Üyeliğinizi yenileyip antrenmanlarınıza kesintisiz devam etmek için mesaj atabilirsiniz!`);
+      window.open(`https://wa.me/90${phone}?text=${waText}`, '_blank');
+    }
+    window.sendWAForMembership = sendWAForMembership;
+
+    function sendWAForFormCheck(phone, name) {
+      const waText = encodeURIComponent(`Merhaba ${name}, bu haftaki form ve vücut ölçüm kontrolü gününüz gelmiştir! Lütfen 4 cephe güncel form fotoğraflarınızı danışan panelinizden yükleyiniz.`);
+      window.open(`https://wa.me/90${phone}?text=${waText}`, '_blank');
+    }
+    window.sendWAForFormCheck = sendWAForFormCheck;
+
+    // --------------------------------------------------------------------------
+    // BÖLÜM 2: EĞİTMEN AYLIK TAKVİMİ (MONTHLY CALENDAR ENGINE)
+    // --------------------------------------------------------------------------
+    async function renderTrainerCalendar() {
+      const monthStr = calendarCurrentDate.toISOString().slice(0, 7);
+      const titleEl = document.getElementById('cal-month-title');
+      const gridEl = document.getElementById('trainer-calendar-grid');
+      const filterType = document.getElementById('cal-filter-type')?.value || 'all';
+
+      if (titleEl) {
+        const monthName = calendarCurrentDate.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+        titleEl.textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+      }
+
+      if (!gridEl) return;
+      gridEl.innerHTML = '';
+
+      try {
+        const res = await trainerFetch(`/api/calendar?month=${monthStr}`);
+        const data = await res.json();
+        calendarEvents = (data.success && Array.isArray(data.events)) ? data.events : [];
+      } catch (err) {
+        calendarEvents = [];
+      }
+
+      // Filter events by type
+      const filteredEvents = calendarEvents.filter(ev => {
+        if (filterType === 'all') return true;
+        return ev.type === filterType;
+      });
+
+      // Build Calendar Days Matrix
+      const year = calendarCurrentDate.getFullYear();
+      const monthIdx = calendarCurrentDate.getMonth();
+      const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
+      const firstDayWeekIdx = (new Date(year, monthIdx, 1).getDay() + 6) % 7; // Monday = 0
+
+      // Render Day Headers (Pzt - Paz)
+      const dayHeaderNames = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+      dayHeaderNames.forEach(dName => {
+        const hCell = document.createElement('div');
+        hCell.style.textAlign = 'center';
+        hCell.style.fontSize = '0.75rem';
+        hCell.style.fontWeight = '800';
+        hCell.style.color = 'var(--text-muted)';
+        hCell.style.padding = '0.3rem';
+        hCell.textContent = dName;
+        gridEl.appendChild(hCell);
+      });
+
+      // Empty padding cells
+      for (let i = 0; i < firstDayWeekIdx; i++) {
+        const emptyCell = document.createElement('div');
+        gridEl.appendChild(emptyCell);
+      }
+
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      // Day Cells
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateKey = `${year}-${String(monthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const isToday = (dateKey === todayStr);
+        const dayEvents = filteredEvents.filter(ev => ev.date === dateKey);
+
+        const cell = document.createElement('div');
+        cell.className = `calendar-day-cell ${isToday ? 'today' : ''}`;
+        cell.onclick = () => window.openCalendarDayEventsModal(dateKey, dayEvents);
+
+        cell.innerHTML = `
+          <div style="font-size: 0.8rem; font-weight: 800; color: ${isToday ? '#10B981' : '#FFF'}; margin-bottom: 0.2rem;">${day}</div>
+          <div id="cal-cell-events-${day}" style="display: flex; flex-direction: column; gap: 0.15rem; overflow: hidden;">
+            ${dayEvents.slice(0, 3).map(ev => `
+              <div class="cal-event-pill" style="background: ${ev.color};" title="${ev.title}">
+                ${ev.title}
+              </div>
+            `).join('')}
+            ${dayEvents.length > 3 ? `<div style="font-size: 0.65rem; color: #F59E0B; font-weight: bold; text-align: center;">+${dayEvents.length - 3} daha</div>` : ''}
+          </div>
+        `;
+        gridEl.appendChild(cell);
+      }
+    }
+    window.renderTrainerCalendar = renderTrainerCalendar;
+
+    function navCalendarMonth(delta) {
+      calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + delta);
+      renderTrainerCalendar();
+    }
+    window.navCalendarMonth = navCalendarMonth;
+
+    function resetCalendarToday() {
+      calendarCurrentDate = new Date();
+      renderTrainerCalendar();
+    }
+    window.resetCalendarToday = resetCalendarToday;
+
+    function openCalendarDayEventsModal(dateKey, dayEvents) {
+      if (dayEvents.length === 0) {
+        alert(`📌 ${dateKey} tarihinde henüz planlanmış bir olay bulunmuyor.`);
+        return;
+      }
+      const eventsStr = dayEvents.map(e => `• ${e.title} (${e.subtitle || ''})`).join('\n');
+      alert(`📅 ${dateKey} Tarihli Olaylar:\n\n${eventsStr}`);
+    }
+    window.openCalendarDayEventsModal = openCalendarDayEventsModal;
+
+    // --------------------------------------------------------------------------
+    // BÖLÜM 3: PLAN PT SESSION MODAL
+    // --------------------------------------------------------------------------
+    function openPlanSessionModal() {
+      const select = document.getElementById('plan-session-client-select');
+      select.innerHTML = '<option value="">-- Danışan Seçin --</option>';
+      clients.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.name} (${c.package})`;
+        if (c.id === selectedClientId) opt.selected = true;
+        select.appendChild(opt);
+      });
+      document.getElementById('plan-session-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('plan-session-modal').classList.add('active');
+    }
+    window.openPlanSessionModal = openPlanSessionModal;
+
+    async function executePlanSession(e) {
+      e.preventDefault();
+      const clientId = document.getElementById('plan-session-client-select').value;
+      const date = document.getElementById('plan-session-date').value;
+      const time = document.getElementById('plan-session-time').value;
+      const type = document.getElementById('plan-session-type').value;
+      const location = document.getElementById('plan-session-location').value;
+      const note = document.getElementById('plan-session-note').value;
+
+      if (!clientId) {
+        alert('⚠️ Lütfen danışan seçiniz!');
+        return;
+      }
+
+      try {
+        const res = await trainerFetch(`/api/clients/${clientId}/sessions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ date, time, type, location, note })
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('plan-session-modal').classList.remove('active');
+          alert('✨ Birebir PT / Stüdyo dersi başarıyla planlandı!');
+          fetchTrainerAgenda();
+          renderTrainerCalendar();
+        }
+      } catch (err) {
+        alert('⚠️ Seans planlama hatası!');
+      }
+    }
+    window.executePlanSession = executePlanSession;
 
     // --------------------------------------------------------------------------
     // WIZARD STEP NAVIGATION CONTROLLER
@@ -1193,7 +1691,6 @@
     }
     window.removeWizardDayFromCurrentWeek = removeWizardDayFromCurrentWeek;
 
-    // Copy to Other Weeks with Confirmation & Deep Copy
     function copyCurrentWeekToOtherWeeks() {
       if (!confirm(`⚠️ ${wizardCurrentWeek}. Hafta içeriği 1, 2, 3 ve 4. haftalara kopyalanacaktır. Diğer haftalardaki mevcut içerik üzerine yazılacaktır. Onaylıyor musunuz?`)) {
         return;
@@ -1214,7 +1711,6 @@
     }
     window.copyCurrentWeekToOtherWeeks = copyCurrentWeekToOtherWeeks;
 
-    // Clone matrix from another client
     function openCloneFromClientModal() {
       const select = document.getElementById('clone-source-client-select');
       select.innerHTML = '<option value="">-- Danışan Seçin --</option>';
@@ -1244,7 +1740,6 @@
     }
     window.executeCloneFromClient = executeCloneFromClient;
 
-    // Presets
     function openPresetModal() {
       document.getElementById('preset-modal').classList.add('active');
     }
@@ -1406,6 +1901,8 @@
           document.getElementById('wizard-unsaved-badge').style.display = 'none';
           alert(`✨ PROGRAM BAŞARIYLA KAYDEDİLDİ VE DANIŞANA AKTARILDI!\n\n📌 Danışan: ${clientData.name}\n🚀 Danışan kendi paneline girdiğinde 4 haftanın bağımsız antrenman, beslenme ve eğitmen notunu anında görecektir.`);
           fetchServerClients();
+          fetchTrainerAgenda();
+          renderTrainerCalendar();
         } else {
           alert('⚠️ Program kaydedilemedi: ' + (data.message || 'Sunucu hatası'));
         }
@@ -1426,6 +1923,8 @@
         if (data.success) {
           alert(data.message);
           fetchServerClients();
+          fetchTrainerAgenda();
+          renderTrainerCalendar();
         }
       } catch (err) {
         alert('⚠️ Sunucu bağlantı hatası!');
@@ -1453,6 +1952,8 @@
         if (data.success) {
           alert(data.message);
           fetchServerClients();
+          fetchTrainerAgenda();
+          renderTrainerCalendar();
         }
       } catch (err) {
         alert('⚠️ Sunucu bağlantı hatası!');
@@ -1474,6 +1975,8 @@
         if (data.success) {
           alert(data.message);
           fetchServerClients();
+          fetchTrainerAgenda();
+          renderTrainerCalendar();
         }
       } catch (err) {
         alert('⚠️ Geçersiz JSON verisi veya sunucu hatası!');
@@ -1510,6 +2013,8 @@
           document.getElementById('add-client-form').reset();
           alert(`✨ Danışan Sisteme Kaydedildi!\n\n📌 Danışan: ${data.client.name}\n📱 Telefon: ${data.client.phone}\n🔑 Şifre: ${data.client.password}`);
           await fetchServerClients();
+          fetchTrainerAgenda();
+          renderTrainerCalendar();
           selectClientForWizard(data.client.id);
         } else {
           alert('⚠️ Kayıt hatası: ' + (data.message || 'Bilinmeyen hata'));
@@ -1529,6 +2034,8 @@
 
     // Initial load
     fetchServerClients();
+    fetchTrainerAgenda();
+    renderTrainerCalendar();
   </script>
 </body>
 </html>

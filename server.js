@@ -478,32 +478,477 @@ app.post('/api/me/photos', requireAuth, (req, res) => {
   client.formPhotos.unshift(photoObj);
   client.photos.unshift(photoObj);
 
+  // Auto Mark Form Check as Done!
+  if (!client.formPhotos) client.formPhotos = [];
+  const todayStr = new Date().toISOString().split('T')[0];
+  if (!client.formChecks) client.formChecks = [];
+  let matchingCheck = client.formChecks.find(f => f.dueDate === todayStr);
+  if (!matchingCheck) {
+    matchingCheck = { dueDate: todayStr, status: 'done', completedAt: new Date().toISOString() };
+    client.formChecks.push(matchingCheck);
+  } else {
+    matchingCheck.status = 'done';
+    matchingCheck.completedAt = new Date().toISOString();
+  }
+
   writeDb(db);
   res.json({ success: true, photos: client.formPhotos });
 });
 
-// POST /api/me/dismiss-notification — Dismiss client-bound new program notification
-app.post('/api/me/dismiss-notification', requireAuth, (req, res) => {
-  if (!req.client) {
-    return res.status(400).json({ success: false, message: 'Geçersiz oturum.' });
+// Helper for Package Entitlements
+function getPackageEntitlements(pkgName) {
+  const p = (pkgName || '').toLowerCase();
+  if (p.includes('birebir pt') || p.includes('20 ders')) {
+    return { ptSessionsTotal: 20, ptSessionsUsed: 0, monthlyStudioSessions: 0 };
   }
+  if (p.includes('vip') || p.includes('şampiyon')) {
+    return { ptSessionsTotal: 0, ptSessionsUsed: 0, monthlyStudioSessions: 1, monthlyVideoReview: 1 };
+  }
+  if (p.includes('hibrit') || p.includes('macfit')) {
+    return { ptSessionsTotal: 0, ptSessionsUsed: 0, monthlyStudioSessions: 1 };
+  }
+  return { ptSessionsTotal: 0, ptSessionsUsed: 0, monthlyStudioSessions: 0 };
+}
 
+// --------------------------------------------------------------------------
+// EĞİTMEN AJANDA & TAKVİM REST API ENDPOINTS
+// --------------------------------------------------------------------------
+
+// GET /api/agenda — Eğitmen Günlük / Haftalık Yapılacaklar Listesi (TRAINER ONLY)
+app.get('/api/agenda', requireTrainer, (req, res) => {
   const db = readDb();
-  const client = db.clients.find(c => c.id === req.client.id);
-  if (client) {
-    client.hasNewProgramNotification = false;
-    writeDb(db);
-  }
-  res.json({ success: true });
+  autoExpireClients(db);
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayDate = new Date(todayStr);
+
+  const overdue = [];
+  const today = [];
+  const week = [];
+
+  db.clients.forEach(c => {
+    if (!c.status) c.status = 'active';
+    const clientPhone10 = normalizePhone(c.phone) || '';
+
+    // 1. Üyelik Bitiş Tarihi Kontrolü
+    if (c.expiryDate) {
+      const expDate = new Date(c.expiryDate);
+      const diffDays = Math.ceil((expDate - todayDate) / (1000 * 60 * 60 * 24));
+
+      if (diffDays < 0 && c.status !== 'passive') {
+        overdue.push({
+          id: `exp-${c.id}`,
+          clientId: c.id,
+          clientName: c.name,
+          clientPhone: clientPhone10,
+          type: 'membership_expired',
+          title: 'Üyelik Süresi Doldu',
+          subtitle: `${Math.abs(diffDays)} gün gecikti (Bitiş: ${c.expiryDate})`,
+          dueDate: c.expiryDate,
+          urgency: 'overdue',
+          actions: ['extend', 'passivate', 'whatsapp']
+        });
+      } else if (diffDays === 0 && c.status === 'active') {
+        today.push({
+          id: `exp-${c.id}`,
+          clientId: c.id,
+          clientName: c.name,
+          clientPhone: clientPhone10,
+          type: 'membership_expiring',
+          title: 'Üyelik Bugüne Bitiyor',
+          subtitle: `Bugün son gün! (${c.expiryDate})`,
+          dueDate: c.expiryDate,
+          urgency: 'today',
+          actions: ['extend', 'passivate', 'whatsapp']
+        });
+      } else if (diffDays > 0 && diffDays <= 7 && c.status === 'active') {
+        week.push({
+          id: `exp-${c.id}`,
+          clientId: c.id,
+          clientName: c.name,
+          clientPhone: clientPhone10,
+          type: 'membership_expiring',
+          title: 'Üyelik Bitiyor',
+          subtitle: `${diffDays} gün kaldı (Bitiş: ${c.expiryDate})`,
+          dueDate: c.expiryDate,
+          urgency: 'week',
+          actions: ['extend', 'passivate', 'whatsapp']
+        });
+      }
+    }
+
+    // 2. 4 Haftalık Antrenman Programı Bitiş Tarihi (startDate + 28 gün)
+    const startDateStr = c.startDate || (c.createdAt ? c.createdAt.split('T')[0] : null);
+    if (startDateStr && c.hasAssignedProgram && c.status === 'active') {
+      const startD = new Date(startDateStr);
+      const progExpD = new Date(startD);
+      progExpD.setDate(progExpD.getDate() + 28);
+      const progExpStr = progExpD.toISOString().split('T')[0];
+      const progDiff = Math.ceil((progExpD - todayDate) / (1000 * 60 * 60 * 24));
+
+      if (progDiff < 0) {
+        overdue.push({
+          id: `prog-${c.id}`,
+          clientId: c.id,
+          clientName: c.name,
+          clientPhone: clientPhone10,
+          type: 'program_expired',
+          title: '4 Haftalık Program Bitti',
+          subtitle: `${Math.abs(progDiff)} gün gecikti (Yenilenmeli)`,
+          dueDate: progExpStr,
+          urgency: 'overdue',
+          actions: ['open_wizard', 'whatsapp']
+        });
+      } else if (progDiff === 0) {
+        today.push({
+          id: `prog-${c.id}`,
+          clientId: c.id,
+          clientName: c.name,
+          clientPhone: clientPhone10,
+          type: 'program_expired',
+          title: 'Program Bugün Bitiyor',
+          subtitle: `Bugün 4. hafta son günü!`,
+          dueDate: progExpStr,
+          urgency: 'today',
+          actions: ['open_wizard', 'whatsapp']
+        });
+      } else if (progDiff > 0 && progDiff <= 7) {
+        week.push({
+          id: `prog-${c.id}`,
+          clientId: c.id,
+          clientName: c.name,
+          clientPhone: clientPhone10,
+          type: 'program_expired',
+          title: 'Program Bitiyor',
+          subtitle: `${progDiff} gün kaldı (4. Hafta Sonu)`,
+          dueDate: progExpStr,
+          urgency: 'week',
+          actions: ['open_wizard', 'whatsapp']
+        });
+      }
+    }
+
+    // 3. Form Görseli Kontrol Günleri (7, 14, 21, 28. Günler)
+    if (startDateStr && c.status === 'active') {
+      const startD = new Date(startDateStr);
+      const checkDays = [7, 14, 21, 28];
+      if (!c.formChecks) c.formChecks = [];
+
+      checkDays.forEach(dayOffset => {
+        const fcD = new Date(startD);
+        fcD.setDate(fcD.getDate() + dayOffset);
+        const fcStr = fcD.toISOString().split('T')[0];
+        const fcDiff = Math.ceil((fcD - todayDate) / (1000 * 60 * 60 * 24));
+
+        const existingFC = c.formChecks.find(f => f.dueDate === fcStr);
+        const isDone = existingFC && existingFC.status === 'done';
+
+        if (!isDone) {
+          if (fcDiff < 0) {
+            overdue.push({
+              id: `fc-${c.id}-${fcStr}`,
+              clientId: c.id,
+              clientName: c.name,
+              clientPhone: clientPhone10,
+              type: 'form_check_due',
+              title: 'Form Fotoğrafı Gecikti',
+              subtitle: `${Math.abs(fcDiff)} gün gecikti (${dayOffset}. gün kontrolü)`,
+              dueDate: fcStr,
+              urgency: 'overdue',
+              actions: ['whatsapp_form', 'mark_fc_done']
+            });
+          } else if (fcDiff === 0) {
+            today.push({
+              id: `fc-${c.id}-${fcStr}`,
+              clientId: c.id,
+              clientName: c.name,
+              clientPhone: clientPhone10,
+              type: 'form_check_due',
+              title: 'Form Fotoğrafı Günü',
+              subtitle: `Bugün ${dayOffset}. gün kontrol tarihi!`,
+              dueDate: fcStr,
+              urgency: 'today',
+              actions: ['whatsapp_form', 'mark_fc_done']
+            });
+          } else if (fcDiff > 0 && fcDiff <= 7) {
+            week.push({
+              id: `fc-${c.id}-${fcStr}`,
+              clientId: c.id,
+              clientName: c.name,
+              clientPhone: clientPhone10,
+              type: 'form_check_due',
+              title: 'Form Fotoğrafı Yaklaşıyor',
+              subtitle: `${fcDiff} gün kaldı (${dayOffset}. gün kontrolü)`,
+              dueDate: fcStr,
+              urgency: 'week',
+              actions: ['whatsapp_form', 'mark_fc_done']
+            });
+          }
+        }
+      });
+    }
+
+    // 4. Birebir PT & Stüdyo Seansları (c.sessions[])
+    if (Array.isArray(c.sessions)) {
+      c.sessions.forEach(sess => {
+        if (!sess.date || sess.status === 'done' || sess.status === 'missed') return;
+        const sessD = new Date(sess.date);
+        const sessDiff = Math.ceil((sessD - todayDate) / (1000 * 60 * 60 * 24));
+
+        const sessTypeTitle = sess.type === 'pt' ? 'Birebir PT Dersi' : 'Hibrit Stüdyo Seansı';
+
+        if (sessDiff < 0 && sess.status === 'planned') {
+          overdue.push({
+            id: `sess-${sess.id}`,
+            clientId: c.id,
+            clientName: c.name,
+            clientPhone: clientPhone10,
+            sessionId: sess.id,
+            type: 'pt_session',
+            title: `${sessTypeTitle} (Gecikmiş)`,
+            subtitle: `${Math.abs(sessDiff)} gün gecikti (${sess.time} @ ${sess.location || 'MACFit'})`,
+            dueDate: sess.date,
+            urgency: 'overdue',
+            actions: ['session_done', 'session_postpone']
+          });
+        } else if (sessDiff === 0 && sess.status === 'planned') {
+          today.push({
+            id: `sess-${sess.id}`,
+            clientId: c.id,
+            clientName: c.name,
+            clientPhone: clientPhone10,
+            sessionId: sess.id,
+            type: 'pt_session',
+            title: `${sessTypeTitle} (Bugün)`,
+            subtitle: `Saat ${sess.time} @ ${sess.location || 'MACFit'}`,
+            dueDate: sess.date,
+            urgency: 'today',
+            actions: ['session_done', 'session_postpone']
+          });
+        } else if (sessDiff > 0 && sessDiff <= 7 && sess.status === 'planned') {
+          week.push({
+            id: `sess-${sess.id}`,
+            clientId: c.id,
+            clientName: c.name,
+            clientPhone: clientPhone10,
+            sessionId: sess.id,
+            type: 'pt_session',
+            title: `${sessTypeTitle}`,
+            subtitle: `${sess.date} Saat ${sess.time} @ ${sess.location || 'MACFit'}`,
+            dueDate: sess.date,
+            urgency: 'week',
+            actions: ['session_done', 'session_postpone']
+          });
+        }
+      });
+    }
+  });
+
+  const totalCount = overdue.length + today.length + week.length;
+  res.json({ success: true, agenda: { overdue, today, week }, totalCount });
 });
 
-// POST /api/auth/logout — Logout and invalidate session token
-app.post('/api/auth/logout', requireAuth, (req, res) => {
+// GET /api/calendar — Aylık Olay Takvimi (TRAINER ONLY)
+app.get('/api/calendar', requireTrainer, (req, res) => {
+  const { month, clientId } = req.query; // YYYY-MM
+  const targetMonth = month || new Date().toISOString().slice(0, 7);
+
   const db = readDb();
-  db.sessions = db.sessions.filter(s => s.token !== req.session.token);
+  autoExpireClients(db);
+
+  const events = [];
+
+  db.clients.forEach(c => {
+    if (clientId && c.id !== clientId && normalizePhone(c.phone) !== normalizePhone(clientId)) return;
+
+    // 1. Üyelik Bitiş Olayı (Kırmızı)
+    if (c.expiryDate && c.expiryDate.startsWith(targetMonth)) {
+      events.push({
+        id: `cal-exp-${c.id}`,
+        clientId: c.id,
+        clientName: c.name,
+        date: c.expiryDate,
+        type: 'expiry',
+        color: '#EF4444',
+        title: `🔴 ${c.name} — Üyelik Bitiş`,
+        subtitle: `Paket: ${c.package}`
+      });
+    }
+
+    // 2. Program Bitiş Olayı (Turuncu)
+    const startDateStr = c.startDate || (c.createdAt ? c.createdAt.split('T')[0] : null);
+    if (startDateStr && c.hasAssignedProgram) {
+      const startD = new Date(startDateStr);
+      const progExpD = new Date(startD);
+      progExpD.setDate(progExpD.getDate() + 28);
+      const progExpStr = progExpD.toISOString().split('T')[0];
+
+      if (progExpStr.startsWith(targetMonth)) {
+        events.push({
+          id: `cal-prog-${c.id}`,
+          clientId: c.id,
+          clientName: c.name,
+          date: progExpStr,
+          type: 'program',
+          color: '#F59E0B',
+          title: `🟠 ${c.name} — Program Bitiş (4. Hafta)`,
+          subtitle: `Yeniden program yazılmalı`
+        });
+      }
+
+      // 3. Form Görseli Günleri (Mavi)
+      [7, 14, 21, 28].forEach(dayOffset => {
+        const fcD = new Date(startD);
+        fcD.setDate(fcD.getDate() + dayOffset);
+        const fcStr = fcD.toISOString().split('T')[0];
+
+        if (fcStr.startsWith(targetMonth)) {
+          const isDone = Array.isArray(c.formChecks) && c.formChecks.some(f => f.dueDate === fcStr && f.status === 'done');
+          events.push({
+            id: `cal-fc-${c.id}-${fcStr}`,
+            clientId: c.id,
+            clientName: c.name,
+            date: fcStr,
+            type: 'form',
+            color: '#3B82F6',
+            title: `${isDone ? '✅' : '🔵'} ${c.name} — Form Kontrol (${dayOffset}. Gün)`,
+            subtitle: isDone ? 'Form yüklemesi yapıldı' : 'Görsel yüklemesi bekleniyor'
+          });
+        }
+      });
+    }
+
+    // 4. Birebir Seanslar (Yeşil)
+    if (Array.isArray(c.sessions)) {
+      c.sessions.forEach(sess => {
+        if (sess.date && sess.date.startsWith(targetMonth)) {
+          events.push({
+            id: `cal-sess-${sess.id}`,
+            clientId: c.id,
+            clientName: c.name,
+            date: sess.date,
+            time: sess.time,
+            type: 'pt',
+            color: '#10B981',
+            title: `🟢 ${c.name} — ${sess.type === 'pt' ? 'PT Dersi' : 'Stüdyo Seansı'} (${sess.time})`,
+            subtitle: `@ ${sess.location || 'MACFit'} [${sess.status}]`
+          });
+        }
+      });
+    }
+  });
+
+  res.json({ success: true, month: targetMonth, events });
+});
+
+// POST /api/clients/:id/sessions — Yeni Birebir Ders / Seans Planla (TRAINER ONLY)
+app.post('/api/clients/:id/sessions', requireTrainer, (req, res) => {
+  const { id } = req.params;
+  const { date, time, type, location, note } = req.body;
+  const db = readDb();
+  const client = db.clients.find(c => c.id === id || normalizePhone(c.phone) === normalizePhone(id));
+  if (!client) return res.status(404).json({ success: false, message: 'Danışan bulunamadı.' });
+
+  if (!client.sessions) client.sessions = [];
+  const newSession = {
+    id: 'sess-' + Date.now(),
+    date: date || new Date().toISOString().split('T')[0],
+    time: time || '14:00',
+    type: type || 'pt',
+    location: location || 'Cevahir AVM MACFit',
+    note: note || '',
+    status: 'planned',
+    createdAt: new Date().toISOString()
+  };
+  client.sessions.push(newSession);
+
+  if (!client.entitlements) {
+    client.entitlements = getPackageEntitlements(client.package);
+  }
+
   writeDb(db);
-  res.setHeader('Set-Cookie', 'session_token=; Path=/; HttpOnly; Max-Age=0');
-  res.json({ success: true, message: 'Oturum başarıyla kapatıldı.' });
+  res.json({ success: true, session: newSession, client });
+});
+
+// PUT /api/clients/:id/sessions/:sessionId — Seans Durumu Güncelle (TRAINER ONLY)
+app.put('/api/clients/:id/sessions/:sessionId', requireTrainer, (req, res) => {
+  const { id, sessionId } = req.params;
+  const { status, date, time, note } = req.body;
+  const db = readDb();
+  const client = db.clients.find(c => c.id === id || normalizePhone(c.phone) === normalizePhone(id));
+  if (!client) return res.status(404).json({ success: false, message: 'Danışan bulunamadı.' });
+
+  if (!client.sessions) client.sessions = [];
+  const sess = client.sessions.find(s => s.id === sessionId);
+  if (!sess) return res.status(404).json({ success: false, message: 'Seans bulunamadı.' });
+
+  const prevStatus = sess.status;
+  if (status) sess.status = status;
+  if (date) sess.date = date;
+  if (time) sess.time = time;
+  if (note) sess.note = note;
+
+  if (!client.entitlements) {
+    client.entitlements = getPackageEntitlements(client.package);
+  }
+
+  if (sess.type === 'pt' && prevStatus !== 'done' && status === 'done') {
+    client.entitlements.ptSessionsUsed = (client.entitlements.ptSessionsUsed || 0) + 1;
+  }
+
+  writeDb(db);
+  res.json({ success: true, session: sess, entitlements: client.entitlements });
+});
+
+// PUT /api/clients/:id/form-checks/:dueDate — Form Kontrolü Durumu Güncelle (TRAINER ONLY)
+app.put('/api/clients/:id/form-checks/:dueDate', requireTrainer, (req, res) => {
+  const { id, dueDate } = req.params;
+  const { status } = req.body;
+  const db = readDb();
+  const client = db.clients.find(c => c.id === id || normalizePhone(c.phone) === normalizePhone(id));
+  if (!client) return res.status(404).json({ success: false, message: 'Danışan bulunamadı.' });
+
+  if (!client.formChecks) client.formChecks = [];
+  let check = client.formChecks.find(f => f.dueDate === dueDate);
+  if (!check) {
+    check = { dueDate, status: status || 'done' };
+    client.formChecks.push(check);
+  } else {
+    check.status = status;
+  }
+  if (status === 'done') {
+    check.completedAt = new Date().toISOString();
+  }
+
+  writeDb(db);
+  res.json({ success: true, formChecks: client.formChecks });
+});
+
+// PUT /api/clients/:id/extend — Üyelik Süresi Uzat / Durum Güncelle (TRAINER ONLY)
+app.put('/api/clients/:id/extend', requireTrainer, (req, res) => {
+  const { id } = req.params;
+  const { months, newExpiryDate, status } = req.body;
+  const db = readDb();
+  const client = db.clients.find(c => c.id === id || normalizePhone(c.phone) === normalizePhone(id));
+  if (!client) return res.status(404).json({ success: false, message: 'Danışan bulunamadı.' });
+
+  if (newExpiryDate) {
+    client.expiryDate = newExpiryDate;
+  } else if (months) {
+    const curExp = client.expiryDate ? new Date(client.expiryDate) : new Date();
+    curExp.setMonth(curExp.getMonth() + parseInt(months));
+    client.expiryDate = curExp.toISOString().split('T')[0];
+  }
+
+  if (status) {
+    client.status = status;
+  } else {
+    client.status = 'active';
+  }
+
+  client.note = `Aktif Üyelik (Son Tarih: ${client.expiryDate})`;
+  writeDb(db);
+  res.json({ success: true, client });
 });
 
 // GET /api/clients — PROTECTED (TRAINER ONLY)
