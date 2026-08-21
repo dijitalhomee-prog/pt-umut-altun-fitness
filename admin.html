@@ -1040,6 +1040,77 @@
       }
     }
 
+    function loadSelectedClientProgramData(client) {
+      if (!client) return;
+
+      const cleanPhone = (client.phone || '').replace(/\D/g, '');
+
+      // 1. Load Program Matrix
+      const clientMatrix = client.programMatrix || 
+                           JSON.parse(localStorage.getItem('pt_matrix_program_' + client.id)) ||
+                           JSON.parse(localStorage.getItem('pt_matrix_program_' + cleanPhone));
+
+      if (clientMatrix) {
+        window.adminProgramState = JSON.parse(JSON.stringify(clientMatrix));
+      } else {
+        // Reset to default matrix state for new client
+        window.adminProgramState = {
+          "1_1": [
+            { name: "Dumbbell Chest Press (Düz Sehpa)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
+            { name: "Incline Dumbbell Fly", sets: "3 Set", reps: "12-15 Tekrar", rest: "60 sn Dinlenme" },
+            { name: "Barbell Biceps Curl (Ön Kol)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" }
+          ],
+          "1_2": [
+            { name: "Lat Pulldown (Göğse Çekiş)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
+            { name: "Seated Cable Row (Kürek)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
+            { name: "Triceps Rope Pushdown (Arka Kol)", sets: "3 Set", reps: "15 Tekrar", rest: "60 sn Dinlenme" }
+          ],
+          "1_3": [
+            { name: "Goblet Squat (Dambıl ile Squat)", sets: "4 Set", reps: "10-12 Tekrar", rest: "90 sn Dinlenme" },
+            { name: "Leg Press", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
+            { name: "Seated Dumbbell Shoulder Press (Omuz)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" }
+          ],
+          "1_4": [
+            { name: "Plank Hold", sets: "3 Set", reps: "45 sn", rest: "45 sn Dinlenme" },
+            { name: "Hanging Leg Raise (Alt Karın)", sets: "3 Set", reps: "15 Tekrar", rest: "45 sn Dinlenme" },
+            { name: "Eğimli Yürüyüş Kardiyo", sets: "1 Seans", reps: "25 dk (Eğim 8, Hız 5.5)", rest: "Antrenman Sonu" }
+          ]
+        };
+      }
+
+      // Load matrix into input fields for active week & day
+      if (typeof loadInputsFromState === 'function') {
+        loadInputsFromState();
+      }
+
+      // 2. Load Start Date
+      const dateInput = document.getElementById('builder-start-date');
+      if (dateInput) {
+        dateInput.value = client.startDate || 
+                          localStorage.getItem('pt_start_date_' + client.id) || 
+                          localStorage.getItem('pt_start_date_' + cleanPhone) || 
+                          new Date().toISOString().split('T')[0];
+        if (typeof updateAdminWeekDateBadges === 'function') {
+          updateAdminWeekDateBadges();
+        }
+      }
+
+      // 3. Load Coach Note
+      const coachNoteInput = document.getElementById('builder-coach-note');
+      if (coachNoteInput) {
+        coachNoteInput.setAttribute('data-client-id', client.id);
+        const storedNote = client.coachNote || 
+                           localStorage.getItem('pt_coach_note_' + client.id) || 
+                           localStorage.getItem('pt_coach_note_' + cleanPhone);
+        if (storedNote) {
+          coachNoteInput.value = storedNote;
+        } else {
+          const firstName = client.name.split(' ')[0];
+          coachNoteInput.value = `${client.package} ailesine hoş geldin ${firstName}! İlk 2 haftamızda temel hedefimiz ağır kitleler kaldırmak değil, hareket formlarını eksiksiz öğrenmek ve vücudunu antrenman ritmine alıştırmaktır. Beslenme listendeki makrolara sadık kal!`;
+        }
+      }
+    }
+
     function renderClientsList() {
       checkAutomaticExpirations();
       const container = document.getElementById('clients-container');
@@ -1076,13 +1147,8 @@
           }
         }
 
-        // Dynamically set default personalized coach note for selected client
-        const coachNoteInput = document.getElementById('builder-coach-note');
-        if (coachNoteInput && (!coachNoteInput.value || coachNoteInput.getAttribute('data-client-id') !== currentSelected.id)) {
-          const firstName = currentSelected.name.split(' ')[0];
-          coachNoteInput.setAttribute('data-client-id', currentSelected.id);
-          coachNoteInput.value = `${currentSelected.package} ailesine hoş geldin ${firstName}! İlk 2 haftamızda temel hedefimiz ağır kitleler kaldırmak değil, hareket formlarını eksiksiz öğrenmek ve vücudunu antrenman ritmine alıştırmaktır. Beslenme listendeki makrolara sadık kal!`;
-        }
+        // Dynamically load selected client's personalized program matrix, start date, and coach notes
+        loadSelectedClientProgramData(currentSelected);
       } else {
         if (titleName) titleName.textContent = 'Danışan Seçilmedi';
         if (pkgInfo) pkgInfo.textContent = 'Lütfen soldaki listeden danışan seçin veya yukarıdaki "Yeni Danışan Ekle" butonuna basın.';
