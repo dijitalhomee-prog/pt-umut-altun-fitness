@@ -903,7 +903,12 @@
         </div> <!-- End of #client-meal-list-box -->
 
         <!-- Besin Değişim Rehberi İpucu Kutusu -->
-        <div style="padding: 1.2rem; background: rgba(6, 182, 212, 0.08); border: 1px dashed var(--accent-secondary);      <!-- TAB 3: FORM KONTROLÜ & ÖLÇÜMLER -->
+        <div style="padding: 1.2rem; background: rgba(6, 182, 212, 0.08); border: 1px dashed var(--accent-secondary); border-radius: var(--radius-md); font-size: 0.85rem; color: var(--text-muted); margin-top: 1.5rem;">
+          💡 <strong>Beslenme & Değişim Notu:</strong> Diyet listenizdeki protein veya karbonhidrat kaynaklarını birebir gramajına sadık kalarak alternatifleriyle değiştirebilirsiniz (Örn: 180g Tavuk Göğsü = 180g Hindi = 200g Yağsız Biftek).
+        </div>
+      </div> <!-- End of #tab-nutrition -->
+
+      <!-- TAB 3: FORM KONTROLÜ & ÖLÇÜMLER -->
       <div id="tab-checkin" class="tab-content-pane">
         <div class="glass-panel" style="padding: 2rem;">
           <!-- 1. BÖLÜM C: Gelişimim & Yan Yana Fotoğraf Karşılaştırma -->
@@ -972,15 +977,6 @@
             <!-- Dynamic Form Check Schedule Grid -->
             <div id="form-checks-schedule-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
               <!-- Rendered dynamically by renderClientFormCheckSchedule(client) -->
-            </div>
-          </div>
-        </div>
-      </div>;">
-                <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); background: rgba(255,255,255,0.05); padding: 0.2rem 0.5rem; border-radius: var(--radius-full);">3. KONTROL</span>
-                <h5 style="color: #FFFFFF; font-size: 1rem; margin: 0.5rem 0 0.2rem 0;">11 Eylül 2026</h5>
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.6rem;">6. Hafta Değerlendirmesi</p>
-                <span style="font-size: 0.75rem; color: var(--text-dark);"><i class="fas fa-clock"></i> Beklemede</span>
-              </div>
             </div>
           </div>
         </div>
@@ -1500,8 +1496,19 @@
       if (!gridEl) return;
 
       try {
-        const rawPhotos = (currentClientData && (currentClientData.formPhotos || currentClientData.photos)) || [];
-        const photosList = rawPhotos.filter(p => {
+        const serverPhotos = (currentClientData && (currentClientData.formPhotos || currentClientData.photos)) || [];
+        const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
+        const cleanPhone = userPhone.replace(/\D/g, '');
+        const localPhotos = cleanPhone ? (JSON.parse(localStorage.getItem(`pt_client_photos_${cleanPhone}`)) || []) : [];
+
+        const combinedPhotos = [...serverPhotos];
+        localPhotos.forEach(lp => {
+          if (!combinedPhotos.some(sp => (sp.id && lp.id && sp.id === lp.id) || (sp.date && lp.date && sp.date === lp.date))) {
+            combinedPhotos.push(lp);
+          }
+        });
+
+        const photosList = combinedPhotos.filter(p => {
           if (!p || typeof p !== 'object' || Array.isArray(p)) return false;
           return Boolean(
             (p.front && String(p.front).trim()) ||
