@@ -1650,8 +1650,121 @@
       });
 
       exerciseListBox.innerHTML = html;
+
+      if (typeof updateWorkoutCompletionState === 'function') {
+        updateWorkoutCompletionState();
+      }
     }
     window.renderMatrixExercises = renderMatrixExercises;
+
+    function getWorkoutDayTargetDate(week, day) {
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
+      const cleanPhone = userPhone.replace(/\D/g, '');
+      const startStr = localStorage.getItem('pt_start_date_' + cleanPhone) || 
+                       localStorage.getItem('pt_start_date_global') || 
+                       new Date().toISOString().split('T')[0];
+
+      const start = new Date(startStr);
+      // Offset: (week - 1) * 7 + (day - 1)
+      const offsetDays = (week - 1) * 7 + (day - 1);
+      const targetDate = new Date(start);
+      targetDate.setDate(start.getDate() + offsetDays);
+
+      return targetDate;
+    }
+    window.getWorkoutDayTargetDate = getWorkoutDayTargetDate;
+
+    function updateWorkoutCompletionState() {
+      const targetDate = getWorkoutDayTargetDate(clientCurrentWeek, clientCurrentDay);
+      const today = new Date();
+      
+      const targetDateStr = targetDate.toISOString().split('T')[0];
+      const todayStr = today.toISOString().split('T')[0];
+      const targetDayNum = targetDate.getDate();
+
+      const formattedTargetDate = targetDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' });
+
+      const completeBtn = document.getElementById('complete-today-workout-btn');
+      const statusText = document.getElementById('workout-status-text');
+
+      const completedDays = getUserCompletedDays();
+      const isAlreadyCompleted = completedDays.includes(targetDayNum);
+
+      if (targetDateStr > todayStr) {
+        // FUTURE DATE - Henüz Günü Gelmedi! (KİLİTLİ)
+        if (statusText) {
+          statusText.innerHTML = `<span style="color: #F59E0B; font-weight: 700;"><i class="fas fa-lock"></i> ⏳ Bu antrenman gününün tarihi henüz gelmedi (${formattedTargetDate}). Günü geldiğinde antrenmanınız açılacaktır.</span>`;
+        }
+        if (completeBtn) {
+          completeBtn.disabled = true;
+          completeBtn.style.cssText = 'display: inline-flex; align-items: center; gap: 0.6rem; opacity: 0.65; cursor: not-allowed; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #9CA3AF; font-weight: bold; pointer-events: none;';
+          completeBtn.innerHTML = `<i class="fas fa-lock" style="color: #F59E0B;"></i> Bu Antrenman Henüz Açılmadı (${formattedTargetDate}'de Açılacak)`;
+        }
+
+        // Mute exercise check buttons for future dates
+        document.querySelectorAll('.check-exercise-btn').forEach(btn => {
+          btn.style.opacity = '0.35';
+          btn.style.pointerEvents = 'none';
+          btn.title = 'Günü gelmeden tamamlanamaz';
+        });
+
+      } else if (targetDateStr === todayStr) {
+        // TODAY
+        document.querySelectorAll('.check-exercise-btn').forEach(btn => {
+          btn.style.opacity = '1';
+          btn.style.pointerEvents = 'auto';
+          btn.title = 'Tamamlandı İşaretle';
+        });
+
+        if (isAlreadyCompleted) {
+          if (statusText) {
+            statusText.innerHTML = '<span style="color: #10B981; font-weight: 700;"><i class="fas fa-check-circle"></i> Tebrikler! Bugünkü antrenmanını tamamladın ve takvimine kırmızı onay rozetiyle işlendi.</span>';
+          }
+          if (completeBtn) {
+            completeBtn.disabled = true;
+            completeBtn.style.cssText = 'display: inline-flex; align-items: center; gap: 0.6rem; background: #10B981; border: 1px solid #10B981; color: #FFF; font-weight: bold; cursor: default; pointer-events: none;';
+            completeBtn.innerHTML = '<i class="fas fa-check-double"></i> Bugünkü Antrenmanı Bitirdin!';
+          }
+        } else {
+          if (statusText) {
+            statusText.innerHTML = 'Hareketleri tamamladığında aşağıdaki butona basarak bugünün antrenmanını kapat ve takvime kaydet.';
+          }
+          if (completeBtn) {
+            completeBtn.disabled = false;
+            completeBtn.style.cssText = 'display: inline-flex; align-items: center; gap: 0.6rem; background: var(--accent-red); border: 1px solid var(--accent-red); color: #FFF; font-weight: bold; cursor: pointer; pointer-events: auto;';
+            completeBtn.innerHTML = '<i class="fas fa-check-circle"></i> Bugünün Antrenmanını Bitir & Takvime İşle';
+          }
+        }
+
+      } else {
+        // PAST DATE
+        document.querySelectorAll('.check-exercise-btn').forEach(btn => {
+          btn.style.opacity = '0.85';
+          btn.style.pointerEvents = 'auto';
+        });
+
+        if (isAlreadyCompleted) {
+          if (statusText) {
+            statusText.innerHTML = `<span style="color: #10B981; font-weight: 700;"><i class="fas fa-check-circle"></i> ${formattedTargetDate} tarihindeki bu antrenman başarıyla tamamlandı.</span>`;
+          }
+          if (completeBtn) {
+            completeBtn.disabled = true;
+            completeBtn.style.cssText = 'display: inline-flex; align-items: center; gap: 0.6rem; background: rgba(16,185,129,0.2); border: 1px solid #10B981; color: #10B981; font-weight: bold; cursor: default; pointer-events: none;';
+            completeBtn.innerHTML = `<i class="fas fa-check"></i> Bu Antrenman Tamamlandı (${formattedTargetDate})`;
+          }
+        } else {
+          if (statusText) {
+            statusText.innerHTML = `<span style="color: #EF4444; font-weight: 700;"><i class="fas fa-exclamation-triangle"></i> ${formattedTargetDate} tarihli geçmiş antrenman günü. Telafi etmek için tamamlayabilirsiniz.</span>`;
+          }
+          if (completeBtn) {
+            completeBtn.disabled = false;
+            completeBtn.style.cssText = 'display: inline-flex; align-items: center; gap: 0.6rem; background: rgba(239,68,68,0.2); border: 1px solid var(--accent-red); color: #FFF; font-weight: bold; cursor: pointer; pointer-events: auto;';
+            completeBtn.innerHTML = `<i class="fas fa-history"></i> Geçmiş Antrenmanı Telafi Et & Tamamla (${formattedTargetDate})`;
+          }
+        }
+      }
+    }
+    window.updateWorkoutCompletionState = updateWorkoutCompletionState;
 
     function updateClientWeekDateBadges() {
       const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
@@ -2018,11 +2131,21 @@
     renderCalendar();
     window.renderCalendar = renderCalendar;
 
-    // Complete Today's Workout Action
+    // Complete Workout Action (Tarih Korumalı)
     const completeBtn = document.getElementById('complete-today-workout-btn');
     if (completeBtn) {
       completeBtn.addEventListener('click', () => {
-        const today = new Date().getDate();
+        const targetDate = getWorkoutDayTargetDate(clientCurrentWeek, clientCurrentDay);
+        const today = new Date();
+        const targetDateStr = targetDate.toISOString().split('T')[0];
+        const todayStr = today.toISOString().split('T')[0];
+
+        if (targetDateStr > todayStr) {
+          alert(`🔒 Bu antrenman gününün tarihi henüz gelmedi (${targetDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' })}).\n\nDanışanlar tarihi gelmemiş antrenmanları bitiremez!`);
+          return;
+        }
+
+        const dayNumToMark = targetDate.getDate();
         let completedWorkoutDays = getUserCompletedDays();
 
         // 1. Mark all exercise checkmarks completed
@@ -2030,23 +2153,15 @@
           btn.classList.add('completed');
         });
 
-        // 2. Add today to completed days if not present
-        if (!completedWorkoutDays.includes(today)) {
-          completedWorkoutDays.push(today);
+        // 2. Add target day to completed days if not present
+        if (!completedWorkoutDays.includes(dayNumToMark)) {
+          completedWorkoutDays.push(dayNumToMark);
           saveUserCompletedDays(completedWorkoutDays);
         }
 
-        // 3. Re-render calendar & update status text
+        // 3. Re-render calendar & update state
         renderCalendar();
-        
-        const statusText = document.getElementById('workout-status-text');
-        if (statusText) {
-          statusText.innerHTML = '<span style="color: #10B981; font-weight: 700;"><i class="fas fa-check-circle"></i> Tebrikler! Bugünkü antrenmanını tamamladın ve takvimine kırmızı onay rozetiyle işlendi.</span>';
-        }
-
-        completeBtn.style.background = '#10B981';
-        completeBtn.style.borderColor = '#10B981';
-        completeBtn.innerHTML = '<i class="fas fa-check-double"></i> Bugünkü Antrenmanı Bitirdin!';
+        updateWorkoutCompletionState();
       });
     }
 
