@@ -622,6 +622,14 @@
           return;
         }
 
+        // Mark program as officially assigned to this client
+        targetClient.hasAssignedProgram = true;
+        saveClients();
+
+        const cleanP = (targetClient.phone || '').replace(/\D/g, '');
+        if (targetClient.id) localStorage.setItem('pt_assigned_program_' + targetClient.id, 'true');
+        if (cleanP) localStorage.setItem('pt_assigned_program_' + cleanP, 'true');
+
         // Save written coach note for selected client
         const coachNoteInput = document.getElementById('builder-coach-note');
         if (coachNoteInput && coachNoteInput.value.trim()) {
@@ -630,7 +638,13 @@
           fetch(`/api/clients/${targetClient.id}/profile`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ coachNote: coachNoteInput.value.trim() })
+            body: JSON.stringify({ coachNote: coachNoteInput.value.trim(), hasAssignedProgram: true })
+          }).catch(err => console.warn('Offline fallback', err));
+        } else {
+          fetch(`/api/clients/${targetClient.id}/profile`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ hasAssignedProgram: true })
           }).catch(err => console.warn('Offline fallback', err));
         }
 
