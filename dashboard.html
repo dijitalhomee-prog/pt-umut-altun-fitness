@@ -27,6 +27,16 @@
     if (localStorage.getItem('client_authenticated') === 'true' || sessionStorage.getItem('client_authenticated') === 'true') {
       document.write('<style>#client-auth-overlay { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }</style>');
     }
+
+    window.openProfileUpdateModal = function() {
+      const modal = document.getElementById('client-profile-modal');
+      if (modal) {
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('z-index', '999999', 'important');
+        modal.style.setProperty('opacity', '1', 'important');
+        modal.style.setProperty('visibility', 'visible', 'important');
+      }
+    };
   </script>
   <style>
     /* Dashboard Specific Styles */
@@ -1047,9 +1057,48 @@
         if (swInput) swInput.value = savedProfile.startWeight || currentClient.startWeight || '';
         if (cwInput) cwInput.value = savedProfile.currentWeight || currentClient.currentWeight || '';
         if (twInput) twInput.value = savedProfile.targetWeight || currentClient.targetWeight || '';
+      } else {
+        triggerPromptProfileUpdate();
       }
     }
     window.openProfileUpdateModal = openProfileUpdateModal;
+
+    function triggerPromptProfileUpdate() {
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
+      const cleanPhone = userPhone.replace(/\D/g, '');
+      const profileKey = `pt_client_profile_${cleanPhone}`;
+      const savedProfile = JSON.parse(localStorage.getItem(profileKey)) || {};
+
+      const h = prompt("📏 Boyunuz kaç cm? (Örn: 180)", savedProfile.height || "180");
+      if (h === null) return;
+
+      const sw = prompt("⚖️ Başlangıç Kilonuz kaç kg? (Örn: 85.0)", savedProfile.startWeight || "85.0");
+      if (sw === null) return;
+
+      const cw = prompt("⚖️ Güncel Kilonuz kaç kg? (Örn: 82.0)", savedProfile.currentWeight || "82.0");
+      if (cw === null) return;
+
+      const tw = prompt("🎯 Hedef Kilonuz kaç kg? (Örn: 75.0)", savedProfile.targetWeight || "75.0");
+
+      const profileData = {
+        height: h,
+        startWeight: sw,
+        currentWeight: cw,
+        targetWeight: tw || '',
+        updatedAt: new Date().toISOString()
+      };
+
+      localStorage.setItem(profileKey, JSON.stringify(profileData));
+      fetch(`/api/clients/${cleanPhone}/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profileData)
+      }).catch(err => console.log('Profile sync offline fallback:', err));
+
+      renderClientProfileMetrics();
+      alert("✅ Vücut ölçüleriniz başarıyla güncellendi!");
+    }
+    window.triggerPromptProfileUpdate = triggerPromptProfileUpdate;
 
     function closeProfileUpdateModal() {
       const modal = document.getElementById('client-profile-modal');
@@ -1699,6 +1748,16 @@
         exportSectionToPDF('Kişiye Özel Beslenme & Makro Günlüğü', 'tab-nutrition');
       });
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const openBtn = document.getElementById('btn-open-profile-modal');
+      if (openBtn) {
+        openBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          window.openProfileUpdateModal();
+        });
+      }
+    });
   </script>
 </body>
 </html>
