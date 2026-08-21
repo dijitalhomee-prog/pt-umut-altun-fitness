@@ -357,6 +357,17 @@ app.post('/api/clients/verify-auth', (req, res) => {
     });
   }
 
+  // Passivated Account Check
+  if (client.status === 'passive') {
+    return res.status(403).json({
+      success: false,
+      notFound: false,
+      deleted: false,
+      passive: true,
+      message: 'Üyeliğiniz sona ermiştir. Lütfen eğitmeniniz Umut Altun ile iletişime geçiniz.'
+    });
+  }
+
   // Password Empty Check
   const storedPassword = String(client.password || '').trim();
   const givenPassword = String(password || '').trim();
@@ -720,21 +731,128 @@ app.delete('/api/clients/:id', requireTrainer, (req, res) => {
   res.status(404).json({ success: false, message: 'Silinecek danışan bulunamadı.' });
 });
 
-// POST /api/admin/purge-all-clients — Reset All Clients (TRAINER ONLY)
-app.post('/api/admin/purge-all-clients', requireTrainer, (req, res) => {
-  const db = {
-    clients: [],
-    deletedPhones: [],
-    programs: {},
-    sessions: [],
-    trainerPin: TRAINER_PIN,
-    lastUpdated: new Date().toISOString()
-  };
+// POST /api/admin/passivate-all-clients — Passivate All Active Memberships (TRAINER ONLY)
+app.post('/api/admin/passivate-all-clients', requireTrainer, (req, res) => {
+  const db = readDb();
+  let count = 0;
+  db.clients.forEach(c => {
+    c.status = 'passive';
+    c.note = '🔴 Eğitmen Tarafından Toplu Pasife Alındı';
+    count++;
+  });
+
+  // Revoke all client active session tokens
+  db.sessions = db.sessions.filter(s => s.isTrainer);
+  writeDb(db);
+
+  res.json({
+    success: true,
+    count,
+    message: `✨ Toplam ${count} danışan üyelik durumu pasife alındı ve oturumları kapatıldı.`
+  });
+});
+
+// POST /api/admin/revoke-all-sessions — Revoke All Client Sessions (TRAINER ONLY)
+app.post('/api/admin/revoke-all-sessions', requireTrainer, (req, res) => {
+  const db = readDb();
+  const initialSessions = db.sessions.length;
+  db.sessions = db.sessions.filter(s => s.isTrainer);
+  writeDb(db);
+
+  res.json({
+    success: true,
+    revokedCount: initialSessions - db.sessions.length,
+    message: '✨ Tüm aktif danışan oturumları başarıyla sonlandırıldı.'
+  });
+});
+
+// POST /api/admin/import-clients — One-time Bulk Import Clients (TRAINER ONLY)
+app.post('/api/admin/import-clients', requireTrainer, (req, res) => {
+  const { clients: incoming } = req.body;
+  if (!Array.isArray(incoming) || incoming.length === 0) {
+    return res.status(400).json({ success: false, message: 'İçe aktarılacak danışan dizisi boş veya geçersiz.' });
+  }
+
+  const db = readDb();
+  let addedCount = 0;
+  let updatedCount = 0;
+
+  incoming.forEach(inc => {
+    if (!inc || (!inc.name && !inc.phone)) return;
+    const clean10 = normalizePhone(inc.phone);
+    if (!clean10) return;
+
+    if (db.deletedPhones) {
+      db.deletedPhones = db.deletedPhones.filter(dp => (normalizePhone(dp) || dp) !== clean10 && dp !== inc.id);
+    }
+
+    const idx = db.clients.findIndex(c => (inc.id && c.id === inc.id) || normalizePhone(c.phone) === clean10);
+
+    if (idx >= 0) {
+      db.clients[idx] = {
+        ...db.clients[idx],
+        ...inc,
+        phone: clean10,
+        password: (inc.password && String(inc.password).trim()) ? String(inc.password).trim() : db.clients[idx].password
+      };
+      updatedCount++;
+    } else {
+      const newClient = {
+        id: inc.id || ('client-' + Date.now() + '-' + Math.floor(Math.random() * 1000)),
+        name: String(inc.name).trim(),
+        phone: clean10,
+        password: (inc.password && String(inc.password).trim()) ? String(inc.password).trim() : Math.floor(100000 + Math.random() * 900000).toString(),
+        package: inc.package || 'Özel Koçluk Paketi',
+        stage: inc.stage || '1. Hafta (Yeni Başladı)',
+        expiryDate: inc.expiryDate || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        status: inc.status || 'active',
+        note: inc.note || 'Aktif Üyelik',
+        createdAt: inc.createdAt || new Date().toISOString()
+      };
+      db.clients.unshift(newClient);
+      addedCount++;
+    }
+  });
 
   writeDb(db);
   res.json({
     success: true,
-    message: '✨ TÜM ESKİ DANIŞAN KAYITLARI KALICI OLARAK SİLİNDİ: Veritabanı %100 sıfırlandı.'
+    addedCount,
+    updatedCount,
+    totalCount: db.clients.length,
+    message: `✨ Danışanlar başarıyla içe aktarıldı: ${addedCount} yeni eklendi, ${updatedCount} güncellendi.`
+  });
+});
+
+// POST /api/admin/purge-all-clients — Reset All Clients with Timestamped Backup (TRAINER ONLY)
+app.post('/api/admin/purge-all-clients', requireTrainer, (req, res) => {
+  const db = readDb();
+
+  // Create timestamped backup snapshot BEFORE purge
+  try {
+    if (!fs.existsSync(BACKUP_DIR)) {
+      fs.mkdirSync(BACKUP_DIR, { recursive: true });
+    }
+    const timestampStr = new Date().toISOString().replace(/[:.]/g, '-');
+    const backupFile = path.join(BACKUP_DIR, `db-backup-BEFORE-PURGE-${timestampStr}.json`);
+    fs.writeFileSync(backupFile, JSON.stringify(db, null, 2), 'utf8');
+  } catch (backupErr) {
+    console.error('Purge backup error:', backupErr);
+  }
+
+  const cleanDb = {
+    clients: [],
+    deletedPhones: [],
+    programs: {},
+    sessions: db.sessions.filter(s => s.isTrainer),
+    trainerPin: TRAINER_PIN,
+    lastUpdated: new Date().toISOString()
+  };
+
+  writeDb(cleanDb);
+  res.json({
+    success: true,
+    message: '✨ TÜM DANIŞAN KAYITLARI KALICI OLARAK SİLİNDİ: Otomatik yedek alındı ve tüm oturumlar kapatıldı.'
   });
 });
 

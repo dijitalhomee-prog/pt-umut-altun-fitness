@@ -24,10 +24,6 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="css/style.css">
   <script>
-    if (localStorage.getItem('client_authenticated') === 'true' || sessionStorage.getItem('client_authenticated') === 'true') {
-      document.write('<style>#client-auth-overlay { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }</style>');
-    }
-
     window.openProfileUpdateModal = function() {
       const modal = document.getElementById('client-profile-modal');
       if (modal) {
