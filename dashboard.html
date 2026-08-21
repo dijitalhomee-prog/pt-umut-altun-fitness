@@ -430,6 +430,39 @@
     </div>
   </div>
 
+  <!-- Haftalık Form Görseli Yükleme Modalı -->
+  <div id="form-photo-upload-modal" style="position: fixed; inset: 0; background: rgba(8, 8, 10, 0.94); z-index: 999999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(15px); padding: 1.5rem;">
+    <div class="glass-panel" style="max-width: 480px; width: 100%; padding: 2rem; border-radius: var(--radius-lg); border: 2px solid #10B981; box-shadow: 0 0 35px rgba(16, 185, 129, 0.3); position: relative; text-align: center;">
+      <button type="button" onclick="closeFormPhotoModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer;">&times;</button>
+      
+      <div style="width: 60px; height: 60px; background: rgba(16, 185, 129, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.8rem auto; border: 1px solid #10B981;">
+        <i class="fas fa-camera" style="font-size: 1.6rem; color: #10B981;"></i>
+      </div>
+      <h3 style="color: #FFFFFF; font-size: 1.3rem; margin-bottom: 0.3rem;">Haftalık Form Görseli Yükleyin</h3>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.5rem;">Umut Hoca'nın gelişiminizi incelemesi için boy/cephe veya sırt form fotoğrafınızı yükleyin.</p>
+
+      <form id="form-photo-upload-form" onsubmit="saveFormPhotoUpload(event);">
+        <div class="calc-form-group" style="margin-bottom: 1rem; text-align: left;">
+          <label class="calc-label">Form Fotoğrafı Seç (JPG / PNG) *</label>
+          <input type="file" id="input-form-photo-file" accept="image/*" class="input-field" required style="padding: 0.5rem;" onchange="previewSelectedFormPhoto(event)">
+        </div>
+
+        <div id="form-photo-preview-container" style="display: none; margin-bottom: 1rem;">
+          <img id="form-photo-preview-img" src="" alt="Form Önizleme" style="max-height: 180px; width: 100%; border-radius: var(--radius-md); border: 1px solid #10B981; object-fit: cover;">
+        </div>
+
+        <div class="calc-form-group" style="margin-bottom: 1.2rem; text-align: left;">
+          <label class="calc-label">Ek Not / Kilo Bilgisi (Opsiyonel)</label>
+          <input type="text" id="input-form-photo-note" class="input-field" placeholder="Örn: Sabah aç karınla çekildi, güncel kilo 81.5 kg">
+        </div>
+
+        <button type="submit" class="btn btn-primary-glow" style="width: 100%; padding: 0.8rem; font-size: 0.95rem; background: #10B981; border-color: #10B981;">
+          <i class="fas fa-upload"></i> Görseli Yükle & Danışan Paneline Kaydet
+        </button>
+      </form>
+    </div>
+  </div>
+
   <!-- Navigation Bar -->
   <header class="navbar scrolled">
     <div class="container nav-container">
@@ -483,18 +516,18 @@
         <div class="user-info-box">
           <div class="user-avatar" id="client-initials">EG</div>
           <div class="user-details">
-            <h2>Hoş Geldin, <span class="gradient-text" id="client-name">Danışanım</span> 👋</h2>
+            <h2>Hoş Geldin, <span class="gradient-text" id="client-name">Egemen Güneş</span> 👋</h2>
             <div class="package-pill" id="client-package-badge">
-              <i class="fas fa-shield-alt"></i> Özel Koçluk Paketi (1. Hafta)
+              <i class="fas fa-shield-alt"></i> 🌱 3 Aylık Başlangıç & Disiplin Paketi (1. Hafta)
             </div>
           </div>
         </div>
 
         <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
-          <button class="btn btn-outline" onclick="openProfileUpdateModal()" style="border-color: rgba(239, 68, 68, 0.4); color: #EF4444; font-size: 0.88rem; padding: 0.65rem 1rem; background: rgba(239,68,68,0.1);">
+          <button type="button" class="btn btn-outline" onclick="window.openProfileUpdateModal();" style="border-color: rgba(239, 68, 68, 0.4); color: #EF4444; font-size: 0.88rem; padding: 0.65rem 1rem; background: rgba(239,68,68,0.1); cursor: pointer;">
             <i class="fas fa-edit"></i> Ölçülerimi Güncelle
           </button>
-          <button class="btn btn-primary-glow" id="checkin-trigger-btn">
+          <button type="button" class="btn btn-primary-glow" id="checkin-trigger-btn" onclick="window.openFormPhotoModal();" style="cursor: pointer;">
             <i class="fas fa-camera"></i> Haftalık Form Görseli Yükle
           </button>
         </div>
@@ -831,7 +864,21 @@
             </tbody>
           </table>
 
-          <!-- YENİ: Görsel Form Kontrol & Randevu Takvimi Grid -->
+          <!-- YENİ: Yüklenen Canlı Form Görselleri & Geçmiş Fotoğraf Takibi -->
+          <div id="uploaded-form-photos-section" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-light);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 0.8rem;">
+              <h4 style="color: #FFFFFF; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                <i class="fas fa-images" style="color: #10B981;"></i> Yüklediğiniz Form Görselleri & Geçmiş Takibi
+              </h4>
+              <button type="button" onclick="window.openFormPhotoModal()" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-color: #10B981; color: #10B981; background: rgba(16,185,129,0.1);">
+                <i class="fas fa-plus-circle"></i> Yeni Form Fotoğrafı Ekle
+              </button>
+            </div>
+
+            <div id="form-photos-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem;">
+              <!-- Dynamic Form Photos Rendered Here -->
+            </div>
+          </div>
           <div style="margin-top: 2rem; padding-top: 1.8rem; border-top: 1px solid var(--border-light);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 0.8rem;">
               <h4 style="color: #FFFFFF; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
@@ -1006,6 +1053,132 @@
     }
     window.closeProfileUpdateModal = closeProfileUpdateModal;
 
+    function openFormPhotoModal() {
+      const modal = document.getElementById('form-photo-upload-modal');
+      if (modal) modal.style.display = 'flex';
+    }
+    window.openFormPhotoModal = openFormPhotoModal;
+
+    function closeFormPhotoModal() {
+      const modal = document.getElementById('form-photo-upload-modal');
+      if (modal) modal.style.display = 'none';
+      const container = document.getElementById('form-photo-preview-container');
+      if (container) container.style.display = 'none';
+      const form = document.getElementById('form-photo-upload-form');
+      if (form) form.reset();
+    }
+    window.closeFormPhotoModal = closeFormPhotoModal;
+
+    function previewSelectedFormPhoto(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const previewImg = document.getElementById('form-photo-preview-img');
+          const previewContainer = document.getElementById('form-photo-preview-container');
+          if (previewImg && previewContainer) {
+            previewImg.src = e.target.result;
+            previewContainer.style.display = 'block';
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+    window.previewSelectedFormPhoto = previewSelectedFormPhoto;
+
+    function renderClientFormPhotos() {
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
+      const cleanPhone = userPhone.replace(/\D/g, '');
+      const photosKey = `pt_client_photos_${cleanPhone}`;
+      const photosList = JSON.parse(localStorage.getItem(photosKey)) || [];
+
+      const gridEl = document.getElementById('form-photos-grid');
+      if (!gridEl) return;
+
+      if (photosList.length === 0) {
+        gridEl.innerHTML = `
+          <div style="grid-column: 1 / -1; padding: 1.5rem; background: rgba(0,0,0,0.3); border: 1px dashed var(--border-light); border-radius: var(--radius-md); text-align: center; color: var(--text-muted);">
+            <i class="fas fa-camera-retro" style="font-size: 1.8rem; color: #10B981; margin-bottom: 0.5rem; display: block;"></i>
+            Henüz yüklenmiş form görseliniz yok. Üstteki <strong>"Haftalık Form Görseli Yükle"</strong> butonuna basarak ilk görselinizi ekleyebilirsiniz.
+          </div>
+        `;
+        return;
+      }
+
+      gridEl.innerHTML = photosList.map(p => `
+        <div style="background: rgba(18, 18, 22, 0.95); border: 1px solid var(--border-light); border-radius: var(--radius-md); overflow: hidden; display: flex; flex-direction: column;">
+          <div style="height: 180px; width: 100%; overflow: hidden; background: #000; position: relative;">
+            <img src="${p.dataUrl}" alt="Form Görseli" style="width: 100%; height: 100%; object-fit: cover;">
+            <span style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.75); color: #10B981; font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: var(--radius-full); border: 1px solid #10B981;">
+              <i class="fas fa-check-circle"></i> Yüklendi
+            </span>
+          </div>
+          <div style="padding: 0.8rem; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <span style="font-size: 0.75rem; color: var(--accent-red); font-weight: 700; display: block; margin-bottom: 0.2rem;">
+                <i class="fas fa-calendar-alt"></i> ${p.date || 'Tarih Belirtilmedi'}
+              </span>
+              <p style="font-size: 0.82rem; color: #E5E7EB; margin: 0.3rem 0; line-height: 1.3;">
+                ${p.note ? `"${p.note}"` : '<em>Ek not eklenmedi</em>'}
+              </p>
+            </div>
+            <div style="margin-top: 0.6rem; padding-top: 0.4rem; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.72rem; color: #10B981; font-weight: 600;">
+              ${p.status || '🟢 Umut Hoca İncelemesinde'}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    window.renderClientFormPhotos = renderClientFormPhotos;
+
+    function saveFormPhotoUpload(e) {
+      if (e) e.preventDefault();
+      const fileInput = document.getElementById('input-form-photo-file');
+      const noteInput = document.getElementById('input-form-photo-note');
+
+      if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        alert('Lütfen bir form fotoğrafı seçin!');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const photoDataUrl = evt.target.result;
+        const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
+        const cleanPhone = userPhone.replace(/\D/g, '');
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+        const photoObj = {
+          id: 'photo-' + Date.now(),
+          dataUrl: photoDataUrl,
+          date: dateStr,
+          note: noteInput ? noteInput.value.trim() : '',
+          status: '🟢 Umut Hoca Tarafından İnceleniyor'
+        };
+
+        const photosKey = `pt_client_photos_${cleanPhone}`;
+        const photosList = JSON.parse(localStorage.getItem(photosKey)) || [];
+        photosList.unshift(photoObj);
+        localStorage.setItem(photosKey, JSON.stringify(photosList));
+
+        fetch(`/api/clients/${cleanPhone}/photos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(photoObj)
+        }).catch(err => console.log('Photo sync offline fallback', err));
+
+        closeFormPhotoModal();
+        renderClientFormPhotos();
+
+        alert(`🎉 Form Görseliniz Başarıyla Yüklendi!\n\n📅 Yükleme Tarihi: ${dateStr}\n📌 Not: ${photoObj.note || 'Belirtilmedi'}\n\nUmut Hoca form görselinizi inceleyip dönüt sağlayacaktır.`);
+      };
+      reader.readAsDataURL(file);
+    }
+    window.saveFormPhotoUpload = saveFormPhotoUpload;
+
     function saveClientProfileMetrics(e) {
       if (e) e.preventDefault();
       const userPhone = sessionStorage.getItem('client_user_phone') || localStorage.getItem('client_user_phone') || '05376274415';
@@ -1107,6 +1280,9 @@
           noteBodyEl.textContent = `"${pkgName} ailesine hoş geldin ${firstName}! İlk 2 haftamızda temel hedefimiz ağır kitleler kaldırmak değil, hareket formlarını eksiksiz öğrenmek ve vücudunu antrenman ritmine alıştırmaktır. Beslenme listendeki makrolara sadık kal, her antrenman sonrası hareket kontrol videolarını atmayı unutma!"`;
         }
       }
+
+      // 5. Render Uploaded Form Photos Gallery
+      renderClientFormPhotos();
 
       // Automatically trigger modal on first load if metrics missing
       const isAuth = (sessionStorage.getItem('client_authenticated') === 'true' || localStorage.getItem('client_authenticated') === 'true');

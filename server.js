@@ -237,6 +237,27 @@ app.put('/api/clients/:id/profile', (req, res) => {
   res.json({ success: true, client });
 });
 
+// Upload Client Form Photo Endpoint
+app.post('/api/clients/:id/photos', (req, res) => {
+  const { id } = req.params;
+  const photoObj = req.body;
+
+  const db = readDb();
+  const client = db.clients.find(c => c.id === id || (c.phone && c.phone.replace(/\D/g, '') === id.replace(/\D/g, '')));
+
+  if (!client) {
+    return res.status(404).json({ success: false, message: 'Danışan bulunamadı.' });
+  }
+
+  if (!client.formPhotos) {
+    client.formPhotos = [];
+  }
+  client.formPhotos.unshift(photoObj);
+
+  writeDb(db);
+  res.json({ success: true, photos: client.formPhotos });
+});
+
 // Delete Client Endpoint (Trainer Action)
 app.delete('/api/clients/:id', (req, res) => {
   const { id } = req.params;
