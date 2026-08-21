@@ -21,11 +21,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static(__dirname, {
-  etag: false,
-  lastModified: false
-}));
-
 // Persistent Database Directory & File Path (Railway Persistent Volume Support)
 const DB_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || process.env.DATA_PATH || path.join(__dirname, 'data');
 const DB_FILE = path.join(DB_DIR, 'db.json');
@@ -120,7 +115,6 @@ function deduplicateClients(dbData) {
       mergedMap.set(key, {
         ...existing,
         ...client,
-        // Preserve existing password if new one is missing
         password: (client.password && String(client.password).trim()) ? client.password : existing.password,
         formPhotos: [...(client.formPhotos || []), ...(existing.formPhotos || [])],
         photos: [...(client.photos || []), ...(existing.photos || [])],
@@ -744,8 +738,17 @@ app.post('/api/admin/purge-all-clients', requireTrainer, (req, res) => {
   });
 });
 
-// Fallback Route to index.html
+// Static Files Middleware (Served AFTER REST API endpoints)
+app.use(express.static(__dirname, {
+  etag: false,
+  lastModified: false
+}));
+
+// Fallback Route for SPA with API Protection
 app.get('*', (req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ success: false, message: 'İstenen API rotası bulunamadı.' });
+  }
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
