@@ -1478,12 +1478,57 @@
     let clientCurrentWeek = 1;
     let clientCurrentDay = 1;
 
+    async function syncClientProgramFromBackend() {
+      const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '';
+      const cleanPhone = userPhone.replace(/\D/g, '');
+      if (!cleanPhone) return;
+
+      try {
+        const res = await fetch('/api/clients');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.clients)) {
+            const myClient = data.clients.find(c => c.phone && c.phone.replace(/\D/g, '') === cleanPhone);
+            if (myClient) {
+              if (myClient.hasAssignedProgram !== undefined) {
+                localStorage.setItem('pt_assigned_program_' + cleanPhone, myClient.hasAssignedProgram ? 'true' : 'false');
+              }
+              if (myClient.programMatrix) {
+                localStorage.setItem('pt_matrix_program_' + cleanPhone, JSON.stringify(myClient.programMatrix));
+              }
+              if (myClient.startDate) {
+                localStorage.setItem('pt_start_date_' + cleanPhone, myClient.startDate);
+              }
+              if (myClient.coachNote) {
+                localStorage.setItem('pt_coach_note_' + cleanPhone, myClient.coachNote);
+              }
+
+              // Re-render Client UI elements with fresh backend data
+              if (typeof renderAssignedProgramState === 'function') {
+                renderAssignedProgramState(myClient);
+              }
+              if (typeof renderMatrixExercises === 'function') {
+                renderMatrixExercises(clientCurrentWeek, clientCurrentDay);
+              }
+              if (typeof updateClientWeekDateBadges === 'function') {
+                updateClientWeekDateBadges();
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Backend sync fallback:', err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', syncClientProgramFromBackend);
+    setTimeout(syncClientProgramFromBackend, 300);
+
     function getClientProgramMatrix() {
       const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
       const cleanPhone = userPhone.replace(/\D/g, '');
 
-      let matrix = JSON.parse(localStorage.getItem('pt_matrix_program_' + cleanPhone)) || 
-                   JSON.parse(localStorage.getItem('pt_matrix_program_global')) || {
+      let matrix = JSON.parse(localStorage.getItem('pt_matrix_program_' + cleanPhone)) || {
         "1_1": [
           { name: "Dumbbell Chest Press (Düz Sehpa)", sets: "3 Set", reps: "12 Tekrar", rest: "60 sn Dinlenme" },
           { name: "Incline Dumbbell Fly", sets: "3 Set", reps: "12-15 Tekrar", rest: "60 sn Dinlenme" },
