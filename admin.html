@@ -225,7 +225,7 @@
     }
 
     /* Muscle Filter Chip Button */
-    .muscle-filter-chip {
+    .muscle-filter-chip, .client-filter-chip {
       font-size: 0.76rem;
       padding: 0.3rem 0.7rem;
       border-radius: 100px;
@@ -233,11 +233,34 @@
       cursor: pointer;
       user-select: none;
     }
-    .muscle-filter-chip.active {
+    .muscle-filter-chip.active, .client-filter-chip.active {
       background: rgba(239, 68, 68, 0.2);
       border-color: var(--accent-red);
       color: #FFF;
       font-weight: bold;
+    }
+
+    /* Client Card Item Styling */
+    .client-card-item {
+      background: rgba(18, 18, 22, 0.95);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .client-card-item:hover {
+      border-color: var(--accent-red);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    }
+    .client-card-item.selected {
+      border: 2px solid var(--accent-red);
+      background: rgba(239, 68, 68, 0.08);
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
     }
 
     /* Autocomplete Suggestion Item */
@@ -356,6 +379,31 @@
       <!-- SAYFA İÇİ BAŞARI & UYARI KARTLARI KONUMU -->
       <div id="trainer-success-banner-container"></div>
 
+      <!-- DANIŞAN ÖZELİNDE TEKİL YÖNETİM KARTI (YALNIZCA DANIŞAN SEÇİLİYKEN GÖRÜNÜR) -->
+      <div id="selected-client-management-card" style="display: none; margin-bottom: 1.5rem;">
+        <!-- Dynamically rendered -->
+      </div>
+
+      <!-- DANIŞAN LİSTESİ GÖRÜNÜMÜ & FİLTRELEME ÇİPLERİ (GİRİŞ KARTLARI) -->
+      <div id="client-list-grid-section" class="glass-panel" style="margin-bottom: 1.5rem; padding: 1.2rem 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-light);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.8rem;">
+          <h3 style="font-size: 1.1rem; color: #FFF; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-users" style="color: var(--accent-red);"></i> 👥 Kayıtlı Danışan Listesi (<span id="client-list-count-badge">0</span>)
+          </h3>
+
+          <div style="display: flex; gap: 0.4rem; overflow-x: auto;" id="client-list-filter-bar">
+            <button type="button" class="btn btn-outline client-filter-chip active" data-tab="active" onclick="window.setClientListFilterTab('active')">🟢 Aktif Üyeler</button>
+            <button type="button" class="btn btn-outline client-filter-chip" data-tab="passive" onclick="window.setClientListFilterTab('passive')">🟡 Pasif Üyeler</button>
+            <button type="button" class="btn btn-outline client-filter-chip" data-tab="archived" onclick="window.setClientListFilterTab('archived')">📦 Arşivlenmişler</button>
+            <button type="button" class="btn btn-outline client-filter-chip" data-tab="all" onclick="window.setClientListFilterTab('all')">🎨 Tüm Listeyi Göster</button>
+          </div>
+        </div>
+
+        <div id="client-grid-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.8rem;">
+          <!-- Dynamically rendered -->
+        </div>
+      </div>
+
       <!-- TRAINER TODAY'S AGENDA CARD (BÖLÜM 1) -->
       <div id="trainer-agenda-card" class="glass-panel" style="margin-bottom: 1.5rem; padding: 1.2rem 1.5rem; border-radius: var(--radius-lg); border: 1px solid rgba(245,158,11,0.3); background: linear-gradient(135deg, rgba(245,158,11,0.05) 0%, rgba(18,18,22,0.95) 100%);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.8rem;">
@@ -381,7 +429,7 @@
             <i class="fas fa-user-lock" style="font-size: 3rem; color: var(--accent-red); margin-bottom: 1rem; display: block;"></i>
             <h3 style="color: #FFF; font-size: 1.3rem; margin-bottom: 0.5rem;">Sihirbaz Kullanımı İçin Danışan Seçin</h3>
             <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.5rem;">
-              Program yazmak, beslenme listesini düzenlemek veya eğitmen notu eklemek için yukarıdaki bar üzerinden bir danışan seçiniz veya yeni üye kaydı açınız.
+              Program yazmak, beslenme listesini düzenlemek veya eğitmen notu eklemek için yukarıdaki listeden bir danışan seçiniz veya yeni üye kaydı açınız.
             </p>
             <button class="btn btn-primary-glow" onclick="document.getElementById('open-add-client-btn').click();">
               <i class="fas fa-user-plus"></i> Yeni Danışan Ekle
@@ -464,7 +512,8 @@
               <label class="calc-label">Üyelik Durumu</label>
               <select id="wiz-client-status" class="input-field">
                 <option value="active">🟢 Aktif Üyelik</option>
-                <option value="passive">🔴 Pasif / Biten Üyelik</option>
+                <option value="passive">🟡 Pasif Üyelik</option>
+                <option value="archived">📦 Arşivlenmiş</option>
               </select>
             </div>
 
@@ -490,7 +539,7 @@
           </div>
         </div>
 
-        <!-- STEP 2: 🏋️‍♂️ ANTRENMAN PROGRAMI MATRİSİ (HAFTALAR TAMAMEN BAĞIMSIZ & EGZERSİZ KÜTÜPHANESİ) -->
+        <!-- STEP 2: 🏋️‍♂️ ANTRENMAN PROGRAMI MATRİSİ -->
         <div class="wizard-step-pane" id="wizard-pane-2">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 1rem;">
             <div>
@@ -734,28 +783,33 @@
         </div>
       </div>
 
-      <!-- SEPARATE SYSTEM MANAGEMENT & BULK TOOLS SECTION -->
-      <div class="glass-panel" style="margin-top: 2.5rem; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-light);">
-        <h3 style="color: #FFF; font-size: 1.1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-          <i class="fas fa-cogs" style="color: var(--accent-red);"></i> ⚙️ Sistem Yönetimi, İçe Aktarma & Toplu İşlem Araçları
-        </h3>
+      <!-- COLLAPSIBLE DANGEROUS TOOLS SECTION (KATLANIR TEHLİKELİ İŞLEMLER) -->
+      <div class="glass-panel" style="margin-top: 2.5rem; padding: 1.2rem 1.5rem; border-radius: var(--radius-lg); border: 1px solid rgba(239,68,68,0.4);">
+        <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.toggleDangerousToolsSection();">
+          <h3 style="color: var(--accent-red); font-size: 1.1rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-exclamation-triangle"></i> ⚠️ Tehlikeli İşlemler & Toplu Araçlar
+          </h3>
+          <span id="dangerous-tools-toggle-icon" style="color: var(--text-muted); font-size: 1rem;"><i class="fas fa-chevron-down"></i> (Tıklayıp Aç)</span>
+        </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.8rem;">
-          <button class="btn btn-outline" style="border-color: rgba(245,158,11,0.4); color: #F59E0B;" onclick="window.triggerPassivateAllClients();">
-            <i class="fas fa-user-slash"></i> Tüm Üyelikleri Pasife Al
-          </button>
+        <div id="dangerous-tools-content" style="display: none; margin-top: 1.2rem; padding-top: 1rem; border-top: 1px dashed rgba(239,68,68,0.3);">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.8rem;">
+            <button class="btn btn-outline" style="border-color: rgba(245,158,11,0.4); color: #F59E0B;" onclick="window.triggerPassivateAllClients();">
+              <i class="fas fa-user-slash"></i> Tüm Üyelikleri Pasife Al
+            </button>
 
-          <button class="btn btn-outline" style="border-color: rgba(59,130,246,0.4); color: #3B82F6;" onclick="window.triggerRevokeAllSessions();">
-            <i class="fas fa-key"></i> Tüm Oturumları Kapat
-          </button>
+            <button class="btn btn-outline" style="border-color: rgba(59,130,246,0.4); color: #3B82F6;" onclick="window.triggerRevokeAllSessions();">
+              <i class="fas fa-key"></i> Tüm Oturumları Kapat
+            </button>
 
-          <button class="btn btn-outline" style="border-color: rgba(16,185,129,0.4); color: #10B981;" onclick="window.openImportClientsModal();">
-            <i class="fas fa-file-import"></i> Eski Danışan Listesini İçe Aktar (Import)
-          </button>
+            <button class="btn btn-outline" style="border-color: rgba(16,185,129,0.4); color: #10B981;" onclick="window.openImportClientsModal();">
+              <i class="fas fa-file-import"></i> Eski Danışan Listesini İçe Aktar (Import)
+            </button>
 
-          <button class="btn btn-outline" style="border-color: rgba(239,68,68,0.4); color: var(--accent-red);" onclick="window.triggerPurgeAllClients();">
-            <i class="fas fa-trash-alt"></i> Tüm Danışanları Sıfırla (Yedekli Purge)
-          </button>
+            <button class="btn btn-outline" style="border-color: rgba(239,68,68,0.4); color: var(--accent-red);" onclick="window.openPurgeAllModal();">
+              <i class="fas fa-trash-alt"></i> Tüm Danışanları Sıfırla (Yazarak Onay)
+            </button>
+          </div>
         </div>
       </div>
 
@@ -802,6 +856,58 @@
           <i class="fas fa-check-circle"></i> Danışanı Sisteme Kaydet
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- Hard Delete Confirmation Modal (Writing Confirm) -->
+  <div class="modal-overlay" id="hard-delete-modal">
+    <div class="modal-container">
+      <button class="close-modal-btn" onclick="document.getElementById('hard-delete-modal').classList.remove('active');">&times;</button>
+      <div class="modal-header">
+        <h3 style="color: var(--accent-red);"><i class="fas fa-exclamation-triangle"></i> Danışanı Kalıcı Olarak Sil</h3>
+        <p>Bu işlem <strong>geri alınamaz!</strong> Danışanın tüm programları, vücut ölçümleri ve yüklenen form fotoğrafları veritabanından tamamen yok edilecektir.</p>
+      </div>
+
+      <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--accent-red); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
+        <p style="font-size: 0.88rem; color: #FFF; margin: 0;">
+          Onaylamak için lütfen aşağıdaki kutuya tam olarak <strong><span id="hard-delete-client-name-label" style="color: var(--accent-red);"></span></strong> yazınız:
+        </p>
+      </div>
+
+      <input type="text" id="hard-delete-input-confirm" class="input-field" placeholder="Danışanın tam adını yazın..." autocomplete="off" style="margin-bottom: 1.2rem;">
+
+      <div style="display: flex; gap: 0.6rem;">
+        <button class="btn btn-outline" onclick="document.getElementById('hard-delete-modal').classList.remove('active');" style="flex: 1;">Vazgeç</button>
+        <button id="confirm-hard-delete-btn" class="btn btn-primary-glow" disabled onclick="window.executeHardDeleteClient();" style="flex: 1; background: var(--accent-red); border-color: var(--accent-red);">
+          <i class="fas fa-trash-alt"></i> Kalıcı Olarak Sil
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Purge All Confirmation Modal (Writing Confirm) -->
+  <div class="modal-overlay" id="purge-all-modal">
+    <div class="modal-container">
+      <button class="close-modal-btn" onclick="document.getElementById('purge-all-modal').classList.remove('active');">&times;</button>
+      <div class="modal-header">
+        <h3 style="color: var(--accent-red);"><i class="fas fa-skull-crossbones"></i> Tüm Danışanları Sıfırla (Purge)</h3>
+        <p>Sistemdeki <strong>TÜM DANIŞAN KAYITLARI SİLİNECEKTİR.</strong> Otomatik yedek alınacaktır.</p>
+      </div>
+
+      <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--accent-red); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
+        <p style="font-size: 0.88rem; color: #FFF; margin: 0;">
+          Onaylamak için aşağıdaki kutuya büyük harflerle <strong>SIFIRLA</strong> yazınız:
+        </p>
+      </div>
+
+      <input type="text" id="purge-input-confirm" class="input-field" placeholder="SIFIRLA yazın..." autocomplete="off" style="margin-bottom: 1.2rem;">
+
+      <div style="display: flex; gap: 0.6rem;">
+        <button class="btn btn-outline" onclick="document.getElementById('purge-all-modal').classList.remove('active');" style="flex: 1;">Vazgeç</button>
+        <button id="confirm-purge-btn" class="btn btn-primary-glow" disabled onclick="window.executePurgeAllClients();" style="flex: 1; background: var(--accent-red); border-color: var(--accent-red);">
+          <i class="fas fa-trash-alt"></i> Tümünü Sıfırla
+        </button>
+      </div>
     </div>
   </div>
 
@@ -907,6 +1013,8 @@
     let exerciseLibrary = [];
     let recentExercises = JSON.parse(localStorage.getItem('pt_recent_exercises') || '[]') || [];
     let activeMuscleFilter = 'all';
+    let activeClientListFilterTab = 'active'; // 'active', 'passive', 'archived', 'all'
+    let isPasswordVisibleInCard = false;
 
     let calendarCurrentDate = new Date();
     let calendarEvents = [];
@@ -923,6 +1031,15 @@
         .replace(/ç/g, 'c')
         .replace(/i̇/g, 'i')
         .trim();
+    }
+
+    function getRemainingDays(expiryDateStr) {
+      if (!expiryDateStr) return null;
+      const expDate = new Date(expiryDateStr);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const diffTime = expDate - today;
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
     async function fetchExerciseLibrary() {
@@ -958,6 +1075,16 @@
       closeAllExAutocompletes();
     }
     window.setMuscleGroupFilter = setMuscleGroupFilter;
+
+    function setClientListFilterTab(tabKey) {
+      activeClientListFilterTab = tabKey;
+      document.querySelectorAll('#client-list-filter-bar .client-filter-chip').forEach(chip => {
+        chip.classList.remove('active');
+        if (chip.getAttribute('data-tab') === tabKey) chip.classList.add('active');
+      });
+      renderClientListGrid();
+    }
+    window.setClientListFilterTab = setClientListFilterTab;
 
     function normalizeProgramMatrix(pm, legacyDayList) {
       const defaultDayTitles = [
@@ -1091,6 +1218,8 @@
               statusBadge.style.borderColor = '#10B981';
             }
             populateWizardClientSelect();
+            renderClientListGrid();
+            renderClientManagementCard();
             return;
           }
         }
@@ -1121,7 +1250,8 @@
       filtered.forEach(c => {
         const opt = document.createElement('option');
         opt.value = c.id;
-        opt.textContent = `${c.name} (${c.phone || ''}) - ${c.package || ''}`;
+        const statusIcon = c.status === 'active' ? '🟢' : (c.status === 'archived' ? '📦' : '🟡');
+        opt.textContent = `${statusIcon} ${c.name} (${c.phone || ''}) - ${c.package || ''}`;
         if (c.id === selectedClientId) opt.selected = true;
         select.appendChild(opt);
       });
@@ -1129,12 +1259,17 @@
       updateWizardLockState();
     }
 
-    document.getElementById('wizard-client-search').addEventListener('input', populateWizardClientSelect);
+    document.getElementById('wizard-client-search').addEventListener('input', () => {
+      populateWizardClientSelect();
+      renderClientListGrid();
+    });
 
     document.getElementById('wizard-client-select').addEventListener('change', (e) => {
       const targetId = e.target.value;
       if (!targetId) {
         selectedClientId = null;
+        renderClientManagementCard();
+        renderClientListGrid();
         updateWizardLockState();
         return;
       }
@@ -1149,6 +1284,180 @@
       selectClientForWizard(targetId);
     });
 
+    // RENDER CLIENT LIST GRID / SIDEBAR
+    function renderClientListGrid() {
+      const container = document.getElementById('client-grid-container');
+      const badge = document.getElementById('client-list-count-badge');
+      const searchVal = document.getElementById('wizard-client-search').value.toLowerCase().trim();
+      if (!container) return;
+
+      const filtered = clients.filter(c => {
+        const nameMatch = (c.name || '').toLowerCase().includes(searchVal);
+        const phoneMatch = (c.phone || '').includes(searchVal);
+        if (!nameMatch && !phoneMatch) return false;
+
+        if (activeClientListFilterTab === 'active') return c.status === 'active' || !c.status;
+        if (activeClientListFilterTab === 'passive') return c.status === 'passive';
+        if (activeClientListFilterTab === 'archived') return c.status === 'archived';
+        return true; // 'all'
+      });
+
+      if (badge) badge.textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; border: 1px dashed var(--border-light); border-radius: var(--radius-md);">
+            <p style="color: var(--text-muted); font-size: 0.88rem; margin: 0;">Filtreye uygun danışan kaydı bulunamadı.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      filtered.forEach(c => {
+        const isSelected = c.id === selectedClientId;
+        const remainingDays = getRemainingDays(c.expiryDate);
+        let remainingBadge = '';
+        if (remainingDays !== null) {
+          if (remainingDays < 0) {
+            remainingBadge = `<span style="font-size: 0.7rem; color: #EF4444; font-weight: bold;">Süresi Doldu</span>`;
+          } else {
+            remainingBadge = `<span style="font-size: 0.7rem; color: #10B981; font-weight: bold;">${remainingDays} Gün Kaldı</span>`;
+          }
+        }
+
+        let statusText = '🟢 Aktif';
+        if (c.status === 'passive') statusText = '🟡 Pasif';
+        if (c.status === 'archived') statusText = '📦 Arşiv';
+
+        html += `
+          <div class="client-card-item ${isSelected ? 'selected' : ''}" onclick="window.selectClientForWizard('${c.id}')">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.4rem;">
+              <strong style="color: #FFF; font-size: 0.95rem;">${c.name}</strong>
+              <span style="font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 3px; background: rgba(255,255,255,0.06); color: #FFF;">
+                ${statusText}
+              </span>
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.6rem;">
+              📞 ${c.phone || '—'} · ${c.package || 'Özel Paket'}
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.4rem; margin-top: auto;">
+              ${remainingBadge}
+              
+              ${c.status === 'archived' ? `
+                <div style="display: flex; gap: 0.3rem;">
+                  <button class="btn btn-outline" style="font-size: 0.68rem; padding: 0.15rem 0.4rem; border-color: #10B981; color: #10B981;" onclick="event.stopPropagation(); window.restoreClientFromArchive('${c.id}');" title="Arşivden Çıkar">Geri Yükle</button>
+                  <button class="btn btn-outline" style="font-size: 0.68rem; padding: 0.15rem 0.4rem; border-color: #EF4444; color: #EF4444;" onclick="event.stopPropagation(); window.openHardDeleteModal('${c.id}');" title="Kalıcı Olarak Sil">🗑️ Sil</button>
+                </div>
+              ` : `
+                <span style="font-size: 0.72rem; color: var(--accent-red); font-weight: bold;">Yönet ➡</span>
+              `}
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // RENDER SELECTED CLIENT MANAGEMENT CARD (BÖLÜM 1)
+    function renderClientManagementCard() {
+      const container = document.getElementById('selected-client-management-card');
+      if (!container) return;
+
+      if (!selectedClientId) {
+        container.style.display = 'none';
+        container.innerHTML = '';
+        return;
+      }
+
+      const client = clients.find(c => c.id === selectedClientId);
+      if (!client) {
+        container.style.display = 'none';
+        return;
+      }
+
+      const remainingDays = getRemainingDays(client.expiryDate);
+      let expText = client.expiryDate || 'Belirtilmedi';
+      if (remainingDays !== null) {
+        expText += remainingDays < 0 ? ` (🔴 ${Math.abs(remainingDays)} gün önce bitti)` : ` (🟢 ${remainingDays} gün kaldı)`;
+      }
+
+      let statusBadge = `<span style="color: #10B981; background: rgba(16,185,129,0.15); padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid #10B981;">🟢 Aktif</span>`;
+      if (client.status === 'passive') statusBadge = `<span style="color: #F59E0B; background: rgba(245,158,11,0.15); padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid #F59E0B;">🟡 Pasif</span>`;
+      if (client.status === 'archived') statusBadge = `<span style="color: #6B7280; background: rgba(107,114,128,0.15); padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid #6B7280;">📦 Arşivlenmiş</span>`;
+
+      const displayPassword = isPasswordVisibleInCard ? (client.password || 'TANIMSIZ') : '••••••';
+
+      container.style.display = 'block';
+      container.innerHTML = `
+        <div class="glass-panel" style="padding: 1.2rem 1.5rem; border-radius: var(--radius-lg); border: 2px solid var(--accent-red); background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(18,18,22,0.98) 100%);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.8rem;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.2rem;">
+                <h3 style="color: #FFF; font-size: 1.2rem; margin: 0;">👤 ${client.name} — Danışan Yönetimi</h3>
+                ${statusBadge}
+              </div>
+              <div style="font-size: 0.82rem; color: #E5E7EB;">
+                📞 <strong>${client.phone || '—'}</strong> · Şifre: <strong>${displayPassword}</strong> 
+                <button type="button" style="background: none; border: none; color: var(--accent-red); cursor: pointer; font-size: 0.85rem; margin-left: 0.3rem;" onclick="window.toggleCardPasswordVisibility();">
+                  <i class="fas ${isPasswordVisibleInCard ? 'fa-eye-slash' : 'fa-eye'}"></i>
+                </button>
+                · Paket: <strong>${client.package || '—'}</strong> · Bitiş: <strong>${expText}</strong>
+              </div>
+            </div>
+
+            <button type="button" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="window.deselectWizardClient();">
+              ✕ Kartı Kapat
+            </button>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.8rem;">
+            <button class="btn btn-outline" style="border-color: #25D366; color: #25D366; font-size: 0.8rem; padding: 0.4rem 0.75rem;" onclick="window.sendWAForProgram('${client.phone}', '${client.name}')">
+              <i class="fab fa-whatsapp"></i> WhatsApp'tan Bilgi Gönder
+            </button>
+
+            <button class="btn btn-outline" style="border-color: #3B82F6; color: #3B82F6; font-size: 0.8rem; padding: 0.4rem 0.75rem;" onclick="window.resetClientPassword('${client.id}')">
+              <i class="fas fa-key"></i> Şifre Yenile
+            </button>
+
+            <button class="btn btn-outline" style="border-color: #10B981; color: #10B981; font-size: 0.8rem; padding: 0.4rem 0.75rem;" onclick="window.extendClientMembershipPrompt('${client.id}')">
+              <i class="fas fa-calendar-plus"></i> Üyeliği Uzat
+            </button>
+
+            <button class="btn btn-outline" style="border-color: #F59E0B; color: #F59E0B; font-size: 0.8rem; padding: 0.4rem 0.75rem;" onclick="window.toggleClientStatus('${client.id}')">
+              ${client.status === 'active' ? '🟡 Pasife Al' : '🟢 Aktif Et'}
+            </button>
+
+            <a href="dashboard.html" target="_blank" class="btn btn-outline" style="border-color: rgba(255,255,255,0.25); color: #FFF; font-size: 0.8rem; padding: 0.4rem 0.75rem;">
+              <i class="fas fa-external-link-alt"></i> Danışan Gözüyle Aç
+            </a>
+
+            ${client.status !== 'archived' ? `
+              <button class="btn btn-outline" style="border-color: rgba(239,68,68,0.5); color: #EF4444; font-size: 0.8rem; padding: 0.4rem 0.75rem;" onclick="window.archiveClientSoftDelete('${client.id}')">
+                📦 Danışanı Arşivle
+              </button>
+            ` : `
+              <button class="btn btn-outline" style="border-color: #10B981; color: #10B981; font-size: 0.8rem; padding: 0.4rem 0.75rem;" onclick="window.restoreClientFromArchive('${client.id}')">
+                🔄 Arşivden Çıkar
+              </button>
+            `}
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleCardPasswordVisibility() {
+      isPasswordVisibleInCard = !isPasswordVisibleInCard;
+      renderClientManagementCard();
+    }
+    window.toggleCardPasswordVisibility = toggleCardPasswordVisibility;
+
+    function deselectWizardClient() {
+      resetWizardStateAndForm();
+    }
+    window.deselectWizardClient = deselectWizardClient;
+
     function selectClientForWizard(clientId) {
       selectedClientId = clientId;
       const client = clients.find(c => c.id === clientId);
@@ -1156,7 +1465,7 @@
 
       const badge = document.getElementById('wizard-client-badge');
       if (badge) {
-        badge.innerHTML = `<i class="fas fa-user"></i> ${client.name} | ${client.package} | ${client.status === 'active' ? '🟢 Aktif' : '🔴 Pasif'}`;
+        badge.innerHTML = `<i class="fas fa-user"></i> ${client.name} | ${client.package} | ${client.status === 'active' ? '🟢 Aktif' : (client.status === 'archived' ? '📦 Arşiv' : '🟡 Pasif')}`;
       }
 
       document.getElementById('wiz-client-name').value = client.name || '';
@@ -1198,6 +1507,8 @@
       renderWizardWeekTabs();
       renderWizardExerciseMatrix();
       renderWizardLivePreview();
+      renderClientManagementCard();
+      renderClientListGrid();
       updateWizardLockState();
     }
     window.selectClientForWizard = selectClientForWizard;
@@ -1245,10 +1556,184 @@
       wizardCurrentWeek = 1;
       renderWizardWeekTabs();
       renderWizardExerciseMatrix();
+      renderClientManagementCard();
+      renderClientListGrid();
       goToWizardStep(1);
       updateWizardLockState();
     }
     window.resetWizardStateAndForm = resetWizardStateAndForm;
+
+    // --------------------------------------------------------------------------
+    // DANIŞAN İŞLEMLERİ (PASSWORD, EXTEND, STATUS, ARCHIVE, HARD DELETE)
+    // --------------------------------------------------------------------------
+    async function resetClientPassword(clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+
+      if (!confirm(`🔑 ${client.name} kullanıcısının şifresi yenilenecektir.\n\nEski şifre geçersiz olacak ve yeni 6 haneli rastgele şifre üretilecektir. Onaylıyor musunuz?`)) {
+        return;
+      }
+
+      try {
+        const res = await trainerFetch(`/api/clients/${clientId}/password`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (data.success) {
+          client.password = data.password;
+          showTrainerSuccessBannerMsg(`✨ ${client.name} için yeni şifre oluşturuldu: ${data.password}`);
+          fetchServerClients();
+        }
+      } catch(err) {
+        showTrainerErrorBanner('⚠️ Şifre yenileme hatası');
+      }
+    }
+    window.resetClientPassword = resetClientPassword;
+
+    async function extendClientMembershipPrompt(clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+
+      const choice = prompt(`📅 ${client.name} için üyelik uzatma süresi seçiniz:\n\n1 -> +1 Ay Uzat\n3 -> +3 Ay Uzat\n6 -> +6 Ay Uzat\n12 -> +12 Ay Uzat`, '1');
+      if (!choice || !['1', '3', '6', '12'].includes(choice.trim())) return;
+
+      try {
+        const res = await trainerFetch(`/api/clients/${clientId}/extend`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ months: parseInt(choice.trim()) })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showTrainerSuccessBannerMsg(`✨ ${client.name} üyeliği +${choice} ay uzatıldı! Yeni Bitiş Tarihi: ${data.client.expiryDate}`);
+          fetchServerClients();
+          fetchTrainerAgenda();
+        }
+      } catch(err) {
+        showTrainerErrorBanner('⚠️ Üyelik uzatma hatası');
+      }
+    }
+    window.extendClientMembershipPrompt = extendClientMembershipPrompt;
+
+    async function toggleClientStatus(clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+
+      const newStatus = client.status === 'active' ? 'passive' : 'active';
+      const actionText = newStatus === 'active' ? 'Aktifleştirilecek' : 'Pasife Alınacak';
+
+      if (!confirm(`🟡 ${client.name} üyeliği ${actionText}. Onaylıyor musunuz?`)) return;
+
+      try {
+        const res = await trainerFetch(`/api/clients/${clientId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showTrainerSuccessBannerMsg(`✨ ${client.name} üyelik durumu güncellendi: ${newStatus === 'active' ? '🟢 Aktif' : '🟡 Pasif'}`);
+          fetchServerClients();
+          fetchTrainerAgenda();
+        }
+      } catch(err) {
+        showTrainerErrorBanner('⚠️ Durum güncelleme hatası');
+      }
+    }
+    window.toggleClientStatus = toggleClientStatus;
+
+    async function archiveClientSoftDelete(clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+
+      if (!confirm(`📦 ${client.name} arşivlenecektir.\n\nPanele girişi kapanacak, verileri saklanacaktır. Dilediğiniz zaman Arşiv sekmesinden geri yükleyebilirsiniz. Onaylıyor musunuz?`)) {
+        return;
+      }
+
+      try {
+        const res = await trainerFetch(`/api/clients/${clientId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'archived', note: '📦 Arşivlendi (Panele Girişi Kapalı)' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showTrainerSuccessBannerMsg(`📦 ${client.name} arşivlendi! Panele girişi kapatıldı.`);
+          resetWizardStateAndForm();
+          fetchServerClients();
+          fetchTrainerAgenda();
+        }
+      } catch(err) {
+        showTrainerErrorBanner('⚠️ Arşivleme hatası');
+      }
+    }
+    window.archiveClientSoftDelete = archiveClientSoftDelete;
+
+    async function restoreClientFromArchive(clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+
+      try {
+        const res = await trainerFetch(`/api/clients/${clientId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'active', note: '🟢 Arşivden Çıkarıldı & Aktifleştirildi' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showTrainerSuccessBannerMsg(`✨ ${client.name} arşivden çıkarıldı ve tekrar aktifleştirildi!`);
+          fetchServerClients();
+          fetchTrainerAgenda();
+        }
+      } catch(err) {
+        showTrainerErrorBanner('⚠️ Arşivden çıkarma hatası');
+      }
+    }
+    window.restoreClientFromArchive = restoreClientFromArchive;
+
+    let hardDeleteTargetClientId = null;
+
+    function openHardDeleteModal(clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+
+      hardDeleteTargetClientId = clientId;
+      document.getElementById('hard-delete-client-name-label').textContent = client.name;
+      const input = document.getElementById('hard-delete-input-confirm');
+      input.value = '';
+      document.getElementById('confirm-hard-delete-btn').disabled = true;
+
+      input.oninput = () => {
+        document.getElementById('confirm-hard-delete-btn').disabled = (input.value.trim().toLowerCase() !== client.name.trim().toLowerCase());
+      };
+
+      document.getElementById('hard-delete-modal').classList.add('active');
+    }
+    window.openHardDeleteModal = openHardDeleteModal;
+
+    async function executeHardDeleteClient() {
+      if (!hardDeleteTargetClientId) return;
+      const client = clients.find(c => c.id === hardDeleteTargetClientId);
+      if (!client) return;
+
+      try {
+        const res = await trainerFetch(`/api/clients/${hardDeleteTargetClientId}`, {
+          method: 'DELETE'
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('hard-delete-modal').classList.remove('active');
+          showTrainerSuccessBannerMsg(`🗑️ ${client.name} kalıcı olarak veritabanından silindi ve telefon numarası engellendi.`);
+          resetWizardStateAndForm();
+          fetchServerClients();
+          fetchTrainerAgenda();
+        }
+      } catch(err) {
+        showTrainerErrorBanner('⚠️ Kalıcı silme hatası');
+      }
+    }
+    window.executeHardDeleteClient = executeHardDeleteClient;
 
     // --------------------------------------------------------------------------
     // BÖLÜM 1: EĞİTMEN GÜNLÜK AJANDASI (AGENDA ENGINE)
@@ -1437,8 +1922,11 @@
     window.sendWAForFormCheck = sendWAForFormCheck;
 
     function sendWAForProgram(phone, name) {
-      const waText = encodeURIComponent(`Merhaba ${name}, PT Umut Altun 4 haftalık kişiselleştirilmiş antrenman, beslenme ve takviye programınız başarıyla hazırlandı ve profilinize yüklendi! Giriş yapıp inceleyebilirsiniz.`);
-      window.open(`https://wa.me/90${phone}?text=${waText}`, '_blank');
+      const client = clients.find(c => (c.phone || '').includes(phone) || (phone && c.phone && c.phone.includes(phone)));
+      const pass = client ? client.password : '••••••';
+      const cleanPhone = phone ? phone.replace(/\D/g, '') : '';
+      const waText = encodeURIComponent(`Merhaba ${name}, PT Umut Altun antrenman ve beslenme programınız hazırdır!\n\nGiriş Adresi: https://ptumutaltun.com/dashboard.html\nTelefon: 0${cleanPhone.slice(-10)}\nGiriş Şifreniz: ${pass}\n\nAntrenmanlarınızda başarılar dilerim!`);
+      window.open(`https://wa.me/90${cleanPhone.slice(-10)}?text=${waText}`, '_blank');
     }
     window.sendWAForProgram = sendWAForProgram;
 
@@ -1798,7 +2286,6 @@
       updateWizardExerciseField(dayIdx, exIdx, 'name', val);
       renderExAutocompleteDropdown(dayIdx, exIdx, val);
 
-      // Toggle custom add button visibility if not in library
       const addCustomBtn = document.getElementById(`wiz-ex-add-custom-btn-${dayIdx}-${exIdx}`);
       if (addCustomBtn) {
         const isKnown = exerciseLibrary.some(e => normalizeTrString(e.name) === normalizeTrString(val) || normalizeTrString(e.nameTr) === normalizeTrString(val));
@@ -1825,7 +2312,6 @@
       const normSearch = normalizeTrString(searchVal);
       currentHighlightIdx = -1;
 
-      // Filter Exercise Library
       let matches = exerciseLibrary.filter(ex => {
         if (activeMuscleFilter !== 'all' && ex.muscleGroup !== activeMuscleFilter) return false;
         if (!normSearch) return true;
@@ -1839,11 +2325,9 @@
 
       let html = '';
 
-      // Recent Exercises Section
       if (!normSearch && recentExercises.length > 0) {
         html += `<div style="font-size: 0.7rem; font-weight: 800; color: #F59E0B; background: rgba(245,158,11,0.1); padding: 0.3rem 0.6rem; text-transform: uppercase;">🕒 Son Kullanılan Hızlı Egzersizler</div>`;
         recentExercises.forEach(rName => {
-          const matchedObj = exerciseLibrary.find(e => e.name.toLowerCase() === rName.toLowerCase());
           html += `
             <div class="ex-suggestion-item" onclick="window.selectExSuggestion(${dayIdx}, ${exIdx}, '${rName.replace(/'/g, "\\'")}')">
               <span><strong>${rName}</strong></span>
@@ -1853,7 +2337,6 @@
         });
       }
 
-      // Group Matches by Muscle Group
       const groupLabels = {
         gogus: "💪 GÖĞÜS",
         sirt: "🪵 SIRT",
@@ -1918,7 +2401,6 @@
       addRecentExercise(chosenName);
       updateWizardExerciseField(dayIdx, exIdx, 'name', chosenName);
 
-      // Auto-fill defaults if present
       if (exObj && exObj.defaults) {
         if (setsInput) {
           setsInput.value = exObj.defaults.sets || '3 Set';
@@ -1936,7 +2418,6 @@
 
       closeAllExAutocompletes();
 
-      // Smooth Keyboard Workflow Focus Transfer to Sets Field
       if (setsInput) {
         setsInput.focus();
         setsInput.select();
@@ -1965,7 +2446,6 @@
           e.preventDefault();
           items[currentHighlightIdx].click();
         } else {
-          // Free text accepted on Enter/Tab
           closeAllExAutocompletes();
           const setsInput = document.getElementById(`wiz-ex-sets-${dayIdx}-${exIdx}`);
           if (setsInput && e.key === 'Enter') {
@@ -2028,7 +2508,6 @@
         renderWizardWeekTabs();
         renderWizardExerciseMatrix();
 
-        // Auto focus newly added exercise input
         const newExIdx = wizardState.programMatrix[wizardCurrentWeek].days[dayIdx].exercises.length - 1;
         setTimeout(() => {
           const newInp = document.getElementById(`wiz-ex-input-${dayIdx}-${newExIdx}`);
@@ -2418,8 +2897,21 @@
     }
 
     // --------------------------------------------------------------------------
-    // BULK ADMIN ACTIONS
+    // DANGEROUS BULK ACTIONS & TOGGLE (BÖLÜM 4)
     // --------------------------------------------------------------------------
+    function toggleDangerousToolsSection() {
+      const content = document.getElementById('dangerous-tools-content');
+      const icon = document.getElementById('dangerous-tools-toggle-icon');
+      if (!content) return;
+
+      const isHidden = content.style.display === 'none';
+      content.style.display = isHidden ? 'block' : 'none';
+      if (icon) {
+        icon.innerHTML = isHidden ? `<i class="fas fa-chevron-up"></i> (Kapat)` : `<i class="fas fa-chevron-down"></i> (Tıklayıp Aç)`;
+      }
+    }
+    window.toggleDangerousToolsSection = toggleDangerousToolsSection;
+
     async function triggerPassivateAllClients() {
       if (!confirm("⚠️ TÜM DANIŞAN ÜYELİKLERİNİ PASİFE ALMAK İSTEDİĞİNİZE EMİN MİSİNİZ?")) return;
       try {
@@ -2449,13 +2941,27 @@
     }
     window.triggerRevokeAllSessions = triggerRevokeAllSessions;
 
-    async function triggerPurgeAllClients() {
-      if (!confirm("⚠️ TÜM DANIŞAN KAYITLARINI SIFIRLAMAK İSTEDİĞİNİZE EMİN MİSİNİZ?\n\nOtomatik yedek oluşturulacaktır.")) return;
+    function openPurgeAllModal() {
+      const input = document.getElementById('purge-input-confirm');
+      input.value = '';
+      document.getElementById('confirm-purge-btn').disabled = true;
+
+      input.oninput = () => {
+        document.getElementById('confirm-purge-btn').disabled = (input.value.trim() !== 'SIFIRLA');
+      };
+
+      document.getElementById('purge-all-modal').classList.add('active');
+    }
+    window.openPurgeAllModal = openPurgeAllModal;
+
+    async function executePurgeAllClients() {
       try {
         const res = await trainerFetch('/api/admin/purge-all-clients', { method: 'POST' });
         const data = await res.json();
         if (data.success) {
+          document.getElementById('purge-all-modal').classList.remove('active');
           showTrainerSuccessBannerMsg(data.message);
+          resetWizardStateAndForm();
           fetchServerClients();
           fetchTrainerAgenda();
           renderTrainerCalendar();
@@ -2464,7 +2970,7 @@
         showTrainerErrorBanner('⚠️ Sunucu bağlantı hatası!');
       }
     }
-    window.triggerPurgeAllClients = triggerPurgeAllClients;
+    window.executePurgeAllClients = executePurgeAllClients;
 
     async function openImportClientsModal() {
       const jsonStr = prompt("📌 İçe Aktarılacak Danışan Listesi JSON Verisini Yapıştırın:");
