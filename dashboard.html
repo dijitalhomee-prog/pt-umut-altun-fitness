@@ -388,7 +388,7 @@
   </div>
 
   <!-- Danışan Kişisel Vücut Ölçüleri & Profil Modal -->
-  <div id="client-profile-modal" style="position: fixed; inset: 0; background: rgba(8, 8, 10, 0.92); z-index: 99998; display: none; align-items: center; justify-content: center; backdrop-filter: blur(15px); padding: 1.5rem;">
+  <div id="client-profile-modal" style="position: fixed; inset: 0; background: rgba(8, 8, 10, 0.95); z-index: 999999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(15px); padding: 1.5rem;">
     <div class="glass-panel" style="max-width: 460px; width: 100%; padding: 2rem; border-radius: var(--radius-lg); border: 2px solid var(--accent-red); box-shadow: 0 0 35px rgba(239, 68, 68, 0.25); position: relative;">
       <button type="button" onclick="closeProfileUpdateModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer;">&times;</button>
       
@@ -524,7 +524,7 @@
         </div>
 
         <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
-          <button type="button" class="btn btn-outline" onclick="window.openProfileUpdateModal();" style="border-color: rgba(239, 68, 68, 0.4); color: #EF4444; font-size: 0.88rem; padding: 0.65rem 1rem; background: rgba(239,68,68,0.1); cursor: pointer;">
+          <button type="button" id="btn-open-profile-modal" class="btn btn-outline" onclick="window.openProfileUpdateModal();" style="border-color: rgba(239, 68, 68, 0.4); color: #EF4444; font-size: 0.88rem; padding: 0.65rem 1rem; background: rgba(239,68,68,0.1); cursor: pointer;">
             <i class="fas fa-edit"></i> Ölçülerimi Güncelle
           </button>
           <button type="button" class="btn btn-primary-glow" id="checkin-trigger-btn" onclick="window.openFormPhotoModal();" style="cursor: pointer;">
@@ -1025,9 +1025,13 @@
     function openProfileUpdateModal() {
       const modal = document.getElementById('client-profile-modal');
       if (modal) {
-        modal.style.display = 'flex';
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('z-index', '999999', 'important');
+        modal.style.setProperty('opacity', '1', 'important');
+        modal.style.setProperty('visibility', 'visible', 'important');
+
         const storedClients = (liveClientsList && liveClientsList.length > 0) ? liveClientsList : (JSON.parse(localStorage.getItem('pt_clients_list')) || []);
-        const userPhone = sessionStorage.getItem('client_user_phone') || localStorage.getItem('client_user_phone') || '05376274415';
+        const userPhone = localStorage.getItem('client_user_phone') || sessionStorage.getItem('client_user_phone') || '05376274415';
         const cleanPhone = userPhone.replace(/\D/g, '');
         const currentClient = storedClients.find(c => (c.phone || '').replace(/\D/g, '') === cleanPhone) || {};
         
@@ -1049,7 +1053,9 @@
 
     function closeProfileUpdateModal() {
       const modal = document.getElementById('client-profile-modal');
-      if (modal) modal.style.display = 'none';
+      if (modal) {
+        modal.style.setProperty('display', 'none', 'important');
+      }
     }
     window.closeProfileUpdateModal = closeProfileUpdateModal;
 
