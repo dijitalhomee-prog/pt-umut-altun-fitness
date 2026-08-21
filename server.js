@@ -74,16 +74,17 @@ function readDb() {
       dbData.deletedPhones = [];
     }
 
-    // Filter out any clients that were marked as deleted
-    if (dbData.deletedPhones.length > 0) {
-      const initialLen = dbData.clients.length;
-      dbData.clients = dbData.clients.filter(c => {
-        const cleanP = (c.phone || '').replace(/\D/g, '');
-        return !dbData.deletedPhones.includes(cleanP) && 
-               !dbData.deletedPhones.includes(c.id) && 
-               !dbData.deletedPhones.some(dp => cleanP && cleanP.length >= 10 && cleanP.endsWith(dp.slice(-10)));
+    // Clean deletedPhones: If a client exists in dbData.clients, remove them from deletedPhones!
+    if (dbData.deletedPhones.length > 0 && dbData.clients.length > 0) {
+      const activePhones = dbData.clients.map(c => (c.phone || '').replace(/\D/g, '')).filter(Boolean);
+      const activeIds = dbData.clients.map(c => c.id).filter(Boolean);
+
+      const initialLen = dbData.deletedPhones.length;
+      dbData.deletedPhones = dbData.deletedPhones.filter(dp => {
+        return !activePhones.includes(dp) && !activeIds.includes(dp) && !activePhones.some(ap => ap.length >= 10 && ap.endsWith(dp.slice(-10)));
       });
-      if (dbData.clients.length < initialLen) {
+
+      if (dbData.deletedPhones.length < initialLen) {
         writeDb(dbData);
       }
     }
@@ -175,6 +176,11 @@ app.post('/api/clients', (req, res) => {
     createdAt: new Date().toISOString()
   };
 
+  // Ensure new client's phone is unblocked if it was in deletedPhones
+  if (clientPhone && db.deletedPhones) {
+    db.deletedPhones = db.deletedPhones.filter(dp => dp !== clientPhone && !clientPhone.endsWith(dp.slice(-10)));
+  }
+
   db.clients.unshift(newClient);
   writeDb(db);
 
@@ -191,15 +197,18 @@ app.post('/api/clients/sync', (req, res) => {
   const db = readDb();
   if (!db.deletedPhones) db.deletedPhones = [];
 
-  // Filter out any incoming clients whose phone is in deletedPhones blocklist!
-  const filteredIncoming = incoming.filter(inc => {
-    const cleanP = (inc.phone || '').replace(/\D/g, '');
-    return !db.deletedPhones.includes(cleanP) && !db.deletedPhones.includes(inc.id);
-  });
-
-  filteredIncoming.forEach(inc => {
+  incoming.forEach(inc => {
     if (!inc || (!inc.id && !inc.phone)) return;
     const cleanPhone = (inc.phone || '').replace(/\D/g, '');
+
+    // Unblock if incoming client is active
+    if (cleanPhone && db.deletedPhones.includes(cleanPhone)) {
+      db.deletedPhones = db.deletedPhones.filter(dp => dp !== cleanPhone && !cleanPhone.endsWith(dp.slice(-10)));
+    }
+    if (inc.id && db.deletedPhones.includes(inc.id)) {
+      db.deletedPhones = db.deletedPhones.filter(dp => dp !== inc.id);
+    }
+
     const idx = db.clients.findIndex(c => c.id === inc.id || (cleanPhone && c.phone && c.phone.replace(/\D/g, '') === cleanPhone));
 
     if (idx >= 0) {
