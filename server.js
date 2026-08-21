@@ -544,12 +544,14 @@ function autoExpireClients(db) {
   }
 }
 
-// Sanitize Client Object (Strips password for non-trainer responses)
-function sanitizeClient(client, includePassword = false) {
+// Sanitize Client Object (Strips password and internal notes for non-trainer client responses)
+function sanitizeClient(client, includeSensitive = false) {
   if (!client) return null;
   const copy = { ...client };
-  if (!includePassword) {
+  if (!includeSensitive) {
     delete copy.password;
+    delete copy.systemNote;
+    delete copy.note;
   }
   return copy;
 }
