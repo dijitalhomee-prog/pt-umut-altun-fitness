@@ -18,9 +18,29 @@ document.addEventListener('DOMContentLoaded', () => {
    1. Dynamic Rendering (Paketler, Dönüşümler, SSS)
    ========================================================================== */
 
-function renderPackages() {
+async function renderPackages() {
   const container = document.getElementById('packages-container');
-  if (!container || !APP_DATA || !APP_DATA.packages) return;
+  if (!container) return;
+
+  try {
+    const res = await fetch('/api/packages');
+    const data = await res.json();
+    if (data.success && Array.isArray(data.packages) && data.packages.length > 0) {
+      data.packages.forEach(apiPkg => {
+        if (APP_DATA && Array.isArray(APP_DATA.packages)) {
+          const localMatch = APP_DATA.packages.find(p => p.name === apiPkg.name || p.id === apiPkg.id);
+          if (localMatch) {
+            localMatch.price = `${apiPkg.price.toLocaleString('tr-TR')} ₺`;
+            localMatch.description = apiPkg.packageDescription || localMatch.description;
+          }
+        }
+      });
+    }
+  } catch (err) {
+    console.warn('Dynamic packages sync error:', err);
+  }
+
+  if (!APP_DATA || !APP_DATA.packages) return;
 
   container.innerHTML = APP_DATA.packages.map(pkg => `
     <div class="package-card ${pkg.featured ? 'featured' : ''}" data-package-id="${pkg.id}">

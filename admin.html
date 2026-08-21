@@ -1269,8 +1269,41 @@
     // --------------------------------------------------------------------------
     // BACKEND SYNC & CLIENT LIST MANAGERS
     // --------------------------------------------------------------------------
+    let serverPackages = [];
+
+    async function fetchPackagesAndPopulateDropdowns() {
+      try {
+        const res = await fetch('/api/packages');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.packages)) {
+          serverPackages = data.packages;
+          populatePackageSelectOptions();
+        }
+      } catch (err) {
+        console.warn('Fetch packages error:', err);
+      }
+    }
+    window.fetchPackagesAndPopulateDropdowns = fetchPackagesAndPopulateDropdowns;
+
+    function populatePackageSelectOptions() {
+      const newClientSelect = document.getElementById('new-client-package');
+      const wizClientSelect = document.getElementById('wiz-client-package');
+
+      if (serverPackages.length === 0) return;
+
+      const html = serverPackages.map(p => {
+        const priceStr = p.price ? ` — ${p.price.toLocaleString('tr-TR')} ₺` : '';
+        const entStr = p.expiryMode === 'sessions' ? ` (${p.entitlements.ptSessionsTotal} Ders PT)` : ` (${p.durationDays} Gün)`;
+        return `<option value="${p.name}">${p.name}${entStr}${priceStr}</option>`;
+      }).join('');
+
+      if (newClientSelect) newClientSelect.innerHTML = html;
+      if (wizClientSelect) wizClientSelect.innerHTML = html;
+    }
+
     async function fetchServerClients() {
       const statusBadge = document.getElementById('server-status-badge');
+      fetchPackagesAndPopulateDropdowns();
       try {
         const res = await trainerFetch('/api/clients');
         if (res.ok) {

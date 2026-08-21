@@ -62,6 +62,86 @@ function getPackageDurationDays(pkgName) {
   return 90;
 }
 
+const DEFAULT_PACKAGES = [
+  {
+    id: 'pkg-pt-10',
+    name: 'Cevahir AVM 10 Ders Birebir PT',
+    price: 17900,
+    expiryMode: 'sessions',
+    durationDays: null,
+    entitlements: { ptSessionsTotal: 10, monthlyStudioSessions: 0 },
+    packageDescription: 'Kişiye özel 1:1 antrenör eşliğinde 10 derslik birebir çalışma, postür analizi, özel beslenme takibi ve salon erişimi.',
+    showOnWebsite: true,
+    active: true
+  },
+  {
+    id: 'pkg-pt-20',
+    name: 'Cevahir AVM 20 Ders Birebir PT',
+    price: 32900,
+    expiryMode: 'sessions',
+    durationDays: null,
+    entitlements: { ptSessionsTotal: 20, monthlyStudioSessions: 0 },
+    packageDescription: 'Kişiye özel 1:1 antrenör eşliğinde 20 derslik VİP birebir çalışma, detaylı vücut analizi, beslenme takibi ve MACFit stüdyo erişimi.',
+    showOnWebsite: true,
+    active: true
+  },
+  {
+    id: 'pkg-pt-30',
+    name: 'Cevahir AVM 30 Ders Birebir PT',
+    price: 45350,
+    expiryMode: 'sessions',
+    durationDays: null,
+    entitlements: { ptSessionsTotal: 30, monthlyStudioSessions: 0 },
+    packageDescription: 'Kişiye özel 1:1 antrenör eşliğinde 30 derslik tam dönüşüm paketi, öncelikli saat planlama, beslenme rehberliği ve MACFit stüdyo erişimi.',
+    showOnWebsite: true,
+    active: true
+  },
+  {
+    id: 'pkg-hybrid',
+    name: 'Cevahir MACFit Hibrit Koçluk Paketi',
+    price: 12500,
+    expiryMode: 'days',
+    durationDays: 90,
+    entitlements: { ptSessionsTotal: 0, monthlyStudioSessions: 1 },
+    packageDescription: 'Uzaktan eğitim koçluğu + ayda 1 kez Cevahir MACFit stüdyosunda yüz yüze form ve teknik değerlendirme seansı.',
+    showOnWebsite: true,
+    active: true
+  },
+  {
+    id: 'pkg-3m',
+    name: '3 Aylık Başlangıç & Disiplin Paketi',
+    price: 8500,
+    expiryMode: 'days',
+    durationDays: 90,
+    entitlements: { ptSessionsTotal: 0, monthlyStudioSessions: 0 },
+    packageDescription: '3 aylık kişiselleştirilmiş antrenman ve beslenme programı, haftalık form takibi ve WhatsApp destek kanalı.',
+    showOnWebsite: true,
+    active: true
+  },
+  {
+    id: 'pkg-6m',
+    name: '6 Aylık Vücut Yenileme & Hipertrofi Paketi',
+    price: 14500,
+    expiryMode: 'days',
+    durationDays: 180,
+    entitlements: { ptSessionsTotal: 0, monthlyStudioSessions: 0 },
+    packageDescription: '6 aylık kapsamlı uzaktan koçluk, dönemlik makro ve antrenman revizyonları, haftalık form ve gelişim analizi.',
+    showOnWebsite: true,
+    active: true
+  },
+  {
+    id: 'pkg-12m',
+    name: '12 Aylık VIP Şampiyon Dönüşüm Paketi',
+    price: 24000,
+    expiryMode: 'days',
+    durationDays: 365,
+    entitlements: { ptSessionsTotal: 0, monthlyStudioSessions: 0 },
+    packageDescription: '12 aylık kesintisiz VIP birebir koçluk, yıl boyu dönemsel periyotlamalar, takviye rehberi ve 7/24 direkt antrenör iletişimi.',
+    showOnWebsite: true,
+    active: true
+  }
+];
+
 // Ensure Database File & Directories Exist
 function initDatabase() {
   if (!fs.existsSync(DB_DIR)) {
@@ -76,6 +156,7 @@ function initDatabase() {
 
   const defaultDbData = {
     clients: [],
+    packages: DEFAULT_PACKAGES,
     deletedPhones: [],
     programs: {},
     sessions: [],
@@ -328,8 +409,45 @@ function readDb(forceDiskRead = false) {
         return !activePhones.includes(normDp) && !activeIds.includes(dp);
       });
 
-      if (dbData.deletedPhones.length < initialLen) needDiskSave = true;
+    // 5. Packages catalog initialization & client schema migration (MADDELER 1, 2, 3, 5)
+    if (!Array.isArray(dbData.packages) || dbData.packages.length === 0) {
+      dbData.packages = DEFAULT_PACKAGES;
+      needDiskSave = true;
     }
+
+    dbData.clients.forEach(c => {
+      // System Note Migration
+      if (!c.systemNote) {
+        c.systemNote = c.note || 'Aktif Üyelik Devam Ediyor';
+        needDiskSave = true;
+      }
+
+      // Weight History Migration
+      if (!Array.isArray(c.weightHistory)) {
+        c.weightHistory = [];
+        if (c.currentWeight && !isNaN(parseFloat(c.currentWeight))) {
+          c.weightHistory.push({
+            date: c.createdAt ? c.createdAt.split('T')[0] : getTurkeyDateStr(),
+            weight: parseFloat(c.currentWeight)
+          });
+          needDiskSave = true;
+        }
+      }
+
+      // Match Package Object
+      const matchedPkg = dbData.packages.find(p => p.id === c.packageId || p.name === c.package || (c.package && c.package.includes(p.name)));
+      if (matchedPkg) {
+        if (!c.packageId) { c.packageId = matchedPkg.id; needDiskSave = true; }
+        if (!c.packageDescription) { c.packageDescription = matchedPkg.packageDescription; needDiskSave = true; }
+
+        if (matchedPkg.expiryMode === 'sessions') {
+          if (c.expiryDate !== null) {
+            c.expiryDate = null; // Session based package has no expiry date!
+            needDiskSave = true;
+          }
+        }
+      }
+    });
 
     if (needDiskSave) {
       fs.writeFileSync(DB_FILE, JSON.stringify(dbData, null, 2), 'utf8');
@@ -342,7 +460,7 @@ function readDb(forceDiskRead = false) {
     return dbData;
   } catch (err) {
     console.error('Error reading database:', err);
-    return cachedDbData || { clients: [], deletedPhones: [], programs: {}, sessions: [], trainerPin: TRAINER_PIN };
+    return cachedDbData || { clients: [], packages: DEFAULT_PACKAGES, deletedPhones: [], programs: {}, sessions: [], trainerPin: TRAINER_PIN };
   }
 }
 
@@ -370,20 +488,32 @@ function autoExpireClients(db) {
   let updated = false;
 
   db.clients.forEach(client => {
-    if (client.expiryDate && client.expiryDate < todayStr && client.status === 'active') {
-      // Check if client has a PT package with remaining PT sessions
-      const entitlements = client.entitlements || getPackageEntitlements(client.package);
-      const ptTotal = entitlements ? (entitlements.ptSessionsTotal || 0) : 0;
-      const ptUsed = entitlements ? (entitlements.ptSessionsUsed || 0) : 0;
+    const pkg = db.packages ? db.packages.find(p => p.id === client.packageId || p.name === client.package) : null;
+    const isSessionBased = (pkg && pkg.expiryMode === 'sessions') || (client.package && client.package.includes('Birebir PT'));
 
-      if (ptTotal > 0 && ptUsed < ptTotal) {
-        // Client still has remaining PT lessons! Do NOT auto-expire!
-        return;
+    if (isSessionBased) {
+      client.expiryDate = null; // Clean up calendar expiry date for PT clients
+      const used = (client.entitlements && client.entitlements.ptSessionsUsed) || 0;
+      const total = (client.entitlements && client.entitlements.ptSessionsTotal) || 20;
+
+      // Auto-Passivate when last session is done (KABUL KRİTERİ 7)
+      if (used >= total && total > 0 && client.status === 'active') {
+        client.status = 'passive';
+        client.systemNote = `🔴 Paket Tamamlandı (${used}/${total} ders bitti)`;
+        
+        // Revoke active sessions
+        db.sessions = (db.sessions || []).filter(s => s.clientId !== client.id);
+        updated = true;
       }
-
-      client.status = 'passive';
-      client.note = '🔴 Otomatik Pasife Alındı (Süresi Doldu)';
-      updated = true;
+    } else {
+      if (client.expiryDate && client.expiryDate < todayStr && client.status === 'active') {
+        client.status = 'passive';
+        client.systemNote = `🔴 Otomatik Pasife Alındı (Süresi Doldu - ${client.expiryDate})`;
+        
+        // Revoke active sessions
+        db.sessions = (db.sessions || []).filter(s => s.clientId !== client.id);
+        updated = true;
+      }
     }
   });
 
@@ -1202,6 +1332,89 @@ app.put('/api/clients/:id/form-checks/:dueDate', requireTrainer, (req, res) => {
   res.json({ success: true, formChecks: client.formChecks });
 });
 
+// --------------------------------------------------------------------------
+// BÖLÜM: DİNAMİK PAKET KATALOĞU (PACKAGES CATALOG API - MADDE 1)
+// --------------------------------------------------------------------------
+// GET /api/packages — Tüm Aktif Paket Kataloğunu Getir (PUBLIC)
+app.get('/api/packages', (req, res) => {
+  const db = readDb();
+  if (!Array.isArray(db.packages) || db.packages.length === 0) {
+    db.packages = DEFAULT_PACKAGES;
+    writeDb(db);
+  }
+  res.json({ success: true, packages: db.packages });
+});
+
+// POST /api/packages — Yeni Paket Ekle (TRAINER ONLY)
+app.post('/api/packages', requireTrainer, (req, res) => {
+  const { name, price, expiryMode, durationDays, ptSessionsTotal, monthlyStudioSessions, packageDescription, showOnWebsite } = req.body;
+  if (!name || !name.trim()) return res.status(400).json({ success: false, message: 'Paket adı zorunludur.' });
+
+  const db = readDb();
+  if (!Array.isArray(db.packages)) db.packages = DEFAULT_PACKAGES;
+
+  const newPkg = {
+    id: `pkg-${Date.now()}`,
+    name: name.trim(),
+    price: Number(price || 0),
+    expiryMode: expiryMode === 'sessions' ? 'sessions' : 'days',
+    durationDays: expiryMode === 'sessions' ? null : Number(durationDays || 90),
+    entitlements: {
+      ptSessionsTotal: Number(ptSessionsTotal || 0),
+      monthlyStudioSessions: Number(monthlyStudioSessions || 0)
+    },
+    packageDescription: packageDescription || 'Kişiye özel antrenör desteği ve takip.',
+    showOnWebsite: showOnWebsite !== false,
+    active: true,
+    createdAt: new Date().toISOString()
+  };
+
+  db.packages.push(newPkg);
+  writeDb(db);
+  res.json({ success: true, package: newPkg });
+});
+
+// PUT /api/packages/:id — Paket Güncelle (TRAINER ONLY)
+app.put('/api/packages/:id', requireTrainer, (req, res) => {
+  const { id } = req.params;
+  const { name, price, expiryMode, durationDays, ptSessionsTotal, monthlyStudioSessions, packageDescription, showOnWebsite, active } = req.body;
+  const db = readDb();
+  if (!Array.isArray(db.packages)) db.packages = DEFAULT_PACKAGES;
+
+  const pkg = db.packages.find(p => p.id === id);
+  if (!pkg) return res.status(404).json({ success: false, message: 'Paket bulunamadı.' });
+
+  if (name) pkg.name = name.trim();
+  if (price !== undefined) pkg.price = Number(price);
+  if (expiryMode) pkg.expiryMode = expiryMode;
+  if (durationDays !== undefined) pkg.durationDays = expiryMode === 'sessions' ? null : Number(durationDays);
+  if (ptSessionsTotal !== undefined || monthlyStudioSessions !== undefined) {
+    if (!pkg.entitlements) pkg.entitlements = {};
+    if (ptSessionsTotal !== undefined) pkg.entitlements.ptSessionsTotal = Number(ptSessionsTotal);
+    if (monthlyStudioSessions !== undefined) pkg.entitlements.monthlyStudioSessions = Number(monthlyStudioSessions);
+  }
+  if (packageDescription !== undefined) pkg.packageDescription = packageDescription;
+  if (showOnWebsite !== undefined) pkg.showOnWebsite = Boolean(showOnWebsite);
+  if (active !== undefined) pkg.active = Boolean(active);
+
+  writeDb(db);
+  res.json({ success: true, package: pkg });
+});
+
+// DELETE /api/packages/:id — Paket Deaktif Et (TRAINER ONLY)
+app.delete('/api/packages/:id', requireTrainer, (req, res) => {
+  const { id } = req.params;
+  const db = readDb();
+  if (!Array.isArray(db.packages)) db.packages = DEFAULT_PACKAGES;
+
+  const pkg = db.packages.find(p => p.id === id);
+  if (!pkg) return res.status(404).json({ success: false, message: 'Paket bulunamadı.' });
+
+  pkg.active = false;
+  writeDb(db);
+  res.json({ success: true, message: 'Paket deaktif edildi.' });
+});
+
 // PUT /api/clients/:id/extend — Üyelik Süresi Uzat / Durum Güncelle (TRAINER ONLY)
 app.put('/api/clients/:id/extend', requireTrainer, (req, res) => {
   const { id } = req.params;
@@ -1331,14 +1544,28 @@ app.post('/api/clients', requireTrainer, (req, res) => {
 
   const db = readDb();
 
-  // Expiry Date Auto-Calculation (Fixes 30-day PT package bug)
+  // Look up Package Object from Catalog
+  if (!Array.isArray(db.packages)) db.packages = DEFAULT_PACKAGES;
+  const pkgObj = db.packages.find(p => p.id === pkg || p.name === pkg) || db.packages.find(p => pkg && pkg.includes(p.name));
+
+  const pkgName = pkgObj ? pkgObj.name : (pkg || '3 Aylık Başlangıç & Disiplin Paketi');
+  const pkgId = pkgObj ? pkgObj.id : null;
+  const pkgDesc = pkgObj ? pkgObj.packageDescription : 'Kişiye özel antrenman ve beslenme desteğiniz aktiftir.';
+  const isSessionBased = (pkgObj && pkgObj.expiryMode === 'sessions') || (pkgName.includes('Birebir PT'));
+
   let finalExpiryDate = expiryDate;
-  if (!finalExpiryDate) {
-    const daysToAdd = getPackageDurationDays(pkg);
+  if (isSessionBased) {
+    finalExpiryDate = null; // Session-based membership has no calendar expiry date!
+  } else if (!finalExpiryDate) {
+    const daysToAdd = pkgObj ? (pkgObj.durationDays || 90) : getPackageDurationDays(pkgName);
     const expObj = new Date();
     expObj.setDate(expObj.getDate() + daysToAdd);
     finalExpiryDate = getTurkeyDateStr(expObj);
   }
+
+  const entitlementsObj = (pkgObj && pkgObj.entitlements)
+    ? { ptSessionsTotal: pkgObj.entitlements.ptSessionsTotal, ptSessionsUsed: 0, monthlyStudioSessions: pkgObj.entitlements.monthlyStudioSessions }
+    : getPackageEntitlements(pkgName);
 
   const generatedPassword = (password && String(password).trim()) ? String(password).trim() : Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -1358,11 +1585,14 @@ app.post('/api/clients', requireTrainer, (req, res) => {
       name: name.trim(),
       phone: clean10,
       password: generatedPassword,
-      package: pkg || existing.package || 'Ücretsiz Deneme',
+      package: pkgName,
+      packageId: pkgId || existing.packageId,
+      packageDescription: pkgDesc,
       stage: stage || existing.stage || '1. Hafta (Aktif Üye)',
       expiryDate: finalExpiryDate,
       status: status || existing.status || 'active',
-      note: (status || existing.status) === 'active' ? `Aktif (Son Tarih: ${finalExpiryDate})` : '🔴 Pasif / Süresi Doldu'
+      systemNote: (status || existing.status) === 'active' ? (isSessionBased ? `Aktif (${entitlementsObj.ptSessionsTotal} Ders PT)` : `Aktif (Son Tarih: ${finalExpiryDate})`) : '🔴 Pasif / Süresi Doldu',
+      entitlements: existing.entitlements && existing.entitlements.ptSessionsTotal === entitlementsObj.ptSessionsTotal ? existing.entitlements : entitlementsObj
     };
     writeDb(db);
     return res.json({ success: true, updated: true, client: db.clients[existingIdx] });
@@ -1374,11 +1604,15 @@ app.post('/api/clients', requireTrainer, (req, res) => {
     name: name.trim(),
     phone: clean10,
     password: generatedPassword,
-    package: pkg || 'Ücretsiz Deneme',
+    package: pkgName,
+    packageId: pkgId,
+    packageDescription: pkgDesc,
     stage: stage || '1. Hafta (Yeni Başladı)',
     expiryDate: finalExpiryDate,
     status: status || 'active',
-    note: (status || 'active') === 'active' ? `Aktif (Son Tarih: ${finalExpiryDate})` : '🔴 Pasif / Süresi Doldu',
+    systemNote: (status || 'active') === 'active' ? (isSessionBased ? `Aktif (${entitlementsObj.ptSessionsTotal} Ders PT)` : `Aktif (Son Tarih: ${finalExpiryDate})`) : '🔴 Pasif / Süresi Doldu',
+    entitlements: entitlementsObj,
+    weightHistory: [],
     createdAt: new Date().toISOString()
   };
 
@@ -1463,7 +1697,17 @@ app.put('/api/clients/:id/profile', requireTrainer, (req, res) => {
 
   if (height !== undefined) client.height = height;
   if (startWeight !== undefined) client.startWeight = startWeight;
-  if (currentWeight !== undefined) client.currentWeight = currentWeight;
+  if (currentWeight !== undefined) {
+    client.currentWeight = currentWeight;
+    if (!Array.isArray(client.weightHistory)) client.weightHistory = [];
+    const todayStr = getTurkeyDateStr();
+    const existingToday = client.weightHistory.find(w => w.date === todayStr);
+    if (existingToday) {
+      existingToday.weight = parseFloat(currentWeight);
+    } else if (currentWeight) {
+      client.weightHistory.push({ date: todayStr, weight: parseFloat(currentWeight) });
+    }
+  }
   if (targetWeight !== undefined) client.targetWeight = targetWeight;
   if (coachNote !== undefined) client.coachNote = coachNote;
   if (hasAssignedProgram !== undefined) {
