@@ -1094,11 +1094,19 @@
 
     function getRemainingDays(expiryDateStr) {
       if (!expiryDateStr) return null;
-      const expDate = new Date(expiryDateStr);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const parts = expiryDateStr.split('T')[0].split('-');
+      if (parts.length < 3) return null;
+
+      const expYear = parseInt(parts[0], 10);
+      const expMonth = parseInt(parts[1], 10) - 1;
+      const expDay = parseInt(parts[2], 10);
+
+      const expDate = new Date(expYear, expMonth, expDay, 0, 0, 0);
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+
       const diffTime = expDate - today;
-      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return Math.round(diffTime / (1000 * 60 * 60 * 24));
     }
 
     async function fetchExerciseLibrary() {
@@ -1715,7 +1723,7 @@
     }
     window.approveTrainerClientFormCheck = approveTrainerClientFormCheck;
 
-    function selectClientForWizard(clientId) {
+    function selectClientForWizard(clientId, stepNum) {
       selectedClientId = clientId;
       const client = clients.find(c => c.id === clientId);
       if (!client) return;
@@ -1767,6 +1775,11 @@
       renderClientManagementCard();
       renderClientListGrid();
       updateWizardLockState();
+
+      if (stepNum && typeof window.goToWizardStep === 'function') {
+        window.goToWizardStep(stepNum);
+        document.getElementById('wizard-section')?.scrollIntoView({ behavior: 'smooth' });
+      }
     }
     window.selectClientForWizard = selectClientForWizard;
 
@@ -2042,7 +2055,9 @@
         const res = await trainerFetch('/api/agenda');
         const data = await res.json();
         if (data.success && data.agenda) {
-          if (badge) badge.textContent = data.totalCount || 0;
+          if (badge) {
+            badge.textContent = `${data.totalCount || 0}${data.urgentCount ? ' · ' + data.urgentCount + ' acil' : ''}`;
+          }
           renderAgendaGroups(data.agenda);
         }
       } catch (err) {
@@ -2072,7 +2087,7 @@
       let html = '';
 
       if (overdue.length > 0) {
-        html += `<h4 style="color: #EF4444; font-size: 0.88rem; margin: 0.8rem 0 0.4rem 0;"><i class="fas fa-exclamation-circle"></i> 🔴 Gecikmiş Görevler (${overdue.length})</h4>`;
+        html += `<h4 style="color: #EF4444; font-size: 0.88rem; margin: 0.8rem 0 0.4rem 0;"><i class="fas fa-exclamation-circle"></i> 🔴 ACİL & Gecikmiş Görevler (${overdue.length})</h4>`;
         overdue.forEach(item => { html += renderAgendaTaskRow(item, 'overdue'); });
       }
 
@@ -2092,6 +2107,48 @@
     function renderAgendaTaskRow(item, groupKey) {
       const phone = item.clientPhone || '5303008936';
 
+      // 1. Olası Unassigned Program (Program Yazılmamış / Kurulum Tamamlanmadı) Özel Kartı
+      if (item.type === 'unassigned_program') {
+        const cl = item.checklist || {};
+        return `
+          <div class="agenda-task-item overdue" style="flex-direction: column; align-items: stretch; gap: 0.8rem; background: rgba(239, 68, 68, 0.08); border: 1px solid var(--accent-red); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 0.8rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.6rem;">
+              <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+                <span style="background: var(--accent-red); color: #FFF; font-size: 0.68rem; font-weight: 800; padding: 0.2rem 0.5rem; border-radius: 4px; letter-spacing: 0.05em;">🔴 ACİL KOÇLUK GÖREVİ</span>
+                <strong style="color: #FFF; font-size: 0.95rem; cursor: pointer;" onclick="window.selectClientForWizard('${item.clientId}', 2)">
+                  👤 ${item.clientName}
+                </strong>
+                <span style="font-size: 0.82rem; color: #FCA5A5;">— ${item.title} (<strong>${item.subtitle}</strong>)</span>
+              </div>
+              <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                <button class="btn btn-primary-glow" style="font-size: 0.78rem; padding: 0.35rem 0.75rem;" onclick="window.selectClientForWizard('${item.clientId}', 2)">
+                  📝 Program Yaz / Kurulumu Tamamla →
+                </button>
+                <button class="btn btn-outline" style="font-size: 0.75rem; padding: 0.35rem 0.6rem; border-color: #25D366; color: #25D366;" onclick="window.sendWAForMembership('${phone}', '${item.clientName}')">
+                  <i class="fab fa-whatsapp"></i> Bilgi Ver
+                </button>
+                <button class="btn btn-outline" style="font-size: 0.72rem; padding: 0.35rem 0.5rem; border-color: rgba(255,255,255,0.2); color: var(--text-muted);" onclick="window.quickSkipSetup('${item.clientId}')" title="Bu uyarıyı ajandadan kaldır">
+                  ⏩ Atla
+                </button>
+              </div>
+            </div>
+
+            <!-- Danışan Kurulum Kontrol Listesi -->
+            <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-sm); padding: 0.7rem 0.9rem; font-size: 0.8rem;">
+              <div style="font-weight: 800; color: #9CA3AF; margin-bottom: 0.4rem; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em;">📋 Danışan Kurulum Kontrol Listesi</div>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.4rem;">
+                <div style="color: #10B981;"><i class="fas fa-check-square"></i> Profil & Paket Bilgileri</div>
+                <div style="color: ${cl.program ? '#10B981' : '#EF4444'}; font-weight: ${cl.program ? 'normal' : 'bold'};"><i class="fas ${cl.program ? 'fa-check-square' : 'fa-square'}"></i> Antrenman Programı ${cl.program ? '(Yazıldı)' : '🔴 (Eksik)'}</div>
+                <div style="color: ${cl.nutrition ? '#10B981' : '#F59E0B'};"><i class="fas ${cl.nutrition ? 'fa-check-square' : 'fa-square'}"></i> Beslenme Planı ${cl.nutrition ? '(Tamam)' : '(Opsiyonel)'}</div>
+                <div style="color: ${cl.supplements ? '#10B981' : '#F59E0B'};"><i class="fas ${cl.supplements ? 'fa-check-square' : 'fa-square'}"></i> Takviye Rehberi ${cl.supplements ? '(Tamam)' : '(Opsiyonel)'}</div>
+                <div style="color: ${cl.trainerNote ? '#10B981' : '#F59E0B'};"><i class="fas ${cl.trainerNote ? 'fa-check-square' : 'fa-square'}"></i> Eğitmen Notu ${cl.trainerNote ? '(Eklendi)' : '(Opsiyonel)'}</div>
+                <div style="color: ${cl.formPhotoUploaded ? '#10B981' : '#3B82F6'};"><i class="fas ${cl.formPhotoUploaded ? 'fa-check-square' : 'fa-camera'}"></i> Başlangıç Form Fotoğrafı ${cl.formPhotoUploaded ? '(Yüklendi)' : '(Danışan Bekleniyor)'}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
       let actionBtnsHtml = '';
       if (item.type === 'membership_expired' || item.type === 'membership_expiring') {
         actionBtnsHtml = `
@@ -2101,7 +2158,7 @@
         `;
       } else if (item.type === 'program_expired') {
         actionBtnsHtml = `
-          <button class="btn btn-primary-glow" style="font-size: 0.72rem; padding: 0.25rem 0.55rem;" onclick="window.selectClientForWizard('${item.clientId}')">Yeni Program Yaz 🪄</button>
+          <button class="btn btn-primary-glow" style="font-size: 0.72rem; padding: 0.25rem 0.55rem;" onclick="window.selectClientForWizard('${item.clientId}', 2)">Yeni Program Yaz 🪄</button>
         `;
       } else if (item.type === 'form_check_due') {
         actionBtnsHtml = `
@@ -2167,6 +2224,20 @@
       }
     }
     window.quickPassivateMembership = quickPassivateMembership;
+
+    async function quickSkipSetup(clientId) {
+      try {
+        const res = await trainerFetch(`/api/clients/${clientId}/skip-setup`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showTrainerSuccessBannerMsg('⏩ Danışan kurulum uyarısı ajandadan kaldırıldı.');
+          fetchTrainerAgenda();
+        }
+      } catch (err) {
+        showTrainerErrorBanner('⚠️ İşlem hatası');
+      }
+    }
+    window.quickSkipSetup = quickSkipSetup;
 
     async function quickMarkFormCheckDone(clientId, dueDate) {
       try {
